@@ -2,11 +2,10 @@ package services.impl;
 
 import domain.entities.User;
 import dto.RequestLoginDto;
-import dto.UserDto;
 import dto.RequestUserRegisterDto;
+import dto.UserDto;
 import mappers.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.stereotype.Service;
 import repositories.UserRepository;
 import services.api.UserService;
