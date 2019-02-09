@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'net.ltgt.apt' version '0.10'
+}
+
+group 'AndreiLucianVaida'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // Spring Boot
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
+    compile group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '2.1.2.RELEASE', ext: 'pom'
+
+    // Spring Web
+    // https://mvnrepository.com/artifact/org.springframework/spring-web
+    compile group: 'org.springframework', name: 'spring-web', version: '5.1.4.RELEASE'
+
+
+    // Spring Validation
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.1.2.RELEASE'
+
+    // Hibernate
+    // https://mvnrepository.com/artifact/org.hibernate/hibernate-core
+    compile group: 'org.hibernate', name: 'hibernate-core', version: '5.4.1.Final'
+    
+    // JPA Repository
+    // https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.1.4.RELEASE'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.4'
+    apt 'org.projectlombok:lombok:1.18.4'
+}
