@@ -4,7 +4,7 @@ import domain.entities.Message;
 import domain.entities.User;
 import dto.MessageDto;
 import dto.RequestAddMessageDto;
-import mapper.MessageMapper;
+import mappers.MessageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import repositories.MessageRepository;
@@ -48,7 +48,7 @@ public class MessageServiceImpl implements MessageService {
         final User toUser = userRepository.findById(userId2)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
-        final List<Message> messages = messageRepository.findAllByFromUser_IdAndToUser_IdOrToUser_IdAndFromUser_IdOrderByDateTime(userId1, userId2, userId2, userId1);
+        final List<Message> messages = null;//messageRepository.findAllByFromUser_IdAndToUser_IdOrToUser_IdAndFromUser_IdOrderByDateTime(userId1, userId2, userId2, userId1);
         return messages.stream()
                 .map(MessageMapper::messageToMessageDto)
                 .collect(Collectors.toList());

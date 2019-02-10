@@ -1,7 +1,11 @@
 plugins {
     id 'java'
     id 'net.ltgt.apt' version '0.10'
+    id 'org.springframework.boot' version '2.1.1.RELEASE'
 }
+
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
 
 group 'AndreiLucianVaida'
 version '1.0-SNAPSHOT'
@@ -14,15 +18,23 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'org.springframework.boot:spring-boot-starter-web'
 
     // Spring Boot
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
     compile group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '2.1.2.RELEASE', ext: 'pom'
 
+    // Spring Boot Starter
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.2.RELEASE'
+
+    // Spring Boot Starter Date JPA
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.1.2.RELEASE'
+
     // Spring Web
     // https://mvnrepository.com/artifact/org.springframework/spring-web
     compile group: 'org.springframework', name: 'spring-web', version: '5.1.4.RELEASE'
-
 
     // Spring Validation
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
@@ -31,10 +43,14 @@ dependencies {
     // Hibernate
     // https://mvnrepository.com/artifact/org.hibernate/hibernate-core
     compile group: 'org.hibernate', name: 'hibernate-core', version: '5.4.1.Final'
-    
+
     // JPA Repository
     // https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa
     compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.1.4.RELEASE'
+
+    // PostgreSQL
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.4'

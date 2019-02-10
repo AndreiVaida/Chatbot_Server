@@ -1,4 +1,4 @@
-package mapper;
+package mappers;
 
 import domain.entities.Message;
 import domain.entities.User;
