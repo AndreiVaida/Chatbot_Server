@@ -52,6 +52,10 @@ dependencies {
     // https://mvnrepository.com/artifact/com.google.collections/google-collections
     compile group: 'com.google.collections', name: 'google-collections', version: '1.0'
 
+    // Java JWT
+    // https://mvnrepository.com/artifact/com.auth0/java-jwt
+    compile group: 'com.auth0', name: 'java-jwt', version: '3.7.0'
+
     // Hibernate
     // https://mvnrepository.com/artifact/org.hibernate/hibernate-core
     compile group: 'org.hibernate', name: 'hibernate-core', version: '5.4.1.Final'

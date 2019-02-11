@@ -1,6 +1,5 @@
 package controllers;
 
-import dtos.RequestLoginDto;
 import dtos.RequestUserRegisterDto;
 import dtos.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import services.api.UserService;
-
-import javax.security.auth.login.FailedLoginException;
 
 @RestController
 @RequestMapping("/users")
@@ -31,12 +28,6 @@ public class UserController extends AbstractController {
     public ResponseEntity<?> createAccount(@RequestBody @Validated final RequestUserRegisterDto requestUserRegisterDto) {
         userService.addUser(requestUserRegisterDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody @Validated final RequestLoginDto requestLoginDto) throws FailedLoginException {
-        final String token = userService.login(requestLoginDto);
-        return new ResponseEntity<>(token, HttpStatus.OK);
     }
 
     @GetMapping("/{userId}")

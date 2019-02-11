@@ -39,15 +39,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String login(final RequestLoginDto requestLogin) throws FailedLoginException {
-        final User user = userRepository.findByEmail(requestLogin.getEmail());
+    public UserDto findUserByEmail(final String email) {
+        final User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new EntityNotFoundException("User not found.");
         }
-
-        if (!user.getPassword().equals(requestLogin.getPassword())) {
-            throw new FailedLoginException();
-        }
-        return user.getId().toString();
+        return UserMapper.userToUserDto(user);
     }
 }
