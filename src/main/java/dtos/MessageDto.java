@@ -1,20 +1,17 @@
-package dto;
+package dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
+
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class RequestAddMessageDto {
-    @NonNull
+public class MessageDto {
     private Long fromUserId;
-
-    @NonNull
     private Long toUserId;
-
-    @NonNull
-    private String text;
+    private String message;
+    private LocalDateTime dateTime;
 }

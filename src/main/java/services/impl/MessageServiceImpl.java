@@ -2,8 +2,8 @@ package services.impl;
 
 import domain.entities.Message;
 import domain.entities.User;
-import dto.MessageDto;
-import dto.RequestAddMessageDto;
+import dtos.MessageDto;
+import dtos.RequestAddMessageDto;
 import mappers.MessageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

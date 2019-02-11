@@ -1,8 +1,8 @@
 package controllers;
 
-import dto.RequestLoginDto;
-import dto.RequestUserRegisterDto;
-import dto.UserDto;
+import dtos.RequestLoginDto;
+import dtos.RequestUserRegisterDto;
+import dtos.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

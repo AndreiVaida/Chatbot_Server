@@ -1,8 +1,8 @@
 package mappers;
 
 import domain.entities.User;
-import dto.RequestUserRegisterDto;
-import dto.UserDto;
+import dtos.RequestUserRegisterDto;
+import dtos.UserDto;
 
 public class UserMapper {
     private UserMapper() {}

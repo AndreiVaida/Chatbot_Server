@@ -1,7 +1,7 @@
 package services.api;
 
-import dto.MessageDto;
-import dto.RequestAddMessageDto;
+import dtos.MessageDto;
+import dtos.RequestAddMessageDto;
 
 import java.util.List;
 

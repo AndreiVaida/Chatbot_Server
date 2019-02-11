@@ -1,8 +1,8 @@
 package services.api;
 
-import dto.RequestLoginDto;
-import dto.UserDto;
-import dto.RequestUserRegisterDto;
+import dtos.RequestLoginDto;
+import dtos.UserDto;
+import dtos.RequestUserRegisterDto;
 
 import javax.security.auth.login.FailedLoginException;
 

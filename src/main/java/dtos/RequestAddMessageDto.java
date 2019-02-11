@@ -1,4 +1,4 @@
-package dto;
+package dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,10 +8,13 @@ import lombok.NonNull;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class RequestLoginDto {
+public class RequestAddMessageDto {
     @NonNull
-    private String email;
+    private Long fromUserId;
 
     @NonNull
-    private String password;
+    private Long toUserId;
+
+    @NonNull
+    private String text;
 }
