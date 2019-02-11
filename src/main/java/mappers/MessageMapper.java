@@ -13,7 +13,7 @@ public class MessageMapper {
         final Message message = new Message();
         message.setFromUser(fromUser);
         message.setToUser(toUser);
-        message.setMessage(requestAddMessageDto.getText());
+        message.setMessage(requestAddMessageDto.getMessage());
         message.setDateTime(dateTime);
         return message;
     }

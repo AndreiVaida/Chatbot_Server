@@ -10,11 +10,12 @@ import lombok.NonNull;
 @Data
 public class RequestAddMessageDto {
     @NonNull
+    private String message;
+
+    @NonNull
     private Long fromUserId;
 
     @NonNull
     private Long toUserId;
 
-    @NonNull
-    private String text;
 }

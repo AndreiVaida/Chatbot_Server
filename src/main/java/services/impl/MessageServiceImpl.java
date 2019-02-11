@@ -42,7 +42,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public List<MessageDto> getMessagesForUsers(final Long userId1, final Long userId2) {
+    public List<MessageDto> getMessages(final Long userId1, final Long userId2) {
         final User fromUser = userRepository.findById(userId1)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
         final User toUser = userRepository.findById(userId2)
