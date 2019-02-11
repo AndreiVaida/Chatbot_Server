@@ -19,7 +19,7 @@ import javax.security.auth.login.FailedLoginException;
 
 @RestController
 @RequestMapping("/users")
-public class UserController {
+public class UserController extends AbstractController {
     private final UserService userService;
 
     @Autowired
