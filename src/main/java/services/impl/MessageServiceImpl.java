@@ -43,10 +43,12 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional
     public List<MessageDto> getMessages(final Long userId1, final Long userId2) {
-        final User fromUser = userRepository.findById(userId1)
-                .orElseThrow(() -> new EntityNotFoundException("User not found."));
-        final User toUser = userRepository.findById(userId2)
-                .orElseThrow(() -> new EntityNotFoundException("User not found."));
+        if (!userRepository.existsById(userId1)) {
+            throw new EntityNotFoundException("User 1 not found.");
+        }
+        if (!userRepository.existsById(userId2)) {
+            throw new EntityNotFoundException("User 2 not found.");
+        }
 
         final List<Message> messages = messageRepository.findAllByFromUser_IdAndToUser_IdOrToUser_IdAndFromUser_IdOrderByDateTime(userId1, userId2, userId2, userId1);
         return messages.stream()

@@ -16,9 +16,6 @@ public class AbstractController {
         if (e instanceof EntityNotFoundException) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        if (e instanceof FailedLoginException) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

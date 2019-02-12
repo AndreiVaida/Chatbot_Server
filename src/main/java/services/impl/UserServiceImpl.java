@@ -26,6 +26,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public void addUser(final User user) {
+        final String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
     public void addUser(final RequestUserRegisterDto requestUserRegisterDto) {
         final User user = UserMapper.requestUserRegisterDtoToUser(requestUserRegisterDto);
         final String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
