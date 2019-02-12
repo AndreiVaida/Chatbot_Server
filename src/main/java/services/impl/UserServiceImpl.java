@@ -1,32 +1,35 @@
 package services.impl;
 
 import domain.entities.User;
-import dtos.RequestLoginDto;
 import dtos.RequestUserRegisterDto;
 import dtos.UserDto;
 import mappers.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import repositories.UserRepository;
 import services.api.UserService;
 
 import javax.persistence.EntityNotFoundException;
-import javax.security.auth.login.FailedLoginException;
 import javax.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
     @Transactional
     public void addUser(final RequestUserRegisterDto requestUserRegisterDto) {
         final User user = UserMapper.requestUserRegisterDtoToUser(requestUserRegisterDto);
+        final String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
         userRepository.save(user);
     }
 
@@ -39,6 +42,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDto findUserByEmail(final String email) {
         final User user = userRepository.findByEmail(email);
         if (user == null) {

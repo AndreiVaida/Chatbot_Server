@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import domain.entities.User;
 import dtos.UserDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,7 +29,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
 
-    @Autowired
     public JWTAuthenticationFilter(AuthenticationManager authenticationManager, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
