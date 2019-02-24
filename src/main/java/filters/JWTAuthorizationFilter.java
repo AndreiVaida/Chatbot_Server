@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static configuration.SecurityConstraints.HEADER_STRING;
+import static configuration.SecurityConstraints.TOKEN_STRING;
 import static configuration.SecurityConstraints.SECRET;
 import static configuration.SecurityConstraints.TOKEN_PREFIX;
 
@@ -28,7 +28,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        final String header = request.getHeader(HEADER_STRING);
+        final String header = request.getHeader(TOKEN_STRING);
 
         if (header == null || !header.startsWith(TOKEN_PREFIX)) {
             chain.doFilter(request, response);
@@ -41,7 +41,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-        final String token = request.getHeader(HEADER_STRING);
+        final String token = request.getHeader(TOKEN_STRING);
         if (token != null) {
             // parse the token.
             String user = JWT.require(Algorithm.HMAC512(SECRET.getBytes()))

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import repositories.UserRepository;
 import services.api.UserService;
 
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
@@ -35,6 +36,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void addUser(final RequestUserRegisterDto requestUserRegisterDto) {
+        if (userRepository.existsByEmail(requestUserRegisterDto.getEmail())) {
+            throw new EntityExistsException("There already exists an account with this e-mail.");
+        }
+
         final User user = UserMapper.requestUserRegisterDtoToUser(requestUserRegisterDto);
         final String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);

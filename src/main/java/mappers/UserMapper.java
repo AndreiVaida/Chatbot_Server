@@ -3,6 +3,7 @@ package mappers;
 import domain.entities.User;
 import dtos.RequestUserRegisterDto;
 import dtos.UserDto;
+import org.json.simple.JSONObject;
 
 public class UserMapper {
     private UserMapper() {}
@@ -26,5 +27,15 @@ public class UserMapper {
         userDto.setSurname(user.getSurname());
         userDto.setBirthDay(user.getBirthDay());
         return userDto;
+    }
+
+    public static JSONObject userDtoToJson(final UserDto userDto) {
+        final JSONObject userJson = new JSONObject();
+        userJson.put("id", userDto.getId());
+        userJson.put("email", userDto.getEmail());
+        userJson.put("firstName", userDto.getFirstName());
+        userJson.put("surname", userDto.getSurname());
+        userJson.put("birthDay", userDto.getBirthDay());
+        return userJson;
     }
 }
