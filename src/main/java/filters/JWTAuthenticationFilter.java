@@ -61,7 +61,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         final String responseBody = "{" +
                 "\"" + TOKEN_STRING + "\":\"" + TOKEN_PREFIX + token + "\"," +
-                "\"" + USER_STRING + "\":\"" + UserMapper.userDtoToJson(userDto) + "\"" +
+                "\"" + USER_STRING + "\":" + UserMapper.userDtoToJson(userDto).toString() +
                 "}";
 
         try {
