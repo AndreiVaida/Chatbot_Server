@@ -5,6 +5,7 @@ import dtos.RequestAddMessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,7 @@ public class MessageController extends AbstractController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MessageDto>> getMessages(@RequestParam final Long userId1, @RequestParam final Long userId2) {
+    public ResponseEntity<List<MessageDto>> getMessages(@RequestParam final Long userId1, @RequestParam @Nullable final Long userId2) {
         final List<MessageDto> messages = messageService.getMessages(userId1, userId2);
         return new ResponseEntity<>(messages, HttpStatus.OK);
     }
