@@ -6,7 +6,7 @@ import dtos.RequestAddMessageDto;
 import java.util.List;
 
 public interface MessageService {
-    void addMessage(final RequestAddMessageDto requestAddMessageDto);
+    MessageDto addMessage(final RequestAddMessageDto requestAddMessageDto);
 
     List<MessageDto> getMessages(final Long userId1, Long userId2);
 }

@@ -15,6 +15,7 @@ public class RequestAddMessageDto {
     @NonNull
     private Long fromUserId;
 
+    @NonNull
     private Long toUserId;
 
 }

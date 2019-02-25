@@ -22,8 +22,8 @@ public class MessageMapper {
         final MessageDto messageDto = new MessageDto();
         messageDto.setFromUserId(message.getFromUser().getId());
         messageDto.setToUserId(message.getToUser().getId());
-        message.setMessage(message.getMessage());
-        message.setDateTime(message.getDateTime());
+        messageDto.setMessage(message.getMessage());
+        messageDto.setDateTime(message.getDateTime());
         return messageDto;
     }
 }

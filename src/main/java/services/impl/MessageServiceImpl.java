@@ -35,7 +35,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public void addMessage(final RequestAddMessageDto requestAddMessageDto) {
+    public MessageDto addMessage(final RequestAddMessageDto requestAddMessageDto) {
         if (requestAddMessageDto.getToUserId() == null) {
             requestAddMessageDto.setToUserId(CHATBOT_ID);
         }
@@ -46,6 +46,7 @@ public class MessageServiceImpl implements MessageService {
 
         final Message message = MessageMapper.requestAddMessageDtoToMessage(requestAddMessageDto, fromUser, toUser, LocalDateTime.now());
         messageRepository.save(message);
+        return MessageMapper.messageToMessageDto(message);
     }
 
     @Override
