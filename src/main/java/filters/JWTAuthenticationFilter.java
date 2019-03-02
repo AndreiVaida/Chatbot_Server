@@ -20,7 +20,11 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
-import static configuration.SecurityConstraints.*;
+import static configuration.SecurityConstraints.EXPIRATION_TIME;
+import static configuration.SecurityConstraints.SECRET;
+import static configuration.SecurityConstraints.TOKEN_PREFIX;
+import static configuration.SecurityConstraints.TOKEN_STRING;
+import static configuration.SecurityConstraints.USER_STRING;
 import static org.apache.commons.codec.CharEncoding.UTF_8;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
