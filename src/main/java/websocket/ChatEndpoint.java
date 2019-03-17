@@ -30,6 +30,7 @@ public class ChatEndpoint extends AbstractController {
 
     @OnOpen
     public void onOpen(final Session session, @PathParam("userId") final String userId) {
+        System.out.println("onOpen");
         this.session = session;
         usersEndpoints.put(Long.valueOf(userId), this);
     }
@@ -41,6 +42,7 @@ public class ChatEndpoint extends AbstractController {
 
     @OnError
     public void onError(Session session, Throwable throwable) {
+        System.out.println("onError");
         // TODO Do error handling here
     }
 }

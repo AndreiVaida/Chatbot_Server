@@ -39,6 +39,9 @@ public class MessageServiceImpl implements MessageService {
         if (requestAddMessageDto.getToUserId() == null) {
             requestAddMessageDto.setToUserId(CHATBOT_ID);
         }
+        if (requestAddMessageDto.getToUserId() == null || requestAddMessageDto.getToUserId() == 0) {
+            requestAddMessageDto.setToUserId(CHATBOT_ID);
+        }
         final User fromUser = userRepository.findById(requestAddMessageDto.getFromUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
         final User toUser = userRepository.findById(requestAddMessageDto.getToUserId())
@@ -55,7 +58,7 @@ public class MessageServiceImpl implements MessageService {
         if (!userRepository.existsById(userId1)) {
             throw new EntityNotFoundException("User 1 not found.");
         }
-        if (userId2 == null) {
+        if (userId2 == null || userId2 == 0) {
             userId2 = CHATBOT_ID;
         }
         if (!userRepository.existsById(userId2)) {
