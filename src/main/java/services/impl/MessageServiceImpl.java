@@ -22,14 +22,12 @@ import java.util.stream.Collectors;
 public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
-    private final Environment environment;
     private final Long CHATBOT_ID;
 
     @Autowired
     public MessageServiceImpl(MessageRepository messageRepository, UserRepository userRepository, Environment environment) {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
-        this.environment = environment;
         CHATBOT_ID = Long.valueOf(environment.getProperty("chatbot.id"));
     }
 

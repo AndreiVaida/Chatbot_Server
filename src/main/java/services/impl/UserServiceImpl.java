@@ -5,6 +5,7 @@ import dtos.RequestUserRegisterDto;
 import dtos.UserDto;
 import mappers.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import repositories.UserRepository;
@@ -18,11 +19,13 @@ import javax.transaction.Transactional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final Long CHATBOT_ID;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, Environment environment) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        CHATBOT_ID = Long.valueOf(environment.getProperty("chatbot.id"));
     }
 
     @Override
@@ -48,7 +51,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto getUserById(final Long id) {
+    public UserDto getUserById(Long id) {
+        if (id == null || id == 0) {
+            id = CHATBOT_ID;
+        }
         final User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
         return UserMapper.userToUserDto(user);
