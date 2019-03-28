@@ -1,7 +1,7 @@
 package controllers;
 
 import dtos.MessageDto;
-import dtos.RequestAddMessageDto;
+import dtos.RequestSendMessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +33,8 @@ public class MessageController extends AbstractController {
     }
 
     @PostMapping
-    public ResponseEntity<MessageDto> sendMessage(@RequestBody @Validated final RequestAddMessageDto requestSendMessageDto) {
-        final MessageDto sentMessage = messageService.addMessage(requestSendMessageDto);
-        return new ResponseEntity<>(sentMessage, HttpStatus.OK);
+    public ResponseEntity<MessageDto> sendMessage(@RequestBody @Validated final RequestSendMessageDto requestSendMessageDto) {
+        final MessageDto response = messageService.addMessage(requestSendMessageDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

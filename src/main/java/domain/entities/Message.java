@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -15,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 // Lombok
 @NoArgsConstructor
@@ -45,4 +47,39 @@ public class Message {
 
     @Column
     private LocalDateTime dateTime;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CONCEPT_MESSAGE")
+    private ConceptMessage conceptMessage;
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", fromUser=" + fromUser +
+                ", toUser=" + toUser +
+                ", message='" + message + '\'' +
+                ", messageType=" + messageType +
+                ", dateTime=" + dateTime +
+                ", conceptMessage=" + conceptMessage +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Message)) return false;
+        Message message1 = (Message) o;
+        return Objects.equals(getId(), message1.getId()) &&
+                Objects.equals(getFromUser(), message1.getFromUser()) &&
+                Objects.equals(getToUser(), message1.getToUser()) &&
+                Objects.equals(getMessage(), message1.getMessage()) &&
+                getMessageType() == message1.getMessageType() &&
+                Objects.equals(getDateTime(), message1.getDateTime());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getFromUser(), getToUser(), getMessage(), getMessageType(), getDateTime());
+    }
 }

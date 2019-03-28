@@ -14,6 +14,8 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
+import static app.Main.CHATBOT_ID;
+
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
@@ -48,7 +50,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto getUserById(final Long id) {
+    public UserDto getUserById(Long id) {
+        if (id == null || id == 0) {
+            id = CHATBOT_ID;
+        }
         final User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
         return UserMapper.userToUserDto(user);

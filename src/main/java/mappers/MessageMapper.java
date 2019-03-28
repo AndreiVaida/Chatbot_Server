@@ -3,17 +3,17 @@ package mappers;
 import domain.entities.Message;
 import domain.entities.User;
 import dtos.MessageDto;
-import dtos.RequestAddMessageDto;
+import dtos.RequestSendMessageDto;
 
 import java.time.LocalDateTime;
 
 public class MessageMapper {
-    public static Message requestAddMessageDtoToMessage(final RequestAddMessageDto requestAddMessageDto, final User fromUser,
+    public static Message requestAddMessageDtoToMessage(final RequestSendMessageDto requestSendMessageDto, final User fromUser,
                                                         final User toUser, final LocalDateTime dateTime) {
         final Message message = new Message();
         message.setFromUser(fromUser);
         message.setToUser(toUser);
-        message.setMessage(requestAddMessageDto.getMessage());
+        message.setMessage(requestSendMessageDto.getMessage());
         message.setDateTime(dateTime);
         return message;
     }

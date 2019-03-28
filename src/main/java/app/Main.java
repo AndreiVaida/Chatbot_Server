@@ -7,10 +7,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import services.api.UserService;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @EnableJpaRepositories(basePackages = {"repositories"})
@@ -18,15 +20,17 @@ import java.time.LocalDate;
 @ComponentScan(basePackages = {"services", "controllers", "configuration"})
 public class Main {
     private final UserService userService;
+    public static Long CHATBOT_ID;
 
     @Autowired
-    public Main(UserService userService) {
+    public Main(UserService userService, Environment environment) {
         this.userService = userService;
+        CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
         //populateDb();
     }
 
     private void populateDb() {
-        final User andy = new User(1L, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
+        final User andy = new User(CHATBOT_ID, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
         userService.addUser(andy);
     }
 

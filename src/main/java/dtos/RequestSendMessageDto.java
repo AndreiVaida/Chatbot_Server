@@ -8,7 +8,7 @@ import lombok.NonNull;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class RequestAddMessageDto {
+public class RequestSendMessageDto {
     @NonNull
     private String message;
 
