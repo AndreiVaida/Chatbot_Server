@@ -37,4 +37,10 @@ public class MessageController extends AbstractController {
         final MessageDto response = messageService.addMessage(requestSendMessageDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @GetMapping("/sample")
+    public ResponseEntity<MessageDto> requestMessageFromChatbot(@RequestParam final Long userId) {
+        final MessageDto message = messageService.requestMessageFromChatbot(userId);
+        return new ResponseEntity<>(message, HttpStatus.OK);
+    }
 }

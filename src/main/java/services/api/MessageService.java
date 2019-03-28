@@ -9,4 +9,6 @@ public interface MessageService {
     MessageDto addMessage(final RequestSendMessageDto requestSendMessageDto);
 
     List<MessageDto> getMessages(final Long userId1, Long userId2);
+
+    MessageDto requestMessageFromChatbot(final Long userId);
 }

@@ -38,6 +38,14 @@ public class ConceptMessage {
     )
     private Set<Message> equivalentMessages = new HashSet<>();
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "CONCEPT_MESSAGES_RESPONSES",
+            joinColumns = {@JoinColumn(name = "CONCEPT_MESSAGE_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "RESPONSE_ID")}
+    )
+    private Set<ConceptMessage> responses = new HashSet<>();
+
     @Override
     public String toString() {
         return "ConceptMessage{" +
