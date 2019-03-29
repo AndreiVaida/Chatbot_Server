@@ -13,6 +13,7 @@ public class AbstractController {
 
     @ExceptionHandler
     public ResponseEntity<?> handleException(final Exception e) {
+        e.printStackTrace();
         if (e instanceof EntityNotFoundException) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

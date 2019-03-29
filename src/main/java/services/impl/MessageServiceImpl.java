@@ -20,7 +20,6 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -99,9 +98,22 @@ public class MessageServiceImpl implements MessageService {
         return null;
     }
 
+    private Message getPreviousMessageFromHuman(final Message message) {
+        final List<Message> previousMessages = messageRepository.getPreviousMessagesFromHumans(message.getFromUser().getId(), message.getToUser().getId(),
+                message.getId(), CHATBOT_ID, PageRequest.of(0, 1));
+        if (!previousMessages.isEmpty()) {
+            return previousMessages.get(0);
+        }
+        return null;
+    }
+
     private void addReply(final Message message, final Message reply) {
         if (message.getConceptMessage() != null && reply.getConceptMessage() != null) {
-            message.getConceptMessage().getResponses().add(reply.getConceptMessage());
+            final ConceptMessage conceptMessage = message.getConceptMessage();
+            final Set<ConceptMessage> responses = conceptMessage.getResponses();
+            responses.add(reply.getConceptMessage());
+            conceptMessage.setResponses(responses);
+            conceptMessageRepository.save(conceptMessage);
         }
     }
 
@@ -110,9 +122,11 @@ public class MessageServiceImpl implements MessageService {
             return getUnknownResponse(message.getToUser(), message.getFromUser(), message.getMessage());
         }
         // get a random concept message response
-        int index = random.nextInt(message.getConceptMessage().getResponses().size());
-        final Optional<ConceptMessage> responseConceptMessage = message.getConceptMessage().getResponses()
-                .stream()
+        final Set<ConceptMessage> conceptMessagesWithMessagesFromHuman = message.getConceptMessage().getResponses().stream()
+                .filter(cm -> cm.getEquivalentMessages().stream().anyMatch(m -> !m.getFromUser().getId().equals(CHATBOT_ID)))
+                .collect(Collectors.toSet());
+        int index = random.nextInt(conceptMessagesWithMessagesFromHuman.size());
+        final Optional<ConceptMessage> responseConceptMessage = conceptMessagesWithMessagesFromHuman.stream()
                 .skip(index)
                 .findFirst();
         if (!responseConceptMessage.isPresent()) {
@@ -161,7 +175,7 @@ public class MessageServiceImpl implements MessageService {
         response.setToUser(toUser);
         response.setFromUser(fromUser);
         response.setDateTime(LocalDateTime.now());
-        final int randomNumber = random.nextInt(3);
+        final int randomNumber = random.nextInt(2);
         switch (randomNumber) {
             case 0: {
                 response.setMessage("Nu știu.");
@@ -192,23 +206,33 @@ public class MessageServiceImpl implements MessageService {
         for (String word : words) {
             matchedMessagesSet.addAll(messageRepository.findAllByMessage(word));
         }
-        if (matchedMessagesSet.size() == 0) {
+        if (matchedMessagesSet.isEmpty()) {
             return null;
         }
         // sort founded messages by nr. of matched words
         final int[] bestCount = {0};
         final List<Message> sortedMessages = matchedMessagesSet.stream()
                 .sorted((Message m1, Message m2) -> {
+                    if (m1.equals(m2)) {
+                        return 0;
+                    }
                     final Integer nrOfMatchedWordsM1 = getNrOfPointsOfMatchedWords(words, Arrays.asList(m1.getMessage().split("\\W+")));
                     final Integer nrOfMatchedWordsM2 = getNrOfPointsOfMatchedWords(words, Arrays.asList(m2.getMessage().split("\\W+")));
-                    if (bestCount[0] < nrOfMatchedWordsM1) { bestCount[0] = nrOfMatchedWordsM1; }
-                    if (bestCount[0] < nrOfMatchedWordsM2) { bestCount[0] = nrOfMatchedWordsM2; }
-                    return nrOfMatchedWordsM2.compareTo(nrOfMatchedWordsM1);
+                    if (bestCount[0] < nrOfMatchedWordsM1) {
+                        bestCount[0] = nrOfMatchedWordsM1;
+                    }
+                    if (bestCount[0] < nrOfMatchedWordsM2) {
+                        bestCount[0] = nrOfMatchedWordsM2;
+                    }
+                    if (nrOfMatchedWordsM1 <= nrOfMatchedWordsM2) {
+                        return 1;
+                    }
+                    return -1;
                 })
                 .collect(Collectors.toList());
         // return the bet found message or nothing
         final List<ConceptMessage> matchedConceptMessages = conceptMessageRepository.findAllByEquivalentMessages(sortedMessages.get(0));
-        if (matchedConceptMessages.size() == 0) {
+        if (matchedConceptMessages.isEmpty()) {
             return null;
         }
         // return the best concept message or null if we didn't find a good one
@@ -223,28 +247,27 @@ public class MessageServiceImpl implements MessageService {
         list2.replaceAll(String::toUpperCase);
         int nrOfMatches = 0;
         for (String word : list1) {
-            if (list2.contains(word)) {
+            if (partialContains(list2, word)) {
                 nrOfMatches++;
             }
         }
         for (String word : list2) {
-            if (!list1.contains(word)) {
-                nrOfMatches--;
+            if (!partialContains(list1, word)) {
+                if (random.nextBoolean()) {
+                    nrOfMatches--;
+                }
             }
         }
         return nrOfMatches;
     }
 
-    private Message getRandomElement(final Set<Message> messageSet) {
-        if (messageSet.size() == 0) {
-            return null;
+    private boolean partialContains(final List<String> words, final String wordToFind) {
+        for (String word : words) {
+            if (word.equals(wordToFind) || word.contains(wordToFind) || wordToFind.contains(word)) {
+                return true;
+            }
         }
-        int index = random.nextInt(messageSet.size());
-        final Iterator<Message> iterator = messageSet.iterator();
-        for (int i = 0; i < index; i++) {
-            iterator.next();
-        }
-        return iterator.next();
+        return false;
     }
 
     @Override
@@ -283,15 +306,18 @@ public class MessageServiceImpl implements MessageService {
         // sort concept messages by no. of responses they have
         final List<ConceptMessage> conceptMessages = conceptMessageRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparingInt(cm -> cm.getResponses().size()))
+                .filter(cm ->
+                        // keep only those concept messages which has at least 1 message from human
+                        cm.getEquivalentMessages().stream().anyMatch(message -> !message.getFromUser().getId().equals(CHATBOT_ID))
+                )
+                .sorted((cm1, cm2) -> Integer.compare(cm2.getResponses().size(), cm1.getResponses().size()))
                 .collect(Collectors.toList());
-        if (conceptMessages.size() == 0) {
+        if (conceptMessages.isEmpty()) {
             return getUnknownResponse(chatbot, user, "Nu știu ce să zic...");
         }
         // pick a random concept message
         int index = random.nextInt(conceptMessages.size() / 10 + 1);
-        final Optional<ConceptMessage> optionalConceptMessage = conceptMessages
-                .stream()
+        final Optional<ConceptMessage> optionalConceptMessage = conceptMessages.stream()
                 .skip(index)
                 .findFirst();
         if (!optionalConceptMessage.isPresent()) {
@@ -299,15 +325,13 @@ public class MessageServiceImpl implements MessageService {
         }
         // pick a random message
         index = random.nextInt(optionalConceptMessage.get().getEquivalentMessages().size());
-        final Optional<Message> optionalMessage = optionalConceptMessage.get().getEquivalentMessages()
-                .stream()
+        final Optional<Message> optionalMessage = optionalConceptMessage.get().getEquivalentMessages().stream()
                 .skip(index)
                 .findFirst();
         if (!optionalMessage.isPresent()) {
             return getUnknownResponse(chatbot, user, "Nu știu ce să zic...");
         }
         // duplicate and customize the message
-        final Message message = optionalMessage.get();
-        return createReplyFromMessage(message, chatbot, user);
+        return createReplyFromMessage(optionalMessage.get(), chatbot, user);
     }
 }
