@@ -14,4 +14,5 @@ public class MessageDto {
     private Long toUserId;
     private String message;
     private LocalDateTime dateTime;
+    private Boolean isUnknownMessage;
 }

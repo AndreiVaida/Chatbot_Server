@@ -29,7 +29,7 @@ public class Main {
         //populateDb();
     }
 
-    private void populateDb() {
+    public void populateDb() {
         final User andy = new User(CHATBOT_ID, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
         userService.addUser(andy);
     }

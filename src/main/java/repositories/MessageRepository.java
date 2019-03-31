@@ -15,9 +15,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "ORDER BY m.dateTime")
     List<Message> findAllByUsers(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
-    @Query("SELECT m FROM Message m " +
-            "WHERE LOWER(m.message) LIKE LOWER(CONCAT('%',:message,'%'))")
-    Set<Message> findAllByMessage(@Param("message") String message);
+    Set<Message> findAllByMessageLikeIgnoreCaseAndIsUnknownMessageNot(String message, Boolean isUnknownMessage);
 
     @Query("SELECT m FROM Message m " +
             "WHERE m.id <> :messageId AND m.fromUser.id <> :chatbotId " +

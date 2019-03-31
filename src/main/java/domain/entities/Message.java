@@ -52,6 +52,9 @@ public class Message {
     @JoinColumn(name = "CONCEPT_MESSAGE")
     private ConceptMessage conceptMessage;
 
+    @Column
+    private Boolean isUnknownMessage = false;
+
     @Override
     public String toString() {
         return "Message{" +

@@ -21,7 +21,6 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -76,12 +75,16 @@ public class MessageServiceImpl implements MessageService {
         return MessageMapper.messageToMessageDto(response);
     }
 
+    /**
+     * Assign a suitable concept message for the given message.
+     * If no suitable concept message is found, it's created a new one.
+     * Save the message and the concept message in repository.
+     */
     private void assignConceptMessage(final Message message) {
         ConceptMessage conceptMessage = detectConceptMessage(message);
         if (conceptMessage == null) {
             conceptMessage = new ConceptMessage();
             conceptMessage.getEquivalentMessages().add(message);
-            conceptMessageRepository.save(conceptMessage);
         }
         message.setConceptMessage(conceptMessage);
         conceptMessage.getEquivalentMessages().add(message);
@@ -112,7 +115,7 @@ public class MessageServiceImpl implements MessageService {
             final ConceptMessage conceptMessage = message.getConceptMessage();
             final Set<ConceptMessage> responses = conceptMessage.getResponses();
             responses.add(reply.getConceptMessage());
-            conceptMessage.setResponses(responses);
+            conceptMessage.setResponses(responses); // TODO: don't add the reply if the message already contains it (the same text message)
             conceptMessageRepository.save(conceptMessage);
         }
     }
@@ -175,6 +178,7 @@ public class MessageServiceImpl implements MessageService {
         response.setToUser(toUser);
         response.setFromUser(fromUser);
         response.setDateTime(LocalDateTime.now());
+        response.setIsUnknownMessage(true);
         final int randomNumber = random.nextInt(2);
         switch (randomNumber) {
             case 0: {
@@ -197,14 +201,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     /**
-     * @return best detected ConceptMessage or null.
+     * @return best suitable ConceptMessage for the given message or null.
      */
     private ConceptMessage detectConceptMessage(final Message message) {
         // find equivalent messages in DB
         final List<String> words = Arrays.asList(message.getMessage().split("\\W+"));
         final Set<Message> matchedMessagesSet = new HashSet<>();
         for (String word : words) {
-            matchedMessagesSet.addAll(messageRepository.findAllByMessage(word));
+            matchedMessagesSet.addAll(messageRepository.findAllByMessageLikeIgnoreCaseAndIsUnknownMessageNot(word, true));
         }
         if (matchedMessagesSet.isEmpty()) {
             return null;
@@ -213,9 +217,6 @@ public class MessageServiceImpl implements MessageService {
         final int[] bestCount = {0};
         final List<Message> sortedMessages = matchedMessagesSet.stream()
                 .sorted((Message m1, Message m2) -> {
-                    if (m1.equals(m2)) {
-                        return 0;
-                    }
                     final Integer nrOfMatchedWordsM1 = getNrOfPointsOfMatchedWords(words, Arrays.asList(m1.getMessage().split("\\W+")));
                     final Integer nrOfMatchedWordsM2 = getNrOfPointsOfMatchedWords(words, Arrays.asList(m2.getMessage().split("\\W+")));
                     if (bestCount[0] < nrOfMatchedWordsM1) {
@@ -224,22 +225,14 @@ public class MessageServiceImpl implements MessageService {
                     if (bestCount[0] < nrOfMatchedWordsM2) {
                         bestCount[0] = nrOfMatchedWordsM2;
                     }
-                    if (nrOfMatchedWordsM1 <= nrOfMatchedWordsM2) {
-                        return 1;
-                    }
-                    return -1;
+                    return nrOfMatchedWordsM2.compareTo(nrOfMatchedWordsM1);
                 })
                 .collect(Collectors.toList());
-        // return the bet found message or nothing
-        final List<ConceptMessage> matchedConceptMessages = conceptMessageRepository.findAllByEquivalentMessages(sortedMessages.get(0));
-        if (matchedConceptMessages.isEmpty()) {
-            return null;
-        }
         // return the best concept message or null if we didn't find a good one
         if (bestCount[0] < words.size() / 2) {
             return null;
         }
-        return matchedConceptMessages.get(random.nextInt(matchedConceptMessages.size()));
+        return sortedMessages.get(random.nextInt(sortedMessages.size())).getConceptMessage();
     }
 
     private int getNrOfPointsOfMatchedWords(final List<String> list1, final List<String> list2) {
@@ -251,14 +244,15 @@ public class MessageServiceImpl implements MessageService {
                 nrOfMatches++;
             }
         }
+        int nrOfExtraWords = 0;
         for (String word : list2) {
             if (!partialContains(list1, word)) {
                 if (random.nextBoolean()) {
-                    nrOfMatches--;
+                    nrOfExtraWords--;
                 }
             }
         }
-        return nrOfMatches;
+        return nrOfMatches - nrOfExtraWords/2;
     }
 
     private boolean partialContains(final List<String> words, final String wordToFind) {
@@ -310,13 +304,13 @@ public class MessageServiceImpl implements MessageService {
                         // keep only those concept messages which has at least 1 message from human
                         cm.getEquivalentMessages().stream().anyMatch(message -> !message.getFromUser().getId().equals(CHATBOT_ID))
                 )
-                .sorted((cm1, cm2) -> Integer.compare(cm2.getResponses().size(), cm1.getResponses().size()))
+                .sorted((cm1, cm2) -> Integer.compare(cm1.getResponses().size(), cm2.getResponses().size()))
                 .collect(Collectors.toList());
         if (conceptMessages.isEmpty()) {
             return getUnknownResponse(chatbot, user, "Nu știu ce să zic...");
         }
         // pick a random concept message
-        int index = random.nextInt(conceptMessages.size() / 10 + 1);
+        int index = random.nextInt(conceptMessages.size() / 2 + 1);
         final Optional<ConceptMessage> optionalConceptMessage = conceptMessages.stream()
                 .skip(index)
                 .findFirst();
