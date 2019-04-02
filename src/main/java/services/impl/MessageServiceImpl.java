@@ -4,9 +4,6 @@ import domain.entities.ConceptMessage;
 import domain.entities.Conversation;
 import domain.entities.Message;
 import domain.entities.User;
-import dtos.MessageDto;
-import dtos.RequestSendMessageDto;
-import mappers.MessageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -20,6 +17,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -48,17 +46,21 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public MessageDto addMessage(final RequestSendMessageDto requestSendMessageDto) {
+    public Message addMessage(final String textMessage, final Long fromUserId, Long toUserId) {
         // save the message chat
-        if (requestSendMessageDto.getToUserId() == null || requestSendMessageDto.getToUserId() == 0) {
-            requestSendMessageDto.setToUserId(CHATBOT_ID);
+        if (toUserId == null || toUserId == 0) {
+            toUserId = CHATBOT_ID;
         }
-        final User fromUser = userRepository.findById(requestSendMessageDto.getFromUserId())
+        final User fromUser = userRepository.findById(fromUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
-        final User toUser = userRepository.findById(requestSendMessageDto.getToUserId())
+        final User toUser = userRepository.findById(toUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
-        final Message message = MessageMapper.requestAddMessageDtoToMessage(requestSendMessageDto, fromUser, toUser, LocalDateTime.now());
+        final Message message = new Message();
+        message.setFromUser(fromUser);
+        message.setToUser(toUser);
+        message.setMessage(textMessage);
+        message.setDateTime(LocalDateTime.now());
         messageRepository.save(message);
 
         // AI part
@@ -72,7 +74,7 @@ public class MessageServiceImpl implements MessageService {
         final Message response = generateResponse(message);
         messageRepository.save(response);
 
-        return MessageMapper.messageToMessageDto(response);
+        return response;
     }
 
     /**
@@ -266,7 +268,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public List<MessageDto> getMessages(final Long userId1, Long userId2) {
+    public List<Message> getMessages(final Long userId1, Long userId2) {
         if (!userRepository.existsById(userId1)) {
             throw new EntityNotFoundException("User 1 not found.");
         }
@@ -277,15 +279,12 @@ public class MessageServiceImpl implements MessageService {
             throw new EntityNotFoundException("User 2 not found.");
         }
 
-        final List<Message> messages = messageRepository.findAllByUsers(userId1, userId2);
-        return messages.stream()
-                .map(MessageMapper::messageToMessageDto)
-                .collect(Collectors.toList());
+        return messageRepository.findAllByUsers(userId1, userId2);
     }
 
     @Override
     @Transactional
-    public MessageDto requestMessageFromChatbot(final Long userId) {
+    public Message requestMessageFromChatbot(final Long userId) {
         final User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
         final User chatbot = userRepository.findById(CHATBOT_ID)
@@ -293,7 +292,7 @@ public class MessageServiceImpl implements MessageService {
 
         final Message message = getRandomMessageWithLessResponses(user, chatbot);
         messageRepository.save(message);
-        return MessageMapper.messageToMessageDto(message);
+        return message;
     }
 
     private Message getRandomMessageWithLessResponses(final User user, final User chatbot) {
@@ -304,7 +303,7 @@ public class MessageServiceImpl implements MessageService {
                         // keep only those concept messages which has at least 1 message from human
                         cm.getEquivalentMessages().stream().anyMatch(message -> !message.getFromUser().getId().equals(CHATBOT_ID))
                 )
-                .sorted((cm1, cm2) -> Integer.compare(cm1.getResponses().size(), cm2.getResponses().size()))
+                .sorted(Comparator.comparingInt(cm -> cm.getResponses().size()))
                 .collect(Collectors.toList());
         if (conceptMessages.isEmpty()) {
             return getUnknownResponse(chatbot, user, "Nu știu ce să zic...");

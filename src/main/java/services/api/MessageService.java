@@ -1,14 +1,13 @@
 package services.api;
 
-import dtos.MessageDto;
-import dtos.RequestSendMessageDto;
+import domain.entities.Message;
 
 import java.util.List;
 
 public interface MessageService {
-    MessageDto addMessage(final RequestSendMessageDto requestSendMessageDto);
+    Message addMessage(final String message, final Long fromUserId, final Long toUserId);
 
-    List<MessageDto> getMessages(final Long userId1, Long userId2);
+    List<Message> getMessages(final Long userId1, Long userId2);
 
-    MessageDto requestMessageFromChatbot(final Long userId);
+    Message requestMessageFromChatbot(final Long userId);
 }

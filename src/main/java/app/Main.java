@@ -17,7 +17,7 @@ import java.util.Objects;
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @EnableJpaRepositories(basePackages = {"repositories"})
 @EntityScan(basePackages = {"domain"})
-@ComponentScan(basePackages = {"services", "controllers", "configuration"})
+@ComponentScan(basePackages = {"services", "facades", "controllers", "configuration"})
 public class Main {
     private final UserService userService;
     public static Long CHATBOT_ID;
