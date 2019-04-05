@@ -17,16 +17,22 @@ import java.util.Objects;
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @EnableJpaRepositories(basePackages = {"repositories"})
 @EntityScan(basePackages = {"domain"})
-@ComponentScan(basePackages = {"services", "facades", "controllers", "configuration"})
+@ComponentScan(basePackages = {"services", "facades", "controllers", "configuration", "app"})
 public class Main {
     private final UserService userService;
     public static Long CHATBOT_ID;
+    private final TestClass testClass;
 
     @Autowired
-    public Main(UserService userService, Environment environment) {
+    public Main(UserService userService, Environment environment, TestClass testClass) {
         this.userService = userService;
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
         //populateDb();
+
+        // TEST
+        this.testClass = testClass;
+        testClass.initialize();
+        testClass.testLearnHello();
     }
 
     public void populateDb() {

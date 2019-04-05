@@ -210,7 +210,7 @@ public class MessageServiceImpl implements MessageService {
         final List<String> words = Arrays.asList(message.getMessage().split("\\W+"));
         final Set<Message> matchedMessagesSet = new HashSet<>();
         for (String word : words) {
-            matchedMessagesSet.addAll(messageRepository.findAllByMessageLikeIgnoreCaseAndIsUnknownMessageNot(word, true));
+            matchedMessagesSet.addAll(messageRepository.findAllByMessageLikeIgnoreCaseAndIdNotAndIsUnknownMessageNot(word, message.getId(), true));
         }
         if (matchedMessagesSet.isEmpty()) {
             return null;
@@ -293,6 +293,12 @@ public class MessageServiceImpl implements MessageService {
         final Message message = getRandomMessageWithLessResponses(user, chatbot);
         messageRepository.save(message);
         return message;
+    }
+
+    @Override
+    @Transactional
+    public Message getMessageById(Long id) {
+        return messageRepository.getOne(id);
     }
 
     private Message getRandomMessageWithLessResponses(final User user, final User chatbot) {

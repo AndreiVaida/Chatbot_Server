@@ -15,7 +15,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "ORDER BY m.dateTime")
     List<Message> findAllByUsers(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
-    Set<Message> findAllByMessageLikeIgnoreCaseAndIsUnknownMessageNot(String message, Boolean isUnknownMessage);
+    Set<Message> findAllByMessageLikeIgnoreCaseAndIdNotAndIsUnknownMessageNot(String message, Long messageIdToIgnore, Boolean isUnknownMessage);
 
     @Query("SELECT m FROM Message m " +
             "WHERE m.id <> :messageId AND m.fromUser.id <> :chatbotId " +

@@ -10,4 +10,6 @@ public interface MessageService {
     List<Message> getMessages(final Long userId1, Long userId2);
 
     Message requestMessageFromChatbot(final Long userId);
+
+    Message getMessageById(final Long id);
 }
