@@ -4,15 +4,11 @@ import domain.entities.Message;
 import domain.entities.User;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -25,8 +21,6 @@ import services.impl.MessageServiceImpl;
 import services.impl.UserServiceImpl;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Objects;
 
 @DataJpaTest
 @RunWith(SpringRunner.class)
@@ -63,38 +57,37 @@ public class MessageServiceTest {
         Assert.assertTrue(response.getIsUnknownMessage());
 
         Message message = messageService.requestMessageFromChatbot(user.getId());
-        Assert.assertEquals(message.getMessage(), "salut");
+        Assert.assertEquals("salut", message.getMessage());
         ConceptMessage conceptMessage = message.getConceptMessage();
         Assert.assertNotNull(conceptMessage);
 
-        Assert.assertEquals(messageRepository.findAll().size(), 3);
+        Assert.assertEquals(3, messageRepository.findAll().size());
         Assert.assertNotNull(conceptMessageRepository.getOne(conceptMessage.getId()));
 
         response = messageService.addMessage("salut", user.getId(), andy.getId());
-        Assert.assertEquals(response.getMessage(), "salut");
-        Assert.assertEquals(response.getConceptMessage(), conceptMessage);
-        Assert.assertEquals(response.getConceptMessage().getResponses().size(), 1);
+        Assert.assertEquals("salut", response.getMessage());
+        Assert.assertEquals(conceptMessage, response.getConceptMessage());
+        Assert.assertEquals(1, response.getConceptMessage().getResponses().size());
 
         response = messageService.addMessage("salut", user.getId(), andy.getId());
-        Assert.assertEquals(response.getMessage(), "salut");
-        Assert.assertEquals(response.getConceptMessage(), conceptMessage);
-        Assert.assertEquals(response.getConceptMessage().getResponses().size(), 1);
+        Assert.assertEquals("salut", response.getMessage());
+        Assert.assertEquals(conceptMessage, response.getConceptMessage());
+        Assert.assertEquals(1, response.getConceptMessage().getResponses().size());
 
         // learn "bună"
         message = messageService.requestMessageFromChatbot(user.getId());
-        Assert.assertEquals(message.getMessage(), "salut");
+        Assert.assertEquals("salut", message.getMessage());
 
         response = messageService.addMessage("bună", user.getId(), andy.getId());
         Assert.assertTrue(response.getIsUnknownMessage());
-        message = messageService.getMessageById(message.getId());
-        Assert.assertEquals(message.getConceptMessage().getResponses().size(), 2);
+        conceptMessage = conceptMessageRepository.getOne(message.getConceptMessage().getId());
+        Assert.assertEquals(2, conceptMessage.getResponses().size());
 
         do {
             message = messageService.requestMessageFromChatbot(user.getId());
         } while (message.getMessage().equals("bună"));
         response = messageService.addMessage("salut", user.getId(), andy.getId());
         Assert.assertTrue(response.getMessage().equals("salut") || response.getMessage().equals("bună"));
-        Assert.assertEquals(response.getConceptMessage(), conceptMessage);
 
         System.out.println("TEST PASSED: testLearnHello()");
     }

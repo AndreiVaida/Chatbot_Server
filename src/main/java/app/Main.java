@@ -27,12 +27,14 @@ public class Main {
     public Main(UserService userService, Environment environment, TestClass testClass) {
         this.userService = userService;
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
-        //populateDb();
+        if (userService.findAll().isEmpty()) {
+            populateDb();
+        }
 
         // TEST
         this.testClass = testClass;
-        testClass.initialize();
-        testClass.testLearnHello();
+//        testClass.initialize();
+//        testClass.testLearnHello();
     }
 
     public void populateDb() {

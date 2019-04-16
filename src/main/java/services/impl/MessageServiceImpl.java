@@ -69,6 +69,11 @@ public class MessageServiceImpl implements MessageService {
         final Message previousMessage = getPreviousMessage(message);
         if (previousMessage != null) {
             addReply(previousMessage, message);
+
+            if (previousMessage.getIsUnknownMessage()) {
+                System.out.println("AICI");
+                getPreviousMessage(message);
+            }
         }
         // process a reply to user
         final Message response = generateResponse(message);
@@ -89,9 +94,24 @@ public class MessageServiceImpl implements MessageService {
             conceptMessage.getEquivalentMessages().add(message);
         }
         message.setConceptMessage(conceptMessage);
-        conceptMessage.getEquivalentMessages().add(message);
+        if (!containsMessageByText(conceptMessage.getEquivalentMessages(), message)) {
+            conceptMessage.getEquivalentMessages().add(message);
+        }
         messageRepository.save(message);
         conceptMessageRepository.save(conceptMessage);
+    }
+
+    /**
+     * @return true if the set contains the message by text
+     * Is case insensitive.
+     */
+    private boolean containsMessageByText(final Set<Message> messages, final Message message) {
+        for (Message m : messages) {
+            if (m.getMessage().toLowerCase().equals(message.getMessage().toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Message getPreviousMessage(final Message message) {
@@ -117,7 +137,7 @@ public class MessageServiceImpl implements MessageService {
             final ConceptMessage conceptMessage = message.getConceptMessage();
             final Set<ConceptMessage> responses = conceptMessage.getResponses();
             responses.add(reply.getConceptMessage());
-            conceptMessage.setResponses(responses); // TODO: don't add the reply if the message already contains it (the same text message)
+            conceptMessage.setResponses(responses);
             conceptMessageRepository.save(conceptMessage);
         }
     }
@@ -207,10 +227,10 @@ public class MessageServiceImpl implements MessageService {
      */
     private ConceptMessage detectConceptMessage(final Message message) {
         // find equivalent messages in DB
-        final List<String> words = Arrays.asList(message.getMessage().split("\\W+"));
+        final List<String> words = Arrays.asList(message.getMessage().split("\\P{L}+"));
         final Set<Message> matchedMessagesSet = new HashSet<>();
         for (String word : words) {
-            matchedMessagesSet.addAll(messageRepository.findAllByMessageLikeIgnoreCaseAndIdNotAndIsUnknownMessageNot(word, message.getId(), true));
+            matchedMessagesSet.addAll(messageRepository.findAllByMessageLikeIgnoreCaseAndIdNotAndIsUnknownMessageNot("%"+word+"%", message.getId(), true));
         }
         if (matchedMessagesSet.isEmpty()) {
             return null;

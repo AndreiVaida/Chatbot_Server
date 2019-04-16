@@ -27,7 +27,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("SELECT m FROM Message m " +
             "WHERE m.id <> :messageId " +
             "AND ((m.fromUser.id = :userId1 AND m.toUser.id = :userId2) OR (m.fromUser.id = :userId2 AND m.toUser.id = :userId1)) " +
-            "ORDER BY m.dateTime DESC")
+            "ORDER BY m.dateTime DESC, m.id DESC")
     List<Message> getPreviousMessages(@Param("userId1") Long userId1, @Param("userId2") Long userId2,
                                       @Param("messageId") Long messageId, Pageable pageRequest);
 }

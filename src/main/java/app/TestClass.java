@@ -3,7 +3,6 @@ package app;
 import domain.entities.ConceptMessage;
 import domain.entities.Message;
 import domain.entities.User;
-import org.hibernate.Hibernate;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
