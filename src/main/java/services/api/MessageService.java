@@ -1,15 +1,12 @@
 package services.api;
 
 import domain.entities.Message;
+import domain.entities.User;
 
 import java.util.List;
 
 public interface MessageService {
-    Message addMessage(final String message, final Long fromUserId, final Long toUserId);
+    Message addMessage(final String text, final User fromUser, final User toUser);
 
-    List<Message> getMessages(final Long userId1, Long userId2);
-
-    Message requestMessageFromChatbot(final Long userId);
-
-    Message getMessageById(final Long id);
+    List<Message> getMessagesByUsers(final Long userId1, final Long userId2);
 }

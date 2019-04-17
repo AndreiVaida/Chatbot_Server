@@ -21,23 +21,18 @@ import java.util.Objects;
 public class Main {
     private final UserService userService;
     public static Long CHATBOT_ID;
-    private final TestClass testClass;
 
     @Autowired
-    public Main(UserService userService, Environment environment, TestClass testClass) {
+    public Main(UserService userService, Environment environment) {
         this.userService = userService;
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
-        if (userService.findAll().isEmpty()) {
-            populateDb();
-        }
 
-        // TEST
-        this.testClass = testClass;
-//        testClass.initialize();
-//        testClass.testLearnHello();
+        if (userService.findAll().isEmpty()) {
+            addChatbotInDb();
+        }
     }
 
-    public void populateDb() {
+    public void addChatbotInDb() {
         final User andy = new User(CHATBOT_ID, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
         userService.addUser(andy);
     }

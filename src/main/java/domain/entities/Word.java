@@ -1,16 +1,20 @@
 package domain.entities;
 
-import com.sun.istack.internal.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Table;
+import java.util.HashMap;
+import java.util.Map;
 
 // Lombok
 @NoArgsConstructor
@@ -18,13 +22,17 @@ import javax.persistence.Table;
 @Data
 // Hibernate
 @Entity
-@Table(name = "CONVERSATION_SUBJECT")
-public class ConversationSubject {
+@Table(name = "WORDS")
+public class Word {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotNull
-    @Column(name = "EMAIL", unique = true)
-    private String name;
+    @Column
+    private String text;
+
+    @ElementCollection
+    @CollectionTable(name="WORD_SYNONYMS",
+            joinColumns=@JoinColumn(name="SYNONYM_ID"))
+    private Map<Word, Integer> synonyms = new HashMap<>(); // <synonym, frequency>
 }

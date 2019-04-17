@@ -2,6 +2,7 @@ package controllers;
 
 import dtos.RequestUserRegisterDto;
 import dtos.UserDto;
+import facades.api.UserFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,27 +13,26 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import services.api.UserService;
 
 @RestController
 @RequestMapping("/users")
 public class UserController extends AbstractController {
-    private final UserService userService;
+    private final UserFacade userFacade;
 
     @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserFacade userFacade) {
+        this.userFacade = userFacade;
     }
 
     @PostMapping
     public ResponseEntity<?> createAccount(@RequestBody @Validated final RequestUserRegisterDto requestUserRegisterDto) {
-        userService.addUser(requestUserRegisterDto);
+        userFacade.addUser(requestUserRegisterDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable final Long userId) {
-        final UserDto userDto = userService.getUserById(userId);
+        final UserDto userDto = userFacade.getUserById(userId);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 }
