@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
             id = CHATBOT_ID;
         }
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found."));
+                .orElseThrow(() -> new EntityNotFoundException("User not found !!!!!!!."));
     }
 
     @Override
