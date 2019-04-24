@@ -1,6 +1,7 @@
 package domain.entities;
 
 import com.sun.istack.internal.NotNull;
+import domain.enums.MessageSource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,9 @@ public class Message {
 
     @Column
     private LocalDateTime dateTime;
+
+    @Column
+    private MessageSource messageSource;
 
     @Column
     private Boolean isUnknownMessage;
