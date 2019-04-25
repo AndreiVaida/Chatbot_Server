@@ -1,6 +1,5 @@
 package services.api;
 
-import domain.entities.Message;
 import domain.entities.Sentence;
 
 public interface ChatbotService {
@@ -17,9 +16,15 @@ public interface ChatbotService {
      */
     Sentence addSentence(final String text);
 
-    void addAnswer(final Message previousMessage, final Message message);
+    void addResponse(final Sentence previousSentence, final Sentence sentence);
 
     String generateResponse(final String text);
 
-    String pickRandomSentence();
+    String translateSentenceToText(final Sentence sentence);
+
+    /**
+     * @return random sentence
+     * If no sentences are stored in DB, we create a new one with the text „Salut”.
+     */
+    Sentence pickRandomSentence();
 }

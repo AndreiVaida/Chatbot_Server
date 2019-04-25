@@ -1,6 +1,7 @@
 package services.impl;
 
 import domain.entities.Message;
+import domain.entities.Sentence;
 import domain.entities.User;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -19,12 +20,13 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public Message addMessage(final String text, final User fromUser, final User toUser) {
+    public Message addMessage(final String text, final User fromUser, final User toUser, final Sentence equivalentSentence) {
         final Message message = new Message();
         message.setFromUser(fromUser);
         message.setToUser(toUser);
         message.setText(text);
         message.setDateTime(LocalDateTime.now());
+        message.setEquivalentSentence(equivalentSentence);
 
         messageRepository.save(message);
         return message;

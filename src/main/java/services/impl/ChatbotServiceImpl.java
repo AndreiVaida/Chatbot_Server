@@ -1,8 +1,8 @@
 package services.impl;
 
-import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.Word;
+import domain.enums.SentenceType;
 import org.springframework.stereotype.Service;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
@@ -16,6 +16,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static domain.enums.SentenceType.STATEMENT;
+
 @Service
 public class ChatbotServiceImpl implements ChatbotService {
     private final SentenceRepository sentenceRepository;
@@ -27,7 +29,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
         random = new Random();
-        wordsSplitRegex = "\\P{L}+";
+        wordsSplitRegex = "[\\s,;.]+";
     }
 
     @Override
@@ -70,31 +72,55 @@ public class ChatbotServiceImpl implements ChatbotService {
         }
 
         // the found sentence is mainly the same (maybe)
+        boolean allWordsAreInTheSamePositions = true;
+        int nrOfMatchedWords = 0;
         for (int i = 0; i < newSentence.getWords().size(); i++) {
             final String newSentenceWord = newSentence.getWords().get(i).getText();
-            final String existingSentenceWord = existingSentence.getWords().get(i).getText();
             // check if the new word is equal with the existing word (on same position in sentences) or equal with a synonym of the existing word
-            if (newSentenceWord.toLowerCase().equals(existingSentenceWord.toLowerCase())) {
-                continue; // ok
+            if (i < existingSentence.getWords().size()) {
+                final String existingSentenceWord = existingSentence.getWords().get(i).getText();
+                if (newSentenceWord.toLowerCase().equals(existingSentenceWord.toLowerCase())) {
+                    nrOfMatchedWords++;
+                    continue; // ok - matched the word
+                }
+                if (existingSentence.getWords().get(i).getSynonyms().keySet().stream()
+                        .anyMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase()))) {
+                    nrOfMatchedWords++;
+                    continue; // ok - matched a synonym
+                }
             }
-            if (existingSentence.getWords().get(i).getSynonyms().keySet().stream()
-                    .noneMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase()))) {
-                // the sentence found in DB has different words
-                sentenceRepository.save(newSentence);
-                return newSentence;
+            if (existingSentence.getWords().stream().anyMatch(word -> word.getText().toLowerCase().equals(newSentenceWord.toLowerCase()))) {
+                allWordsAreInTheSamePositions = false;
+                nrOfMatchedWords++;
+                continue; // ok - the word is somewhere else in the sentence
+            }
+            if (existingSentence.getWords().stream().anyMatch(existingWord -> existingWord.getSynonyms().keySet().stream()
+                    .anyMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase())))) {
+                allWordsAreInTheSamePositions = false;
+                nrOfMatchedWords++;
+                continue; // ok - the word has a synonym somewhere else in the sentence
             }
         }
 
-        // the existing sentence perfectly matches the new one
-        for (Word existingWord : existingSentence.getWords()) {
-            if (existingWord.get)
+        final int minimumWordsToMatch = Math.min(newSentence.getWords().size(), existingSentence.getWords().size()) - wordCountDifference / 2;
+        if (!allWordsAreInTheSamePositions || nrOfMatchedWords >= minimumWordsToMatch) {
+            // the sentences are different, but synonyms
+            newSentence.addSynonym(existingSentence);
+            sentenceRepository.save(newSentence);
+            existingSentence.addSynonym(newSentence);
+            sentenceRepository.save(existingSentence);
+            return newSentence;
         }
+
+        // the sentences are different
+        sentenceRepository.save(newSentence);
+        return newSentence;
     }
 
     @Override
-    public void addAnswer(final Message previousMessage, final Message message) {
-        final Sentence previousSentence = identifySentence(previousMessage.getText());
-        previousSentence.
+    public void addResponse(final Sentence previousSentence, final Sentence sentence) {
+        previousSentence.addResponse(sentence);
+        sentenceRepository.save(previousSentence);
     }
 
     /**
@@ -107,7 +133,7 @@ public class ChatbotServiceImpl implements ChatbotService {
             return null;
         }
 
-        final Sentence responseSentence = pickBestResponseSentence(sentence);
+        final Sentence responseSentence = pickBestResponseForSentence(sentence);
         if (responseSentence == null) {
             return null;
         }
@@ -115,11 +141,13 @@ public class ChatbotServiceImpl implements ChatbotService {
         return translateSentenceToText(responseSentence);
     }
 
-    private String translateSentenceToText(final Sentence sentence) {
+    @Override
+    public String translateSentenceToText(final Sentence sentence) {
         final StringBuilder text = new StringBuilder();
         for (Word word : sentence.getWords()) {
-            text.append(word.getText());
+            text.append(word.getText()).append(" ");
         }
+        text.deleteCharAt(text.length() - 1);
 
         return text.toString();
     }
@@ -127,7 +155,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     /**
      * @return best response or <null> if no responses are available for the provided sentence
      */
-    private Sentence pickBestResponseSentence(final Sentence sentence) {
+    private Sentence pickBestResponseForSentence(final Sentence sentence) {
         if (sentence.getResponses().isEmpty()) {
             return null;
         }
@@ -158,11 +186,11 @@ public class ChatbotServiceImpl implements ChatbotService {
                     }
                     // 2. check in words's synonyms
                     final Set<String> matchedWordsSynonyms = new HashSet<>();
-                    final Set<String> loweCaseWords = words.stream().map(String::toLowerCase).collect(Collectors.toSet());
+                    final Set<String> lowerCaseWords = words.stream().map(String::toLowerCase).collect(Collectors.toSet());
                     for (Word sentenceWord : sentence.getWords()) {
                         final List<String> wordSynonyms = sentenceWord.getSynonyms().keySet().stream().map(Word::getText).map(String::toLowerCase).collect(Collectors.toList());
                         for (String synonym : wordSynonyms) {
-                            if (loweCaseWords.contains(synonym)) {
+                            if (lowerCaseWords.contains(synonym)) {
                                 matchedWordsSynonyms.add(synonym);
                             }
                         }
@@ -218,13 +246,19 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
-    public String pickRandomSentence() {
+    public Sentence pickRandomSentence() {
         final long nrOfSentences = sentenceRepository.count();
         if (nrOfSentences == 0) {
-            return "Salut ! Tocmai m-am născut !";
+            final Word word = new Word();
+            word.setText("Salut");
+            wordRepository.save(word);
+            final Sentence sentence = new Sentence();
+            sentence.getWords().add(word);
+            sentence.setSentenceType(STATEMENT);
+            sentenceRepository.save(sentence);
+            return sentence;
         }
 
-        final Sentence sentence = sentenceRepository.findAll().get(random.nextInt((int) nrOfSentences));
-        return translateSentenceToText(sentence);
+        return sentenceRepository.findAll().get(random.nextInt((int) nrOfSentences));
     }
 }

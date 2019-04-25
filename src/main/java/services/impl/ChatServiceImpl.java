@@ -38,14 +38,17 @@ public class ChatServiceImpl implements ChatService {
         // save the message in DB
         final User fromUser = userService.getUserById(fromUserId);
         final User toUser = userService.getUserById(toUserId);
-        final Message message = messageService.addMessage(text, fromUser, toUser);
+        final Sentence sentence = chatbotService.addSentence(text);
+        final Message message = messageService.addMessage(text, fromUser, toUser, sentence);
 
         // generate a response
-        final Sentence sentence = chatbotService.addSentence(message.getText());
         final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
-        chatbotService.addAnswer(previousMessage, message);
-        final String responseText = chatbotService.generateResponse(message.getText());
-        return messageService.addMessage(responseText, toUser, fromUser);
+        chatbotService.addResponse(previousMessage.getEquivalentSentence(), sentence);
+        String responseText = chatbotService.generateResponse(message.getText());
+        if (responseText == null) {
+            responseText = chatbotService.translateSentenceToText(chatbotService.pickRandomSentence());
+        }
+        return messageService.addMessage(responseText, toUser, fromUser, sentence);
     }
 
     @Override
@@ -60,9 +63,9 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public Message requestMessageFromChatbot(final Long userId) {
-        final String text = chatbotService.pickRandomSentence();
+        final Sentence sentence = chatbotService.pickRandomSentence();
         final User fromUser = userService.getUserById(CHATBOT_ID);
         final User toUser = userService.getUserById(userId);
-        return messageService.addMessage(text, fromUser, toUser);
+        return messageService.addMessage(chatbotService.translateSentenceToText(sentence), fromUser, toUser, sentence);
     }
 }

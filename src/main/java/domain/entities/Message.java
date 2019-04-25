@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -32,7 +33,7 @@ public class Message {
     @JoinColumn(name = "FROM_USER")
     private User fromUser;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "TO_USER")
     private User toUser;
 
@@ -48,4 +49,21 @@ public class Message {
 
     @Column
     private Boolean isUnknownMessage;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "EQUIVALENT_SENTENCE")
+    private Sentence equivalentSentence;
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", fromUser=" + fromUser +
+                ", toUser=" + toUser +
+                ", text='" + text + '\'' +
+                ", dateTime=" + dateTime +
+                ", messageSource=" + messageSource +
+                ", isUnknownMessage=" + isUnknownMessage +
+                '}';
+    }
 }

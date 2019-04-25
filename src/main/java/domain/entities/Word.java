@@ -15,6 +15,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 // Lombok
 @NoArgsConstructor
@@ -35,4 +36,39 @@ public class Word {
     @CollectionTable(name="WORD_SYNONYMS",
             joinColumns=@JoinColumn(name="SYNONYM_ID"))
     private Map<Word, Integer> synonyms = new HashMap<>(); // <synonym, frequency>
+
+    /**
+     * Adds the given word as a synonym to this one.
+     * If this word already has the given synonym, then is increased its frequency.
+     */
+    public void addSynonym(final Word synonym) {
+        Integer frequency = synonyms.get(synonym);
+        if (frequency == null) {
+            frequency = 0;
+        }
+        frequency++;
+        synonyms.put(synonym, frequency);
+    }
+
+    @Override
+    public String toString() {
+        return "Word{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Word word = (Word) o;
+        return Objects.equals(id, word.id) &&
+                Objects.equals(text, word.text);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, text);
+    }
 }
