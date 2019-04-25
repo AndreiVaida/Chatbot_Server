@@ -12,8 +12,8 @@ public interface ChatbotService {
      * - If it matches imperfectly (some words haven't matched, not even their synonyms), then the new sentence is set as synonym for the existing sentence (and vice-versa).
      * The new sentence is saved in DB. Return the new sentence.
      * For every word matched by a synonym, we increase it's synonym frequency.
-     * @param text - the text of the new sentence
-     * @return the new created
+     * @param text - the non-empty text of the new sentence
+     * @return the sentence assigned to given text
      */
     Sentence addSentence(final String text);
 

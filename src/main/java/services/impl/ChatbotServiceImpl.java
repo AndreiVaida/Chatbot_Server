@@ -53,17 +53,28 @@ public class ChatbotServiceImpl implements ChatbotService {
 
         // compare the new sentence with the existing one
         final Sentence existingSentence = identifySentence(text);
-        if (existingSentence == null || newSentence.getWords().size() != existingSentence.getWords().size()) {
+
+        if (existingSentence == null) {
             // no equivalent sentence found in DB
             sentenceRepository.save(newSentence);
             return newSentence;
         }
+
+        final int wordCountDifference = Math.abs(newSentence.getWords().size() - existingSentence.getWords().size());
+        if (wordCountDifference > 0
+                && wordCountDifference > Math.min(newSentence.getWords().size(), existingSentence.getWords().size()) / 2
+                && Math.max(newSentence.getWords().size(), existingSentence.getWords().size()) >= 3) { // exceptional case: S1.length == 1 && S2.length == 2
+            // no equivalent sentence found in DB
+            sentenceRepository.save(newSentence);
+            return newSentence;
+        }
+
+        // the found sentence is mainly the same (maybe)
         for (int i = 0; i < newSentence.getWords().size(); i++) {
             final String newSentenceWord = newSentence.getWords().get(i).getText();
             final String existingSentenceWord = existingSentence.getWords().get(i).getText();
             // check if the new word is equal with the existing word (on same position in sentences) or equal with a synonym of the existing word
             if (newSentenceWord.toLowerCase().equals(existingSentenceWord.toLowerCase())) {
-
                 continue; // ok
             }
             if (existingSentence.getWords().get(i).getSynonyms().keySet().stream()
