@@ -49,7 +49,7 @@ public class ChatServiceImpl implements ChatService {
         Sentence responseSentence = chatbotService.generateResponse(message);
         boolean isUnknownMessage = false;
         if (responseSentence == null) {
-            responseSentence = chatbotService.pickRandomSentence();
+            responseSentence = chatbotService.pickSentenceWithFewReplies();
             isUnknownMessage = true;
         }
 

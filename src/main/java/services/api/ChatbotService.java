@@ -31,4 +31,10 @@ public interface ChatbotService {
      * If no sentences are stored in DB, we create a new one with the text „Salut”.
      */
     Sentence pickRandomSentence();
+
+    /**
+     * @return a sentence which has the least replies
+     * If no sentences are stored in DB, we create a new one with the text „Salut”
+     */
+    Sentence pickSentenceWithFewReplies();
 }

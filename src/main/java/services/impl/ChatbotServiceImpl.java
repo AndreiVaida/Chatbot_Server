@@ -108,7 +108,7 @@ public class ChatbotServiceImpl implements ChatbotService {
             }
         }
 
-        final int minimumWordsToMatch = Math.max(newSentence.getWords().size(), existingSentence.getWords().size()); // - wordCountDifference / 2;
+        final int minimumWordsToMatch = Math.min(newSentence.getWords().size(), existingSentence.getWords().size()) - wordCountDifference / 2;
         if (!allWordsAreInTheSamePositions || nrOfMatchedWords < minimumWordsToMatch) {
             // the sentences are different, but synonyms
             newSentence.addSynonym(existingSentence);
@@ -135,7 +135,23 @@ public class ChatbotServiceImpl implements ChatbotService {
             return null;
         }
 
-        return pickBestResponseForSentence(sentence);
+        Sentence response = pickBestResponseForSentence(sentence);
+        if (response != null) {
+            return response;
+        }
+
+        // check for a response in sentence synonyms
+        final List<Sentence> orderedSynonyms = sentence.getSynonyms().keySet().stream()
+                .sorted((synonym1, synonym2) -> sentence.getSynonyms().get(synonym2).compareTo(sentence.getSynonyms().get(synonym1)))
+                .collect(Collectors.toList());
+        for (Sentence synonym : orderedSynonyms) {
+            response = pickBestResponseForSentence(synonym);
+            if (response != null) {
+                return response;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -248,16 +264,32 @@ public class ChatbotServiceImpl implements ChatbotService {
     public Sentence pickRandomSentence() {
         final long nrOfSentences = sentenceRepository.count();
         if (nrOfSentences == 0) {
-            final Word word = new Word();
-            word.setText("Salut");
-            wordRepository.save(word);
-            final Sentence sentence = new Sentence();
-            sentence.getWords().add(word);
-            sentence.setSentenceType(STATEMENT);
-            sentenceRepository.save(sentence);
-            return sentence;
+            return generateDefaultSentence();
         }
-
         return sentenceRepository.findAll().get(random.nextInt((int) nrOfSentences));
+    }
+
+    private Sentence generateDefaultSentence() {
+        final Word word = new Word();
+        word.setText("Salut");
+        wordRepository.save(word);
+        final Sentence sentence = new Sentence();
+        sentence.getWords().add(word);
+        sentence.setSentenceType(STATEMENT);
+        sentenceRepository.save(sentence);
+        return sentence;
+    }
+
+    @Override
+    public Sentence pickSentenceWithFewReplies() {
+        final long nrOfSentences = sentenceRepository.count();
+        if (nrOfSentences == 0) {
+            return generateDefaultSentence();
+        }
+        return sentenceRepository.findAll().stream().min((sentence1, sentence2) -> {
+            final Integer nrOfResponses_sentence1 = sentence1.getResponses().size();
+            final Integer nrOfResponses_sentence2 = sentence2.getResponses().size();
+            return nrOfResponses_sentence1.compareTo(nrOfResponses_sentence2);
+        }).get();
     }
 }

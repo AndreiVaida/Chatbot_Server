@@ -17,5 +17,8 @@ public interface ChatService {
      */
     List<Message> getMessages(final Long userId1, Long userId2);
 
+    /**
+     * @return a random message
+     */
     Message requestMessageFromChatbot(final Long userId);
 }
