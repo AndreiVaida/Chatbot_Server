@@ -43,7 +43,9 @@ public class ChatServiceImpl implements ChatService {
 
         // generate a response
         final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
-        chatbotService.addResponse(previousMessage.getEquivalentSentence(), sentence);
+        if (previousMessage != null) {
+            chatbotService.addResponse(previousMessage.getEquivalentSentence(), sentence);
+        }
         Sentence responseSentence = chatbotService.generateResponse(message);
         boolean isUnknownMessage = false;
         if (responseSentence == null) {
