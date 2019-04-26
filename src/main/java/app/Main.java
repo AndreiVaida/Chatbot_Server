@@ -29,12 +29,18 @@ public class Main {
 
         if (userService.findAll().isEmpty()) {
             addChatbotInDb();
+            addAndreiInDb();
         }
     }
 
     public void addChatbotInDb() {
         final User andy = new User(CHATBOT_ID, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
         userService.addUser(andy);
+    }
+
+    public void addAndreiInDb() {
+        final User user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", null);
+        userService.addUser(user);
     }
 
     public static void main(String[] args) {

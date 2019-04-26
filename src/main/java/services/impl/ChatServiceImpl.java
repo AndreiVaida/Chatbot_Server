@@ -38,17 +38,24 @@ public class ChatServiceImpl implements ChatService {
         // save the message in DB
         final User fromUser = userService.getUserById(fromUserId);
         final User toUser = userService.getUserById(toUserId);
-        final Sentence sentence = chatbotService.addSentence(text);
+        final Sentence sentence = chatbotService.getSentence(text);
         final Message message = messageService.addMessage(text, fromUser, toUser, sentence);
 
         // generate a response
         final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
         chatbotService.addResponse(previousMessage.getEquivalentSentence(), sentence);
-        String responseText = chatbotService.generateResponse(message.getText());
-        if (responseText == null) {
-            responseText = chatbotService.translateSentenceToText(chatbotService.pickRandomSentence());
+        Sentence responseSentence = chatbotService.generateResponse(message);
+        boolean isUnknownMessage = false;
+        if (responseSentence == null) {
+            responseSentence = chatbotService.pickRandomSentence();
+            isUnknownMessage = true;
         }
-        return messageService.addMessage(responseText, toUser, fromUser, sentence);
+
+        // return the response
+        final String responseText = chatbotService.translateSentenceToText(responseSentence);
+        final Message responseMessage = messageService.addMessage(responseText, toUser, fromUser, responseSentence);
+        responseMessage.setIsUnknownMessage(isUnknownMessage);
+        return responseMessage;
     }
 
     @Override

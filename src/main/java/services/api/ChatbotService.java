@@ -1,5 +1,6 @@
 package services.api;
 
+import domain.entities.Message;
 import domain.entities.Sentence;
 
 public interface ChatbotService {
@@ -14,11 +15,14 @@ public interface ChatbotService {
      * @param text - the non-empty text of the new sentence
      * @return the sentence assigned to given text
      */
-    Sentence addSentence(final String text);
+    Sentence getSentence(final String text);
 
     void addResponse(final Sentence previousSentence, final Sentence sentence);
 
-    String generateResponse(final String text);
+    /**
+     * @return best response for the provided message or <null> if no response can be given
+     */
+    Sentence generateResponse(final Message message);
 
     String translateSentenceToText(final Sentence sentence);
 

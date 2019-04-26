@@ -48,7 +48,7 @@ public class Message {
     private MessageSource messageSource;
 
     @Column
-    private Boolean isUnknownMessage;
+    private Boolean isUnknownMessage = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "EQUIVALENT_SENTENCE")

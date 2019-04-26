@@ -1,8 +1,8 @@
 package services.impl;
 
+import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.Word;
-import domain.enums.SentenceType;
 import org.springframework.stereotype.Service;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
@@ -16,6 +16,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static domain.enums.SentenceType.QUESTION;
 import static domain.enums.SentenceType.STATEMENT;
 
 @Service
@@ -23,7 +24,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     private final SentenceRepository sentenceRepository;
     private final WordRepository wordRepository;
     private final Random random;
-    private final String wordsSplitRegex;
+    private final String wordsSplitRegex; // TODO: change regex with a custom function which consider also the signs as words (, . ...)
 
     public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository) {
         this.sentenceRepository = sentenceRepository;
@@ -33,7 +34,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
-    public Sentence addSentence(final String text) {
+    public Sentence getSentence(final String text) {
         final String[] words = text.split(wordsSplitRegex);
 
         // create a new sentence from the given text
@@ -52,6 +53,11 @@ public class ChatbotServiceImpl implements ChatbotService {
         }
         final Sentence newSentence = new Sentence();
         newSentence.setWords(sentenceWords);
+        if (sentenceWords.stream().anyMatch(word -> word.getText().contains("?"))) {
+            newSentence.setSentenceType(QUESTION);
+        } else {
+            newSentence.setSentenceType(STATEMENT);
+        }
 
         // compare the new sentence with the existing one
         final Sentence existingSentence = identifySentence(text);
@@ -102,8 +108,8 @@ public class ChatbotServiceImpl implements ChatbotService {
             }
         }
 
-        final int minimumWordsToMatch = Math.min(newSentence.getWords().size(), existingSentence.getWords().size()) - wordCountDifference / 2;
-        if (!allWordsAreInTheSamePositions || nrOfMatchedWords >= minimumWordsToMatch) {
+        final int minimumWordsToMatch = Math.max(newSentence.getWords().size(), existingSentence.getWords().size()); // - wordCountDifference / 2;
+        if (!allWordsAreInTheSamePositions || nrOfMatchedWords < minimumWordsToMatch) {
             // the sentences are different, but synonyms
             newSentence.addSynonym(existingSentence);
             sentenceRepository.save(newSentence);
@@ -112,9 +118,8 @@ public class ChatbotServiceImpl implements ChatbotService {
             return newSentence;
         }
 
-        // the sentences are different
-        sentenceRepository.save(newSentence);
-        return newSentence;
+        // the sentences are identically
+        return existingSentence;
     }
 
     @Override
@@ -123,22 +128,14 @@ public class ChatbotServiceImpl implements ChatbotService {
         sentenceRepository.save(previousSentence);
     }
 
-    /**
-     * @return best response for the provided text message or <null> if no response can be given
-     */
     @Override
-    public String generateResponse(final String text) {
-        final Sentence sentence = identifySentence(text);
+    public Sentence generateResponse(final Message message) {
+        final Sentence sentence = message.getEquivalentSentence();
         if (sentence == null) {
             return null;
         }
 
-        final Sentence responseSentence = pickBestResponseForSentence(sentence);
-        if (responseSentence == null) {
-            return null;
-        }
-
-        return translateSentenceToText(responseSentence);
+        return pickBestResponseForSentence(sentence);
     }
 
     @Override
@@ -162,7 +159,9 @@ public class ChatbotServiceImpl implements ChatbotService {
 
         final List<Sentence> sortedSentences = sentence.getResponses().keySet().stream()
                 .sorted((Sentence response1, Sentence response2) -> {
-                    return sentence.getResponses().get(response2).compareTo(sentence.getResponses().get(response1));
+                    final Integer response1Frequency = sentence.getResponses().get(response1);
+                    final Integer response2Frequency = sentence.getResponses().get(response2);
+                    return response2Frequency.compareTo(response1Frequency);
                 })
                 .collect(Collectors.toList());
         return sortedSentences.get(0);

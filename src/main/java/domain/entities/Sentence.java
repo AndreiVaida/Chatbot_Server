@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class Sentence {
             joinColumns = {@JoinColumn(name = "SENTENCE_ID")},
             inverseJoinColumns = {@JoinColumn(name = "WORD_ID")}
     )
+    @OrderColumn
     private List<Word> words = new ArrayList<>();
 
     @Column
