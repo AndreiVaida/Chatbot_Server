@@ -3,11 +3,12 @@ package services.api;
 import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.User;
+import domain.enums.MessageSource;
 
 import java.util.List;
 
 public interface MessageService {
-    Message addMessage(final String text, final User fromUser, final User toUser, final Sentence equivalentSentence);
+    Message addMessage(final String text, final User fromUser, final User toUser, final Sentence equivalentSentence, MessageSource messageSource);
 
     List<Message> getMessagesByUsers(final Long userId1, final Long userId2);
 

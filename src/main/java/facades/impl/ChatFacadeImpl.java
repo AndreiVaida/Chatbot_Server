@@ -23,7 +23,7 @@ public class ChatFacadeImpl implements ChatFacade {
     @Override
     public MessageDto addMessage(final RequestSendMessageDto requestSendMessageDto) {
         return MessageMapper.messageToMessageDto(
-                chatService.addMessage(requestSendMessageDto.getMessage(), requestSendMessageDto.getFromUserId(), requestSendMessageDto.getToUserId()));
+                chatService.addMessageAndGetResponse(requestSendMessageDto.getMessage(), requestSendMessageDto.getFromUserId(), requestSendMessageDto.getToUserId()));
     }
 
     @Override

@@ -10,11 +10,14 @@ import services.api.ChatbotService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static domain.enums.SentenceType.QUESTION;
 import static domain.enums.SentenceType.STATEMENT;
@@ -24,13 +27,12 @@ public class ChatbotServiceImpl implements ChatbotService {
     private final SentenceRepository sentenceRepository;
     private final WordRepository wordRepository;
     private final Random random;
-    private final String wordsSplitRegex; // TODO: change regex with a custom function which consider also the signs as words (, . ...)
+    private final String wordsSplitRegex = "[\\s]+";; // TODO: change regex with a custom function which consider also the signs as words (, . ...)
 
     public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository) {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
         random = new Random();
-        wordsSplitRegex = "[\\s,;.]+";
     }
 
     @Override
@@ -129,13 +131,26 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
+    public void addResponseAndSynonym(final Sentence previousSentence, final Sentence sentence) {
+        previousSentence.addResponse(sentence);
+        sentenceRepository.save(previousSentence);
+
+        if (previousSentence.getResponses().containsKey(sentence) && sentence.getResponses().containsKey(previousSentence)) {
+            previousSentence.addSynonym(sentence);
+            sentenceRepository.save(previousSentence);
+            sentence.addSynonym(previousSentence);
+            sentenceRepository.save(sentence);
+        }
+    }
+
+    @Override
     public Sentence generateResponse(final Message message) {
         final Sentence sentence = message.getEquivalentSentence();
         if (sentence == null) {
             return null;
         }
 
-        Sentence response = pickBestResponseForSentence(sentence);
+        Sentence response = pickGoodResponseForSentence(sentence);
         if (response != null) {
             return response;
         }
@@ -145,7 +160,7 @@ public class ChatbotServiceImpl implements ChatbotService {
                 .sorted((synonym1, synonym2) -> sentence.getSynonyms().get(synonym2).compareTo(sentence.getSynonyms().get(synonym1)))
                 .collect(Collectors.toList());
         for (Sentence synonym : orderedSynonyms) {
-            response = pickBestResponseForSentence(synonym);
+            response = pickGoodResponseForSentence(synonym);
             if (response != null) {
                 return response;
             }
@@ -166,21 +181,75 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     /**
-     * @return best response or <null> if no responses are available for the provided sentence
+     * @return random good response or <null> if no responses are available for the provided sentence
      */
-    private Sentence pickBestResponseForSentence(final Sentence sentence) {
+    private Sentence pickGoodResponseForSentence(final Sentence sentence) {
         if (sentence.getResponses().isEmpty()) {
             return null;
         }
 
-        final List<Sentence> sortedSentences = sentence.getResponses().keySet().stream()
+        final List<Sentence> sortedResponses = sentence.getResponses().keySet().stream()
                 .sorted((Sentence response1, Sentence response2) -> {
                     final Integer response1Frequency = sentence.getResponses().get(response1);
                     final Integer response2Frequency = sentence.getResponses().get(response2);
                     return response2Frequency.compareTo(response1Frequency);
                 })
                 .collect(Collectors.toList());
-        return sortedSentences.get(0);
+
+        int index = random.nextInt(sortedResponses.size());
+        if (index != 0 && sortedResponses.size() > 10) {
+            index = random.nextInt(index);
+        }
+        return sortedResponses.get(index);
+    }
+
+    /**
+     * @return random good response or <null> if no responses are available for the provided sentence and for its synonyms
+     * The returned sentence may be a synonym of a picked response.
+     */
+    private Sentence pickGoodResponseForSentenceIncludingSynonyms(final Sentence sentence) {
+        final Map<Sentence, Integer> sentenceAndSynonymsResponses = new HashMap<>(sentence.getResponses());
+        for (Sentence synonym : sentence.getSynonyms().keySet()) {
+            for (Sentence response : synonym.getResponses().keySet()) {
+                sentenceAndSynonymsResponses.put(response, synonym.getResponses().get(response));
+            }
+        }
+
+        final List<Sentence> sortedResponses = sentenceAndSynonymsResponses.keySet().stream()
+                .sorted((Sentence response1, Sentence response2) -> {
+                    final Integer response1Frequency = sentenceAndSynonymsResponses.get(response1);
+                    final Integer response2Frequency = sentenceAndSynonymsResponses.get(response2);
+                    return response2Frequency.compareTo(response1Frequency);
+                })
+                .collect(Collectors.toList());
+
+        if (sortedResponses.isEmpty()) {
+            return null;
+        }
+
+        int index = random.nextInt(sortedResponses.size());
+        if (index != 0 && sortedResponses.size() > 10) {
+            index = random.nextInt(index);
+        }
+        final Sentence response = sortedResponses.get(index);
+        Sentence chosenResponse = response;
+        // pick a synonym of the chosen response
+        if (random.nextBoolean() && !response.getSynonyms().isEmpty()) {
+            final List<Sentence> synonyms = response.getSynonyms().keySet().stream()
+                    .sorted((Sentence response1, Sentence response2) -> {
+                        final Integer response1Frequency = response.getSynonyms().get(response1);
+                        final Integer response2Frequency = response.getSynonyms().get(response2);
+                        return response2Frequency.compareTo(response1Frequency);
+                    })
+                    .collect(Collectors.toList());
+            int indexSynonym = random.nextInt(synonyms.size());
+            if (indexSynonym != 0 && synonyms.size() > 10) {
+                indexSynonym = random.nextInt(indexSynonym);
+            }
+            chosenResponse = synonyms.get(indexSynonym);
+        }
+
+        return chosenResponse;
     }
 
     /**
@@ -210,7 +279,9 @@ public class ChatbotServiceImpl implements ChatbotService {
                             }
                         }
                     }
-                    return matchedWordsSynonyms.size() > words.size() / 2;
+                    final int minWordsToMatch = words.size() / 2;
+                    final int maxWordsToMatch = words.size() + minWordsToMatch;
+                    return matchedWordsSynonyms.size() > minWordsToMatch && matchedWordsSynonyms.size() < maxWordsToMatch;
                 })
                 .sorted((Sentence sentence1, Sentence sentence2) -> {
                     final List<String> sentence1Words = sentence1.getWords().stream().map(Word::getText).collect(Collectors.toList());
@@ -225,7 +296,12 @@ public class ChatbotServiceImpl implements ChatbotService {
                         bestMatchedCount[0] = nrOfMatchedWordsS2;
                     }
 
-                    return nrOfMatchedWordsS2.compareTo(nrOfMatchedWordsS1);
+                    final int extraWordsS1 = sentence1Words.size() - nrOfMatchedWordsS1;
+                    final int extraWordsS2 = sentence2Words.size() - nrOfMatchedWordsS2;
+                    // less is better (0 = perfect match)
+                    final Integer matchScoreS1 = Math.abs(nrOfMatchedWordsS1 - words.size()) - extraWordsS1/2;
+                    final Integer matchScoreS2 = Math.abs(nrOfMatchedWordsS2 - words.size()) - extraWordsS2/2;
+                    return matchScoreS2.compareTo(matchScoreS1);
                 })
                 .collect(Collectors.toList());
 

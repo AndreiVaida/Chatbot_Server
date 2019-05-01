@@ -76,6 +76,10 @@ dependencies {
     // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
     compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
     
+    // JSON.simple // read JSON from file
+    // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+
     /* TESTING */
     // Spring Boot Test Starter
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test

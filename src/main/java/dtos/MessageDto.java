@@ -1,5 +1,6 @@
 package dtos;
 
+import domain.enums.MessageSource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,4 +16,5 @@ public class MessageDto {
     private String message;
     private LocalDateTime dateTime;
     private Boolean isUnknownMessage;
+    private MessageSource messageSource;
 }

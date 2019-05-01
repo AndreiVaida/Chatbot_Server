@@ -49,12 +49,12 @@ public class Sentence {
 
     @ElementCollection
     @CollectionTable(name="SENTENCE_SYNONYMS",
-            joinColumns=@JoinColumn(name="SYNONYM_ID"))
+            joinColumns=@JoinColumn(name="SENTENCE_ID"))
     private Map<Sentence, Integer> synonyms = new HashMap<>(); // <synonym, frequency>
 
     @ElementCollection
     @CollectionTable(name="SENTENCE_RESPONSES",
-            joinColumns=@JoinColumn(name="SYNONYM_ID"))
+            joinColumns=@JoinColumn(name="SENTENCE_ID"))
     private Map<Sentence, Integer> responses = new HashMap<>(); // <response, frequency>
 
     /**

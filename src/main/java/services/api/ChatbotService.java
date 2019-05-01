@@ -17,7 +17,16 @@ public interface ChatbotService {
      */
     Sentence getSentence(final String text);
 
+    /**
+     * Adds sentence as a response for previousSentence. If it is already a response, it's incremented its frequency.
+     */
     void addResponse(final Sentence previousSentence, final Sentence sentence);
+
+    /**
+     * Adds sentence as a response for previousSentence. If it is already a response, it's incremented its frequency.
+     * If both sentences are responses for each other, they are set as synonyms for each other.
+     */
+    void addResponseAndSynonym(final Sentence previousSentence, final Sentence sentence);
 
     /**
      * @return best response for the provided message or <null> if no response can be given

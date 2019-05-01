@@ -3,6 +3,7 @@ package services.impl;
 import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.User;
+import domain.enums.MessageSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import services.api.ChatService;
@@ -30,7 +31,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public Message addMessage(final String text, final Long fromUserId, Long toUserId) {
+    public Message addMessage(final String text, final Long fromUserId, Long toUserId, final MessageSource messageSource) {
         if (toUserId == null || toUserId == 0) {
             toUserId = CHATBOT_ID;
         }
@@ -39,12 +40,35 @@ public class ChatServiceImpl implements ChatService {
         final User fromUser = userService.getUserById(fromUserId);
         final User toUser = userService.getUserById(toUserId);
         final Sentence sentence = chatbotService.getSentence(text);
-        final Message message = messageService.addMessage(text, fromUser, toUser, sentence);
+        final Message message = messageService.addMessage(text, fromUser, toUser, sentence, messageSource);
+
+        final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
+        if (previousMessage != null) {
+            chatbotService.addResponseAndSynonym(previousMessage.getEquivalentSentence(), sentence);
+        }
+
+        return message;
+    }
+
+    @Override
+    @Transactional
+    public Message addMessageAndGetResponse(final String text, final Long fromUserId, Long toUserId) {
+        MessageSource messageSource = MessageSource.USER_USER_CONVERSATION;
+        if (toUserId == null || toUserId == 0) {
+            toUserId = CHATBOT_ID;
+            messageSource = MessageSource.USER_CHATBOT_CONVERSATION;
+        }
+
+        // save the message in DB
+        final User fromUser = userService.getUserById(fromUserId);
+        final User toUser = userService.getUserById(toUserId);
+        final Sentence sentence = chatbotService.getSentence(text);
+        final Message message = messageService.addMessage(text, fromUser, toUser, sentence, messageSource);
 
         // generate a response
         final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
         if (previousMessage != null) {
-            chatbotService.addResponse(previousMessage.getEquivalentSentence(), sentence);
+            chatbotService.addResponseAndSynonym(previousMessage.getEquivalentSentence(), sentence);
         }
         Sentence responseSentence = chatbotService.generateResponse(message);
         boolean isUnknownMessage = false;
@@ -55,7 +79,7 @@ public class ChatServiceImpl implements ChatService {
 
         // return the response
         final String responseText = chatbotService.translateSentenceToText(responseSentence);
-        final Message responseMessage = messageService.addMessage(responseText, toUser, fromUser, responseSentence);
+        final Message responseMessage = messageService.addMessage(responseText, toUser, fromUser, responseSentence, messageSource);
         responseMessage.setIsUnknownMessage(isUnknownMessage);
         return responseMessage;
     }
@@ -75,6 +99,6 @@ public class ChatServiceImpl implements ChatService {
         final Sentence sentence = chatbotService.pickRandomSentence();
         final User fromUser = userService.getUserById(CHATBOT_ID);
         final User toUser = userService.getUserById(userId);
-        return messageService.addMessage(chatbotService.translateSentenceToText(sentence), fromUser, toUser, sentence);
+        return messageService.addMessage(chatbotService.translateSentenceToText(sentence), fromUser, toUser, sentence, MessageSource.USER_CHATBOT_CONVERSATION);
     }
 }
