@@ -1,13 +1,13 @@
 package repositories;
 
 import domain.entities.Message;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Set;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("SELECT m FROM Message m " +
@@ -21,4 +21,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "ORDER BY m.dateTime DESC, m.id DESC")
     List<Message> getPreviousMessages(@Param("userId1") Long userId1, @Param("userId2") Long userId2,
                                       @Param("messageId") Long messageId, Pageable pageRequest);
+
+//    @Query("SELECT m FROM Message m " +
+//            "WHERE m.fromUser.id = :fromUserId AND m.toUser.id = :toUserId " +
+//            "ORDER BY m.dateTime DESC, m.id DESC")
+    List<Message> getAllByFromUser_IdAndToUser_IdOrderByDateTimeDesc(Long fromUserId, Long toUserId, PageRequest pageRequest);
 }

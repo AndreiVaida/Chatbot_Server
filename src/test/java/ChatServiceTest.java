@@ -51,7 +51,7 @@ public class ChatServiceTest {
     public void initialize() {
         userService = new UserServiceImpl(userRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
-        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository);
+        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, linguisticExpressionRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService);
         // add users
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));

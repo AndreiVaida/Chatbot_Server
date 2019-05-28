@@ -2,16 +2,20 @@ package services.api;
 
 import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.information.Information;
+
+import java.util.List;
 
 public interface ChatbotService {
     /**
      * Create a new Sentence from given text.
-     * Check if an equivalent Sentence is already stored in DB. More than half of the words should match (perfectly or by synonyms).
+     * Check if an equivalent Sentence is already stored in DB. More than half of the items should match (perfectly or by synonyms).
      * - If it matches perfectly (every word matched, at least with it's synonyms) then the existing sentence is considered equal with the new one.
      * The new sentence is not saved in DB. Return the existing sentence.
-     * - If it matches imperfectly (some words haven't matched, not even their synonyms), then the new sentence is set as synonym for the existing sentence (and vice-versa).
+     * - If it matches imperfectly (some items haven't matched, not even their synonyms), then the new sentence is set as synonym for the existing sentence (and vice-versa).
      * The new sentence is saved in DB. Return the new sentence.
      * For every word matched by a synonym, we increase it's synonym frequency.
+     *
      * @param text - the non-empty text of the new sentence
      * @return the sentence assigned to given text
      */
@@ -46,4 +50,13 @@ public interface ChatbotService {
      * If no sentences are stored in DB, we create a new one with the text „Salut”
      */
     Sentence pickSentenceWithFewReplies();
+
+    /**
+     * @param previousMessage is a directive, statement or acknowledgement (ex: „Care e numele tău ?” or „Spune-mi numele tău !”, „Eu sunt Andy.”, „Salut !”).
+     *                        It must have set the fields: informationClass and informationFieldName. (ex: PersonalInformation and FirstName)
+     *                        TODO REMOVE It may be null. If it's null, we try to detect automatically what type of information is in answer.
+     * @param answer is a statement
+     * @return the information object of the previousMessage if we it; otherwise return <null>
+     */
+    Information identifyInformation(final Message previousMessage, final Message answer);
 }

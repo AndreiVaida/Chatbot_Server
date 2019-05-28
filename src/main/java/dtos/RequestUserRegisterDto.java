@@ -21,7 +21,6 @@ public class RequestUserRegisterDto {
     @Size(min = 3, max = 255)
     private String password;
 
-    @NotEmpty
     @Size(min = 2, max = 255)
     private String firstName;
 

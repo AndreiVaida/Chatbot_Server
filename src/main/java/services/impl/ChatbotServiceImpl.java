@@ -1,13 +1,23 @@
 package services.impl;
 
+import domain.entities.ExpressionItem;
+import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.Word;
+import domain.enums.ItemClass;
+import domain.enums.SpeechType;
+import domain.information.Information;
 import org.springframework.stereotype.Service;
+import repositories.LinguisticExpressionRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
 import services.api.ChatbotService;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,21 +27,25 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static domain.enums.SentenceType.QUESTION;
-import static domain.enums.SentenceType.STATEMENT;
+import static domain.enums.ItemClass.NOT_AN_INFORMATION;
+import static domain.enums.SpeechType.ACKNOWLEDGEMENT;
+import static domain.enums.SpeechType.DIRECTIVE;
+import static domain.enums.SpeechType.STATEMENT;
 
 @Service
 public class ChatbotServiceImpl implements ChatbotService {
     private final SentenceRepository sentenceRepository;
     private final WordRepository wordRepository;
+    private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final Random random;
-    private final String wordsSplitRegex = "[\\s]+";; // TODO: change regex with a custom function which consider also the signs as words (, . ...)
+    private final String wordsSplitRegex = "[\\s]+";
+    ; // TODO: change regex with a custom function which consider also the signs as items (, . ...)
 
-    public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository) {
+    public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
+        this.linguisticExpressionRepository = linguisticExpressionRepository;
         random = new Random();
     }
 
@@ -55,11 +69,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         }
         final Sentence newSentence = new Sentence();
         newSentence.setWords(sentenceWords);
-        if (sentenceWords.stream().anyMatch(word -> word.getText().contains("?"))) {
-            newSentence.setSentenceType(QUESTION);
-        } else {
-            newSentence.setSentenceType(STATEMENT);
-        }
+        newSentence.setSpeechType(identifySentenceType(newSentence));
 
         // compare the new sentence with the existing one
         final Sentence existingSentence = identifySentence(text);
@@ -122,6 +132,55 @@ public class ChatbotServiceImpl implements ChatbotService {
 
         // the sentences are identically
         return existingSentence;
+    }
+
+    /**
+     * @return the identified SpeechType
+     * The function does not change the sentence field "speechType".
+     */
+    private SpeechType identifySentenceType(final Sentence sentence) {
+        if (sentence.getWords().get(sentence.getWords().size()).getText().contains("?")) {
+            return DIRECTIVE;
+        }
+
+        final List<String> words = sentence.getWords().stream().map(Word::getText).collect(Collectors.toList());
+
+        final List<List<String>> directiveExpressions = getLinguisticExpressionsByTypeAsStrings(DIRECTIVE);
+        for (List<String> expression : directiveExpressions) {
+            if (containsExpression(words, expression)) {
+                return DIRECTIVE;
+            }
+        }
+
+        final List<List<String>> acknowledgementExpressions = getLinguisticExpressionsByTypeAsStrings(ACKNOWLEDGEMENT);
+        for (List<String> expression : acknowledgementExpressions) {
+            if (containsExpression(words, expression)) {
+                return ACKNOWLEDGEMENT;
+            }
+        }
+
+        final List<List<String>> statementExpressions = getLinguisticExpressionsByTypeAsStrings(STATEMENT);
+        for (List<String> expression : statementExpressions) {
+            if (containsExpression(words, expression)) {
+                return STATEMENT;
+            }
+        }
+
+        return STATEMENT; // TODO: check in the future if it's ok
+    }
+
+    private List<List<String>> getLinguisticExpressionsByTypeAsStrings(final SpeechType speechType) {
+        final List<LinguisticExpression> linguisticExpressions = linguisticExpressionRepository.findAllBySpeechType(speechType);
+        final List<List<String>> stringExpressions = new ArrayList<>();
+
+        for (LinguisticExpression linguisticExpression : linguisticExpressions) {
+            final List<String> stringExpression = new ArrayList<>();
+            for (ExpressionItem item : linguisticExpression.getItems()) {
+                stringExpression.add(item.getText());
+            }
+            stringExpressions.add(stringExpression);
+        }
+        return stringExpressions;
     }
 
     @Override
@@ -253,22 +312,22 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     /**
-     * @return best sentence identified (it should have at last half of words matched with the provided text) or <null> if no proper sentence is found
-     * We search in every sentence's words and in sentence's words synonyms.
+     * @return best sentence identified (it should have at last half of items matched with the provided text) or <null> if no proper sentence is found
+     * We search in every sentence's items and in sentence's items synonyms.
      */
     private Sentence identifySentence(final String text) {
-        // find those sentences that contains the words from the given text
+        // find those sentences that containsExpression the items from the given text
         final List<String> words = Arrays.asList(text.split(wordsSplitRegex));
         final int[] bestMatchedCount = {0};
         final List<Sentence> matchedSentences = sentenceRepository.findAll().stream()
                 .filter(sentence -> {
-                    // 1. check in sentence's own words
+                    // 1. check in sentence's own items
                     final List<String> sentenceWords = sentence.getWords().stream().map(Word::getText).collect(Collectors.toList());
                     final int nrOfMatchesSentenceWords = calculateNrOfMatches(sentenceWords, words);
                     if (nrOfMatchesSentenceWords > words.size() / 2) {
                         return true;
                     }
-                    // 2. check in words's synonyms
+                    // 2. check in items's synonyms
                     final Set<String> matchedWordsSynonyms = new HashSet<>();
                     final Set<String> lowerCaseWords = words.stream().map(String::toLowerCase).collect(Collectors.toSet());
                     for (Word sentenceWord : sentence.getWords()) {
@@ -299,8 +358,8 @@ public class ChatbotServiceImpl implements ChatbotService {
                     final int extraWordsS1 = sentence1Words.size() - nrOfMatchedWordsS1;
                     final int extraWordsS2 = sentence2Words.size() - nrOfMatchedWordsS2;
                     // less is better (0 = perfect match)
-                    final Integer matchScoreS1 = Math.abs(nrOfMatchedWordsS1 - words.size()) - extraWordsS1/2;
-                    final Integer matchScoreS2 = Math.abs(nrOfMatchedWordsS2 - words.size()) - extraWordsS2/2;
+                    final Integer matchScoreS1 = Math.abs(nrOfMatchedWordsS1 - words.size()) - extraWordsS1 / 2;
+                    final Integer matchScoreS2 = Math.abs(nrOfMatchedWordsS2 - words.size()) - extraWordsS2 / 2;
                     return matchScoreS2.compareTo(matchScoreS1);
                 })
                 .collect(Collectors.toList());
@@ -313,7 +372,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     /**
-     * @return how many words from list1 are in list2
+     * @return how many items from list1 are in list2
      */
     private int calculateNrOfMatches(final List<String> list1, final List<String> list2) {
         list1.replaceAll(String::toUpperCase);
@@ -327,10 +386,31 @@ public class ChatbotServiceImpl implements ChatbotService {
         return nrOfMatches;
     }
 
+    /**
+     * @return true if the wordToFind is found in items (whole or partial) and false otherwise.
+     * It is case sensitive.
+     */
     private boolean partialContains(final List<String> words, final String wordToFind) {
         for (String word : words) {
             if (word.equals(wordToFind) || word.contains(wordToFind) || wordToFind.contains(word)) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return true if the expression is found in sentence and false otherwise.
+     * It is NOT case sensitive.
+     */
+    private boolean containsExpression(final List<String> sentence, final List<String> expression) {
+        int i = 0;
+        for (String wordE : expression) {
+            final String wordS = sentence.get(i);
+            if (wordE.toLowerCase().equals(wordS.toLowerCase())) {
+                i++;
+            } else if (i > 0) {
+                return false;
             }
         }
         return false;
@@ -351,7 +431,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         wordRepository.save(word);
         final Sentence sentence = new Sentence();
         sentence.getWords().add(word);
-        sentence.setSentenceType(STATEMENT);
+        sentence.setSpeechType(STATEMENT);
         sentenceRepository.save(sentence);
         return sentence;
     }
@@ -368,4 +448,157 @@ public class ChatbotServiceImpl implements ChatbotService {
             return nrOfResponses_sentence1.compareTo(nrOfResponses_sentence2);
         }).get();
     }
+
+    @Override
+    public Information identifyInformation(final Message previousMessage, final Message answer) {
+        final Class<Information> informationClass = previousMessage.getEquivalentSentence().getInformationClass();
+        final String informationFieldName = answer.getEquivalentSentence().getInformationFieldName();
+        final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldName, STATEMENT);
+        ItemClass itemClass = null;
+
+        final String[] answerWords = answer.getText().split(wordsSplitRegex);
+        for (LinguisticExpression expression : expressions) {
+            // search the beginning of the expression in the answer
+            int iAnswer = 0;
+            int iInformationBegin = 0; // the index from the answer where the information starts
+            int iInformationEnd = -1; // the index from the answer where the information ends
+            int iExpression = 0;
+            String expressionWord = expression.getItems().get(0).getText().toLowerCase();
+
+            boolean matchingWords = false;
+            boolean matchingTheInformation = false; // the information consist of >=1 word
+            for (; iAnswer < answerWords.length; iAnswer++) {
+                final String answerWord = answerWords[iAnswer].toLowerCase();
+
+                // if we are matching the information, check for end of information (for first item after information in expression)
+                if (matchingTheInformation && answerWord.equals(expressionWord)) {
+                    matchingWords = true;
+                    matchingTheInformation = false;
+                    iExpression++;
+                    iInformationEnd = iExpression;
+                    expressionWord = expression.getItems().get(iExpression).getText().toLowerCase();
+                    continue;
+                }
+
+                // if the current item of the expression is the information to find, skip (at least) 1 word of the answer AND the expression item
+                if (!expression.getItems().get(iExpression).getItemClass().equals(NOT_AN_INFORMATION)) {
+                    itemClass = expression.getItems().get(iExpression).getItemClass(); // this should be set just once
+                    matchingTheInformation = true;
+                    matchingWords = false;
+                    iInformationBegin = iAnswer;
+                    iExpression++;
+                    expressionWord = expression.getItems().get(iExpression).getText().toLowerCase();
+                    continue;
+                }
+
+                // check if the answerWord == expressionWord
+                if (matchingWords && !answerWord.equals(expressionWord)) {
+                    // reset the search
+                    iExpression = 0;
+                    expressionWord = expression.getItems().get(iExpression).getText().toLowerCase();
+                    matchingWords = false;
+                    continue;
+                }
+                if (answerWord.equals(expressionWord)) {
+                    matchingWords = true;
+                    iExpression++;
+                    expressionWord = expression.getItems().get(iExpression).getText().toLowerCase();
+                    continue;
+                }
+            }
+
+            // check if we matched all items of the expression
+            if (iExpression == expression.getItems().size()) {
+                String[] informationWords = new String[iInformationEnd - iInformationBegin];
+                for (int i = iInformationBegin; i < iInformationEnd; i++) {
+                    informationWords[i - iInformationBegin] = answerWords[i];
+                }
+                try {
+                    final Information information = informationClass.newInstance();
+                    final Method setterOfInformation = information.getClass().getMethod("set" + informationFieldName);
+                    setterOfInformation.invoke(information, convertTextToInformation(informationWords, itemClass));
+                    return information;
+
+                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param informationWords the information as string
+     *                         if NUMBER: return informationWords[0]
+     *                         if DATE: return {day: informationWords[0], month: informationWords[1], year: informationWords[2]}, where year is optional
+     *                         if STRING: return informationWords[0] + informationWords[1] + ... + informationWords[informationWords.length]
+     * @param itemClass - the class which the information should be
+     * @return the information converted the corresponding Java class
+     */
+    private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass) {
+        switch (itemClass) {
+            case NUMBER: return Integer.valueOf(informationWords[0]);
+            case DATE: {
+                int day = Integer.valueOf(informationWords[0]);
+                int month = 1; // TODO: they should not be 1 as default
+                int year = 1;
+                try {
+                    month = Integer.parseInt(informationWords[1]);
+                } catch(NumberFormatException e){
+                    if (informationWords[1].toLowerCase().startsWith("ian")) month = 1; // TODO: TAKE MONTHS FROM DB
+                    if (informationWords[1].toLowerCase().startsWith("feb")) month = 2;
+                    if (informationWords[1].toLowerCase().startsWith("mar")) month = 3;
+                    if (informationWords[1].toLowerCase().startsWith("apr")) month = 4;
+                    if (informationWords[1].toLowerCase().startsWith("mai")) month = 5;
+                    if (informationWords[1].toLowerCase().startsWith("iun")) month = 6;
+                    if (informationWords[1].toLowerCase().startsWith("iul")) month = 7;
+                    if (informationWords[1].toLowerCase().startsWith("aug")) month = 8;
+                    if (informationWords[1].toLowerCase().startsWith("sep")) month = 9;
+                    if (informationWords[1].toLowerCase().startsWith("oct")) month = 10;
+                    if (informationWords[1].toLowerCase().startsWith("no")) month = 11;
+                    if (informationWords[1].toLowerCase().startsWith("dec")) month = 12;
+                }
+                if (informationWords.length >= 3) {
+                    year = Integer.valueOf(informationWords[2]);
+                }
+                return LocalDate.of(year, month, day);
+            }
+            default: {
+                final StringBuilder name = new StringBuilder();
+                for (String word : informationWords) {
+                    name.append(word);
+                }
+                return name.toString();
+            }
+        }
+    }
+
+    /**
+     * @return all linguistic expressions with the given properties, SORTED DESCENDING by the number of items (expression items)
+     */
+    private List<LinguisticExpression> getLinguisticExpressionsByClassAndFieldAndSpeechType(final Class<Information> informationClass,
+                                                                                            final String informationField,
+                                                                                            final SpeechType speechType) {
+        return linguisticExpressionRepository.findAllByInformationClassAndInformationFieldNameAndSpeechType(informationClass, informationField, speechType)
+                .stream()
+                .sorted((expression1, expression2) -> Integer.compare(expression2.getItems().size(), expression1.getItems().size()))
+                .collect(Collectors.toList());
+    }
+
+//    /**
+//     * @param previousMessage is a directive, statement or acknowledgement (ex: „Care e numele tău ?” or „Spune-mi numele tău !”, „Eu sunt Andy.”, „Salut !”).
+//     *                        It must have set the fields: informationClass and informationFieldName. (ex: PersonalInformation and FirstName)
+//     *                        It may be null. If it's null, we try to detect automatically what type of information is in answer.
+//     * @param answer          is a statement
+//     * @return a PersonalInformation object if we find at least 1 personal information; otherwise return <null>
+//     */
+//    private PersonalInformation identifyPersonalInformation(final Message previousMessage, final Message answer) {
+//        if (previousMessage != null) {
+//            final Class<Information> informationClass = previousMessage.getEquivalentSentence().getInformationClass();
+//            final Field informationFieldName = answer.getEquivalentSentence().getInformationFieldName();
+//            final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldName, STATEMENT);
+//
+//        }
+//    }
 }

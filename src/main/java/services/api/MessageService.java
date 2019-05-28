@@ -16,4 +16,9 @@ public interface MessageService {
      * @return the first message before given message or <null> if there is no previous message
      */
     Message getPreviousMessage(final Long userId_1, final Long userId_2, final Long lastMessageId);
+
+    /**
+     * @return the last message sent by fromUser to toUser or <null> if there is no message
+     */
+    Message getLastMessage(final Long fromUserId, final Long toUserId);
 }

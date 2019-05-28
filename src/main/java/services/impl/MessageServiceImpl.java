@@ -47,4 +47,13 @@ public class MessageServiceImpl implements MessageService {
         }
         return null;
     }
+
+    @Override
+    public Message getLastMessage(final Long fromUserId, final Long toUserId) {
+        final List<Message> previousMessages = messageRepository.getAllByFromUser_IdAndToUser_IdOrderByDateTimeDesc(fromUserId, toUserId, PageRequest.of(0, 1));
+        if (!previousMessages.isEmpty()) {
+            return previousMessages.get(0);
+        }
+        return null;
+    }
 }

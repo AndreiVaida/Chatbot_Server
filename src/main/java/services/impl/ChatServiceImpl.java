@@ -4,6 +4,7 @@ import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.User;
 import domain.enums.MessageSource;
+import domain.information.Information;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import services.api.ChatService;
@@ -58,18 +59,37 @@ public class ChatServiceImpl implements ChatService {
             toUserId = CHATBOT_ID;
             messageSource = MessageSource.USER_CHATBOT_CONVERSATION;
         }
-
-        // save the message in DB
         final User fromUser = userService.getUserById(fromUserId);
         final User toUser = userService.getUserById(toUserId);
-        final Sentence sentence = chatbotService.getSentence(text);
-        final Message message = messageService.addMessage(text, fromUser, toUser, sentence, messageSource);
+
+        // save the message in DB and add this message as a response for previous one
+        final Message previousMessage = messageService.getLastMessage(toUserId, fromUserId);
+        final Message message = addMessageAndResponse(text, fromUser, toUser, messageSource, previousMessage);
+
+        // extract the information from the message and update the user details
+        final Information information = chatbotService.identifyInformation(previousMessage, message);
+        userService.updateUserInformation(information, fromUser);
 
         // generate a response
-        final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
+        return generateResponse(message);
+    }
+
+    private Message addMessageAndResponse(final String text, final User fromUser, final User toUser, final MessageSource messageSource, final Message previousMessage) {
+        final Sentence sentence = chatbotService.getSentence(text);
+
+        // save the message ind DB
+        final Message message = messageService.addMessage(text, fromUser, toUser, sentence, messageSource);
+
+        // add this message as a response for the previous message
+
         if (previousMessage != null) {
             chatbotService.addResponseAndSynonym(previousMessage.getEquivalentSentence(), sentence);
         }
+
+        return message;
+    }
+
+    private Message generateResponse(final Message message) {
         Sentence responseSentence = chatbotService.generateResponse(message);
         boolean isUnknownMessage = false;
         if (responseSentence == null) {
@@ -77,9 +97,9 @@ public class ChatServiceImpl implements ChatService {
             isUnknownMessage = true;
         }
 
-        // return the response
+        // save the response
         final String responseText = chatbotService.translateSentenceToText(responseSentence);
-        final Message responseMessage = messageService.addMessage(responseText, toUser, fromUser, responseSentence, messageSource);
+        final Message responseMessage = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), responseSentence, MessageSource.USER_CHATBOT_CONVERSATION);
         responseMessage.setIsUnknownMessage(isUnknownMessage);
         return responseMessage;
     }

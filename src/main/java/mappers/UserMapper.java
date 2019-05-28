@@ -13,9 +13,9 @@ public class UserMapper {
         final User user = new User();
         user.setEmail(requestUserRegisterDto.getEmail());
         user.setPassword(requestUserRegisterDto.getPassword());
-        user.setFirstName(requestUserRegisterDto.getFirstName());
-        user.setSurname(requestUserRegisterDto.getSurname());
-        user.setBirthDay(requestUserRegisterDto.getBirthDay());
+        user.getPersonalInformation().setFirstName(requestUserRegisterDto.getFirstName());
+        user.getPersonalInformation().setSurname(requestUserRegisterDto.getSurname());
+        user.getPersonalInformation().setBirthDay(requestUserRegisterDto.getBirthDay());
         return user;
     }
 
@@ -23,9 +23,9 @@ public class UserMapper {
         final UserDto userDto = new UserDto();
         userDto.setId(user.getId());
         userDto.setEmail(user.getEmail());
-        userDto.setFirstName(user.getFirstName());
-        userDto.setSurname(user.getSurname());
-        userDto.setBirthDay(user.getBirthDay());
+        userDto.setFirstName(user.getPersonalInformation().getFirstName());
+        userDto.setSurname(user.getPersonalInformation().getSurname());
+        userDto.setBirthDay(user.getPersonalInformation().getBirthDay());
         return userDto;
     }
 

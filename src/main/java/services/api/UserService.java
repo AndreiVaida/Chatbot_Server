@@ -1,6 +1,7 @@
 package services.api;
 
 import domain.entities.User;
+import domain.information.Information;
 
 import java.util.List;
 
@@ -12,4 +13,6 @@ public interface UserService {
     User getUserById(final Long id);
 
     User findUserByEmail(final String email);
+
+    void updateUserInformation(final Information information, final User user);
 }
