@@ -68,7 +68,9 @@ public class ChatServiceImpl implements ChatService {
 
         // extract the information from the message and update the user details
         final Information information = chatbotService.identifyInformation(previousMessage, message);
-        userService.updateUserInformation(information, fromUser);
+        if (information != null) {
+            userService.updateUserInformation(information, fromUser);
+        }
 
         // generate a response
         return generateResponse(message);

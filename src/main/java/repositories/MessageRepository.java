@@ -1,7 +1,6 @@
 package repositories;
 
 import domain.entities.Message;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,5 +24,5 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 //    @Query("SELECT m FROM Message m " +
 //            "WHERE m.fromUser.id = :fromUserId AND m.toUser.id = :toUserId " +
 //            "ORDER BY m.dateTime DESC, m.id DESC")
-    List<Message> getAllByFromUser_IdAndToUser_IdOrderByDateTimeDesc(Long fromUserId, Long toUserId, PageRequest pageRequest);
+    List<Message> getAllByFromUser_IdAndToUser_IdOrderByDateTimeDesc(Long fromUserId, Long toUserId, Pageable pageRequest);
 }

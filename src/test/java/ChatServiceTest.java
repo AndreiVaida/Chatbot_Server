@@ -10,7 +10,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import repositories.LinguisticExpressionRepository;
 import repositories.MessageRepository;
+import repositories.PersonalInformationRepository;
 import repositories.SentenceRepository;
 import repositories.UserRepository;
 import repositories.WordRepository;
@@ -40,6 +42,10 @@ public class ChatServiceTest {
     private SentenceRepository sentenceRepository;
     @Autowired
     private MessageRepository messageRepository;
+    @Autowired
+    private PersonalInformationRepository personalInformationRepository;
+    @Autowired
+    private LinguisticExpressionRepository linguisticExpressionRepository;
     private UserService userService;
     private MessageService messageService;
     //private ChatbotService chatbotService;
@@ -49,7 +55,7 @@ public class ChatServiceTest {
 
     @Before
     public void initialize() {
-        userService = new UserServiceImpl(userRepository, new BCryptPasswordEncoder());
+        userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
         final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, linguisticExpressionRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService);

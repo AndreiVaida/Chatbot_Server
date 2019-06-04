@@ -139,7 +139,7 @@ public class ChatbotServiceImpl implements ChatbotService {
      * The function does not change the sentence field "speechType".
      */
     private SpeechType identifySentenceType(final Sentence sentence) {
-        if (sentence.getWords().get(sentence.getWords().size()).getText().contains("?")) {
+        if (sentence.getWords().get(sentence.getWords().size()-1).getText().contains("?")) {
             return DIRECTIVE;
         }
 
@@ -451,7 +451,13 @@ public class ChatbotServiceImpl implements ChatbotService {
 
     @Override
     public Information identifyInformation(final Message previousMessage, final Message answer) {
-        final Class<Information> informationClass = previousMessage.getEquivalentSentence().getInformationClass();
+        final Class<Information> informationClass;
+        if (previousMessage != null) {
+            informationClass = previousMessage.getEquivalentSentence().getInformationClass();
+        }
+        else {
+            informationClass = identifyInformationClass(answer);
+        }
         final String informationFieldName = answer.getEquivalentSentence().getInformationFieldName();
         final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldName, STATEMENT);
         ItemClass itemClass = null;
@@ -525,6 +531,10 @@ public class ChatbotServiceImpl implements ChatbotService {
             }
         }
 
+        return null;
+    }
+
+    private Class<Information> identifyInformationClass(final Message message) {
         return null;
     }
 
