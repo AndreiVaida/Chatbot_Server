@@ -50,13 +50,4 @@ public interface ChatbotService {
      * If no sentences are stored in DB, we create a new one with the text „Salut”
      */
     Sentence pickSentenceWithFewReplies();
-
-    /**
-     * @param previousMessage is a directive, statement or acknowledgement (ex: „Care e numele tău ?” or „Spune-mi numele tău !”, „Eu sunt Andy.”, „Salut !”).
-     *                        It must have set the fields: informationClass and informationFieldName. (ex: PersonalInformation and FirstName)
-     *                        TODO REMOVE It may be null. If it's null, we try to detect automatically what type of information is in answer.
-     * @param answer is a statement
-     * @return the information object of the previousMessage if we it; otherwise return <null>
-     */
-    Information identifyInformation(final Message previousMessage, final Message answer);
 }

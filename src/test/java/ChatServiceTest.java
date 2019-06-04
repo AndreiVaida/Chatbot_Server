@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.MessageRepository;
 import repositories.PersonalInformationRepository;
@@ -18,10 +19,12 @@ import repositories.UserRepository;
 import repositories.WordRepository;
 import services.api.ChatService;
 import services.api.ChatbotService;
+import services.api.InformationService;
 import services.api.MessageService;
 import services.api.UserService;
 import services.impl.ChatServiceImpl;
 import services.impl.ChatbotServiceImpl;
+import services.impl.InformationServiceImpl;
 import services.impl.MessageServiceImpl;
 import services.impl.UserServiceImpl;
 
@@ -46,6 +49,8 @@ public class ChatServiceTest {
     private PersonalInformationRepository personalInformationRepository;
     @Autowired
     private LinguisticExpressionRepository linguisticExpressionRepository;
+    @Autowired
+    private ExpressionItemRepository expressionItemRepository;
     private UserService userService;
     private MessageService messageService;
     //private ChatbotService chatbotService;
@@ -58,7 +63,8 @@ public class ChatServiceTest {
         userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
         final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, linguisticExpressionRepository);
-        chatService = new ChatServiceImpl(messageService, userService, chatbotService);
+        final InformationService informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository);
+        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationService);
         // add users
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
         userService.addUser(andy);

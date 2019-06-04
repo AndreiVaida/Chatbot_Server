@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import services.api.ChatService;
 import services.api.ChatbotService;
+import services.api.InformationService;
 import services.api.MessageService;
 import services.api.UserService;
 
@@ -22,12 +23,14 @@ public class ChatServiceImpl implements ChatService {
     private final UserService userService;
     private final MessageService messageService;
     private final ChatbotService chatbotService;
+    private final InformationService informationService;
 
     @Autowired
-    public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService) {
+    public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService, InformationService informationService) {
         this.messageService = messageService;
         this.userService = userService;
         this.chatbotService = chatbotService;
+        this.informationService = informationService;
     }
 
     @Override
@@ -67,7 +70,13 @@ public class ChatServiceImpl implements ChatService {
         final Message message = addMessageAndSetItAsResponse(text, fromUser, toUser, messageSource, previousMessage);
 
         // extract the information from the message and update the user details
-        final Information information = chatbotService.identifyInformation(previousMessage, message);
+        Class<Information> informationClass = null;
+        String informationFieldName = null;
+        if (previousMessage != null) {
+            informationClass = previousMessage.getEquivalentSentence().getInformationClass();
+            informationFieldName = previousMessage.getEquivalentSentence().getInformationFieldName();
+        }
+        final Information information = informationService.identifyInformation(informationClass, informationFieldName, message);
         if (information != null) {
             userService.updateUserInformation(information, fromUser);
         }

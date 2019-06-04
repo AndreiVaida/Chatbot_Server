@@ -2,6 +2,7 @@ package domain.entities;
 
 import domain.enums.SpeechType;
 import domain.information.Information;
+import domain.information.PersonalInformation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -72,5 +73,9 @@ public class LinguisticExpression {
     @Override
     public int hashCode() {
         return Objects.hash(id, items, speechType);
+    }
+
+    public void setInformationClass(Class informationClass) {
+        this.informationClass = informationClass;
     }
 }

@@ -31,6 +31,11 @@ public class ExpressionItem {
     @Column
     private ItemClass itemClass;
 
+    public ExpressionItem(String text, ItemClass itemClass) {
+        this.text = text;
+        this.itemClass = itemClass;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

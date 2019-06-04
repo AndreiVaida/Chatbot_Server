@@ -54,6 +54,10 @@ public class Message {
     @JoinColumn(name = "EQUIVALENT_SENTENCE")
     private Sentence equivalentSentence;
 
+    public Message(String text) {
+        this.text = text;
+    }
+
     @Override
     public String toString() {
         return "Message{" +
