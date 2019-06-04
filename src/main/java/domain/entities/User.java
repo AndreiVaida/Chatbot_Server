@@ -45,7 +45,7 @@ public class User {
     private String password;
 
     // PERSONAL INFORMATION
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "PERSONAL_INFORMATION")
     private PersonalInformation personalInformation;
 
@@ -70,12 +70,13 @@ public class User {
 
     // FOOD
     @Column(name = "FAVOURITE_FOOD")
-    private String favouriteFood;
+    private String favouriteFood; // TODO: GASTRONOMY INFORMATION
 
     public User(Long id, String email, String password, String firstName, String surname, LocalDate birthDay) {
         this.id = id;
         this.email = email;
         this.password = password;
+        this.personalInformation = new PersonalInformation();
         this.personalInformation.setFirstName(firstName);
         this.personalInformation.setSurname(surname);
         this.personalInformation.setBirthDay(birthDay);

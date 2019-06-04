@@ -16,7 +16,6 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,8 +34,8 @@ public class LinguisticExpression {
 
     @ManyToMany
     @JoinTable(
-            name = "EXPRESSION_WORDS",
-            joinColumns = {@JoinColumn(name = "EXPRESSION_ID")},
+            name = "LINGUISTIC_EXPRESSION_WORDS",
+            joinColumns = {@JoinColumn(name = "LINGUISTIC_EXPRESSION_ID")},
             inverseJoinColumns = {@JoinColumn(name = "WORD_ID")}
     )
     @OrderColumn
@@ -53,7 +52,7 @@ public class LinguisticExpression {
 
     @Override
     public String toString() {
-        return "Sentence{" +
+        return "LinguisticExpression{" +
                 "id=" + id +
                 ", items=" + items +
                 ", speechType=" + speechType +

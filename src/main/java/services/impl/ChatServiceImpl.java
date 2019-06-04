@@ -64,7 +64,7 @@ public class ChatServiceImpl implements ChatService {
 
         // save the message in DB and add this message as a response for previous one
         final Message previousMessage = messageService.getLastMessage(toUserId, fromUserId);
-        final Message message = addMessageAndResponse(text, fromUser, toUser, messageSource, previousMessage);
+        final Message message = addMessageAndSetItAsResponse(text, fromUser, toUser, messageSource, previousMessage);
 
         // extract the information from the message and update the user details
         final Information information = chatbotService.identifyInformation(previousMessage, message);
@@ -74,7 +74,7 @@ public class ChatServiceImpl implements ChatService {
         return generateResponse(message);
     }
 
-    private Message addMessageAndResponse(final String text, final User fromUser, final User toUser, final MessageSource messageSource, final Message previousMessage) {
+    private Message addMessageAndSetItAsResponse(final String text, final User fromUser, final User toUser, final MessageSource messageSource, final Message previousMessage) {
         final Sentence sentence = chatbotService.getSentence(text);
 
         // save the message ind DB

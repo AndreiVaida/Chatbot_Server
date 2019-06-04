@@ -27,7 +27,7 @@ import java.util.List;
 @Table(name = "RELATIONSHIP_INFORMATION")
 public class RelationshipsInformation implements Information {
     @Id
-    @Column
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)

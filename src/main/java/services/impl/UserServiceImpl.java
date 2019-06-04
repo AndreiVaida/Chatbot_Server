@@ -5,6 +5,7 @@ import domain.information.Information;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import repositories.PersonalInformationRepository;
 import repositories.UserRepository;
 import services.api.UserService;
 
@@ -25,11 +26,13 @@ import static app.Main.CHATBOT_ID;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final PersonalInformationRepository personalInformationRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PersonalInformationRepository personalInformationRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.personalInformationRepository = personalInformationRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
@@ -47,6 +50,8 @@ public class UserServiceImpl implements UserService {
 
         final String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+
+        personalInformationRepository.save(user.getPersonalInformation());
         userRepository.save(user);
     }
 

@@ -23,7 +23,7 @@ import java.util.List;
 @Table(name = "FREE_TIME_INFORMATION")
 public class FreeTimeInformation implements Information {
     @Id
-    @Column
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     // HOBBIES

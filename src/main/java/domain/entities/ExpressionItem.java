@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Objects;
 
 // Lombok
 @NoArgsConstructor
@@ -29,4 +30,18 @@ public class ExpressionItem {
 
     @Column
     private ItemClass itemClass;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExpressionItem)) return false;
+        ExpressionItem that = (ExpressionItem) o;
+        return Objects.equals(getText(), that.getText()) &&
+                getItemClass() == that.getItemClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getText(), getItemClass());
+    }
 }

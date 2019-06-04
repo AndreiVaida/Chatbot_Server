@@ -26,7 +26,7 @@ import java.util.Map;
 @Table(name = "SCHOOL_INFORMATION")
 public class SchoolInformation implements Information {
     @Id
-    @Column
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(name = "SCHOOL_NAME")

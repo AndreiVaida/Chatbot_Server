@@ -28,7 +28,7 @@ import java.time.LocalDate;
 @Table(name = "PERSONAL_INFORMATION")
 public class PersonalInformation implements Information {
     @Id
-    @Column
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(name = "FIRST_NAME")
