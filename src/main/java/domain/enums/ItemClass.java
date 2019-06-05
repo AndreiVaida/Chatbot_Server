@@ -4,5 +4,6 @@ public enum ItemClass {
     NOT_AN_INFORMATION,
     NAME,
     NUMBER,
-    DATE
+    DATE,
+    ADDRESS
 }

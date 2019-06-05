@@ -39,7 +39,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     private final WordRepository wordRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final Random random;
-    final static String wordsSplitRegex = "[\\s]+"; // TODO: change regex with a custom function which consider also the signs as items (, . ...)
+    private static final String wordsSplitRegex = "[\\s]+"; // TODO: change regex with a custom function which consider also the signs as items (, . ...)
 
     public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
         this.sentenceRepository = sentenceRepository;
@@ -50,7 +50,7 @@ public class ChatbotServiceImpl implements ChatbotService {
 
     @Override
     public Sentence getSentence(final String text) {
-        final String[] words = text.split(wordsSplitRegex);
+        final String[] words = splitInWords(text);
 
         // create a new sentence from the given text
         final List<Word> sentenceWords = new ArrayList<>();
@@ -316,7 +316,7 @@ public class ChatbotServiceImpl implements ChatbotService {
      */
     private Sentence identifySentence(final String text) {
         // find those sentences that containsExpression the items from the given text
-        final List<String> words = Arrays.asList(text.split(wordsSplitRegex));
+        final List<String> words = Arrays.asList(splitInWords(text));
         final int[] bestMatchedCount = {0};
         final List<Sentence> matchedSentences = sentenceRepository.findAll().stream()
                 .filter(sentence -> {
@@ -446,5 +446,15 @@ public class ChatbotServiceImpl implements ChatbotService {
             final Integer nrOfResponses_sentence2 = sentence2.getResponses().size();
             return nrOfResponses_sentence1.compareTo(nrOfResponses_sentence2);
         }).get();
+    }
+
+    static String[] splitInWords(final String string) {
+        final String[] words = string.split(wordsSplitRegex);
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i];
+            word = word.replaceAll("[.,;?!]+", "");
+            words[i] = word;
+        }
+        return words;
     }
 }

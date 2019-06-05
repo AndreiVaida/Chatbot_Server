@@ -6,7 +6,6 @@ import domain.entities.Message;
 import domain.enums.ItemClass;
 import domain.enums.SpeechType;
 import domain.information.Information;
-import domain.information.PersonalInformation;
 import org.springframework.stereotype.Service;
 import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
@@ -22,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static domain.enums.ItemClass.NOT_AN_INFORMATION;
 import static domain.enums.SpeechType.STATEMENT;
-import static services.impl.ChatbotServiceImpl.wordsSplitRegex;
+import static services.impl.ChatbotServiceImpl.splitInWords;
 
 @Service
 public class InformationServiceImpl implements InformationService {
@@ -68,7 +67,7 @@ public class InformationServiceImpl implements InformationService {
         final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldName, STATEMENT);
         ItemClass itemClass = null;
 
-        final String[] answerWords = answer.getText().split(wordsSplitRegex);
+        final String[] answerWords = splitInWords(answer.getText());
         for (LinguisticExpression expression : expressions) {
             // search the beginning of the expression in the answer
             int iAnswer = 0;
@@ -90,10 +89,10 @@ public class InformationServiceImpl implements InformationService {
                     matchingWords = true;
                     matchingTheInformation = false;
                     iExpression++;
-                    iInformationEnd = iExpression;
-                    if (iExpression == expression.getItems().size()) {
-                        break;
-                    }
+                    iInformationEnd = iAnswer;
+//                    if (iExpression == expression.getItems().size()) {
+//                        break;
+//                    }
                     expressionWord = expression.getItems().get(iExpression).getText();
                     if (expressionWord != null) {
                         expressionWord = expressionWord.toLowerCase();
@@ -101,16 +100,21 @@ public class InformationServiceImpl implements InformationService {
                     continue;
                 }
 
+                if (matchingTheInformation) {
+                    iInformationEnd = iAnswer + 1;
+                    continue;
+                }
+
                 // if the current item of the expression is the information to find, skip (at least) 1 word of the answer AND the expression item
                 if (!expression.getItems().get(iExpression).getItemClass().equals(NOT_AN_INFORMATION)) {
-                    itemClass = expression.getItems().get(iExpression).getItemClass(); // this should be set just once
+                    itemClass = expression.getItems().get(iExpression).getItemClass(); // this should be set just once (itemClass should be final)
                     matchingTheInformation = true;
                     matchingWords = false;
                     iInformationBegin = iAnswer;
                     iExpression++;
                     if (iExpression == expression.getItems().size()) {
                         iInformationEnd = iExpression;
-                        break;
+                        continue;
                     }
                     expressionWord = expression.getItems().get(iExpression).getText();
                     if (expressionWord != null) {
@@ -130,7 +134,7 @@ public class InformationServiceImpl implements InformationService {
                     matchingWords = false;
                     continue;
                 }
-                if (answerWord.equals(expressionWord)) {
+                if (answerWord.equals(expressionWord)) { // && !matchingTheInformation
                     matchingWords = true;
                     iExpression++;
                     if (iExpression == expression.getItems().size()) {
@@ -152,8 +156,16 @@ public class InformationServiceImpl implements InformationService {
                 }
                 try {
                     final Information information = (Information) informationClass.newInstance();
-                    final Method setterOfInformation = information.getClass().getMethod("set" + informationFieldName.substring(0,1).toUpperCase() + informationFieldName.substring(1), String.class);
-                    setterOfInformation.invoke(information, convertTextToInformation(informationWords, itemClass));
+                    final String informationFieldName_firstLetterCapitalize = informationFieldName.substring(0, 1).toUpperCase() + informationFieldName.substring(1);
+                    final Method getterOfInformation = information.getClass().getMethod("get" + informationFieldName_firstLetterCapitalize);
+                    final Class fieldClass = getterOfInformation.getReturnType();
+                    final Method setterOfInformation = information.getClass().getMethod("set" + informationFieldName_firstLetterCapitalize, fieldClass);
+
+                    final Object informationAsItsType = convertTextToInformation(informationWords, itemClass, informationFieldName);
+                    if (informationAsItsType == null) {
+                        return null;
+                    }
+                    setterOfInformation.invoke(information, informationAsItsType);
                     return information;
 
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
@@ -174,19 +186,25 @@ public class InformationServiceImpl implements InformationService {
      *                         if NUMBER: return informationWords[0]
      *                         if DATE: return {day: informationWords[0], month: informationWords[1], year: informationWords[2]}, where year is optional
      *                         if STRING: return informationWords[0] + informationWords[1] + ... + informationWords[informationWords.length]
-     * @param itemClass - the class which the information should be
-     * @return the information converted the corresponding Java class
+     * @param itemClass        - the class which the information should be
+     * @param informationFieldName is needed only for: PersonalInformation.Address, RelationshipInformation.*
+     * @return the information converted the corresponding Java class or <null> if it cannot be converted
      */
-    private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass) {
+    private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass, String informationFieldName) {
         switch (itemClass) {
-            case NUMBER: return Integer.valueOf(informationWords[0]);
+            case NUMBER:
+                return Integer.valueOf(informationWords[0]);
+
             case DATE: {
+                if (informationWords.length < 2) {
+                    return null;
+                }
                 int day = Integer.valueOf(informationWords[0]);
                 int month = 1; // TODO: they should not be 1 as default
                 int year = 1;
                 try {
                     month = Integer.parseInt(informationWords[1]);
-                } catch(NumberFormatException e){
+                } catch (NumberFormatException e) {
                     if (informationWords[1].toLowerCase().startsWith("ian")) month = 1; // TODO: TAKE MONTHS FROM DB
                     if (informationWords[1].toLowerCase().startsWith("feb")) month = 2;
                     if (informationWords[1].toLowerCase().startsWith("mar")) month = 3;
@@ -205,10 +223,19 @@ public class InformationServiceImpl implements InformationService {
                 }
                 return LocalDate.of(year, month, day);
             }
-            default: {
+
+            case ADDRESS: {
+
+            }
+
+            default: { // NAME
                 final StringBuilder name = new StringBuilder();
-                for (String word : informationWords) {
+                for (int i = 0; i < informationWords.length; i++) {
+                    final String word = informationWords[i];
                     name.append(word);
+                    if (i < informationWords.length - 1) {
+                        name.append(" ");
+                    }
                 }
                 return name.toString();
             }

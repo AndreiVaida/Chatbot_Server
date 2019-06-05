@@ -6,7 +6,6 @@ import domain.enums.SpeechType;
 import domain.information.Information;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 public interface LinguisticExpressionRepository extends JpaRepository<LinguisticExpression, Long> {
