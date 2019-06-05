@@ -16,10 +16,15 @@ public interface InformationService {
 
     /**
      * @param previousMessage is a directive, statement or acknowledgement (ex: „Care e numele tău ?” or „Spune-mi numele tău !”, „Eu sunt Andy.”, „Salut !”).
-     *                        It must have set the fields: informationClass and informationFieldName. (ex: PersonalInformation and FirstName)
+     *                        It must have set the fields: informationClass and informationFieldNamePath. (ex: PersonalInformation and FirstName)
      *                        TODO REMOVE It may be null. If it's null, we try to detect automatically what type of information is in answer.
+     * @param informationFieldNamePath is the name of the field of the effective information you want to identify.
+     *                             This function identifies only 1 effective information, not an entire object Information or sub-object of Information.
+     *                             Use "." (dot) to delimit hierarchy fields when you hant to identify an information which is in a sub-object of Information.
+     *                             Example for PersonalInformation: "firstName", "birthDay", "address.street", "address.number". Just giving "address" will not work.
+     *                             Example for RelationshipInformation: "motherPersonalInformation.firstName", "motherPersonalInformation.address.street"
      * @param answer is a statement
      * @return the information object of the previousMessage if we it; otherwise return <null>
      */
-    Information identifyInformation(Class informationClass, String informationFieldName, final Message answer);
+    Information identifyInformation(Class informationClass, String informationFieldNamePath, final Message answer);
 }

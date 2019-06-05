@@ -59,12 +59,12 @@ public class InformationServiceImpl implements InformationService {
     }
 
     @Override
-    public Information identifyInformation(Class informationClass, String informationFieldName, final Message answer) {
+    public Information identifyInformation(Class informationClass, String informationFieldNamePath, final Message answer) {
         if (informationClass == null) {
             informationClass = identifyInformationClass(answer);
-            informationFieldName = answer.getEquivalentSentence().getInformationFieldName();
+            informationFieldNamePath = answer.getEquivalentSentence().getInformationFieldName();
         }
-        final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldName, STATEMENT);
+        final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldNamePath, STATEMENT);
         ItemClass itemClass = null;
 
         final String[] answerWords = splitInWords(answer.getText());
@@ -90,11 +90,11 @@ public class InformationServiceImpl implements InformationService {
                     matchingTheInformation = false;
                     iExpression++;
                     iInformationEnd = iAnswer;
-//                    if (iExpression == expression.getItems().size()) {
-//                        break;
-//                    }
+                    if (iExpression == expression.getItems().size()) {
+                        break;
+                    }
                     expressionWord = expression.getItems().get(iExpression).getText();
-                    if (expressionWord != null) {
+                    if (expressionWord != null) { // it will not be null
                         expressionWord = expressionWord.toLowerCase();
                     }
                     continue;
@@ -113,7 +113,7 @@ public class InformationServiceImpl implements InformationService {
                     iInformationBegin = iAnswer;
                     iExpression++;
                     if (iExpression == expression.getItems().size()) {
-                        iInformationEnd = iExpression;
+                        iInformationEnd = iAnswer + 1;
                         continue;
                     }
                     expressionWord = expression.getItems().get(iExpression).getText();
@@ -148,7 +148,7 @@ public class InformationServiceImpl implements InformationService {
                 }
             }
 
-            // check if we matched all items of the expression
+            // if we matched all the items of the expression => we found the information
             if (iExpression == expression.getItems().size()) {
                 String[] informationWords = new String[iInformationEnd - iInformationBegin];
                 for (int i = iInformationBegin; i < iInformationEnd; i++) {
@@ -156,16 +156,14 @@ public class InformationServiceImpl implements InformationService {
                 }
                 try {
                     final Information information = (Information) informationClass.newInstance();
-                    final String informationFieldName_firstLetterCapitalize = informationFieldName.substring(0, 1).toUpperCase() + informationFieldName.substring(1);
-                    final Method getterOfInformation = information.getClass().getMethod("get" + informationFieldName_firstLetterCapitalize);
-                    final Class fieldClass = getterOfInformation.getReturnType();
-                    final Method setterOfInformation = information.getClass().getMethod("set" + informationFieldName_firstLetterCapitalize, fieldClass);
-
-                    final Object informationAsItsType = convertTextToInformation(informationWords, itemClass, informationFieldName);
+                    final Object informationAsItsType = convertTextToInformation(informationWords, itemClass);
                     if (informationAsItsType == null) {
                         return null;
                     }
-                    setterOfInformation.invoke(information, informationAsItsType);
+
+                    // check if the effective information is a field of a field of the information
+                    final String[] fieldNameHierarchy = informationFieldNamePath.split("\\.");
+                    setTheInformation(information, fieldNameHierarchy, informationAsItsType);
                     return information;
 
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
@@ -177,6 +175,38 @@ public class InformationServiceImpl implements InformationService {
         return null;
     }
 
+    /**
+     * Sets the informationAsItsType in the last child of the hierarchy. Recursive function.
+     * If any of the fields (children) are null, create a new object for it.
+     * @param parent - original parent, it will be a child if the hierarchy impose (length > 1)
+     * @param fieldNameHierarchy - the parent is at index 0, the child is index 1 etc.
+     * @param informationAsItsType - the effective information which should be set for last child in hierarchy
+     */
+    private void setTheInformation(final Object parent, final String[] fieldNameHierarchy, final Object informationAsItsType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+        final String fieldName = fieldNameHierarchy[0];
+        final String fieldName_firstLetterCapitalize = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+        final Method getterOfChild = parent.getClass().getMethod("get" + fieldName_firstLetterCapitalize);
+
+        if (fieldNameHierarchy.length == 1) {
+            final Class fieldClass = getterOfChild.getReturnType();
+            final Method setterOfInformation = parent.getClass().getMethod("set" + fieldName_firstLetterCapitalize, fieldClass);
+            setterOfInformation.invoke(parent, informationAsItsType);
+        }
+        else {
+            Object child = getterOfChild.invoke(parent);
+            if (child == null) {
+                final Class childClass = getterOfChild.getReturnType();
+                child = childClass.newInstance();
+                final Method setterOfChild = parent.getClass().getMethod("set" + fieldName_firstLetterCapitalize, childClass);
+                setterOfChild.invoke(parent, child);
+            }
+
+            final String[] fieldNameHierarchyChild = new String[fieldNameHierarchy.length - 1];
+            System.arraycopy(fieldNameHierarchy, 1, fieldNameHierarchyChild, 0, fieldNameHierarchy.length - 1);
+            setTheInformation(child, fieldNameHierarchyChild, informationAsItsType);
+        }
+    }
+
     private Class<Information> identifyInformationClass(final Message message) {
         return null;
     }
@@ -186,11 +216,13 @@ public class InformationServiceImpl implements InformationService {
      *                         if NUMBER: return informationWords[0]
      *                         if DATE: return {day: informationWords[0], month: informationWords[1], year: informationWords[2]}, where year is optional
      *                         if STRING: return informationWords[0] + informationWords[1] + ... + informationWords[informationWords.length]
-     * @param itemClass        - the class which the information should be
-     * @param informationFieldName is needed only for: PersonalInformation.Address, RelationshipInformation.*
+     * @param itemClass        is the class which the effective information should be
+     *                         if NAME: return String
+     *                         if NUMBER: return Integer
+     *                         if DATE: return LocalDate
      * @return the information converted the corresponding Java class or <null> if it cannot be converted
      */
-    private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass, String informationFieldName) {
+    private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass) {
         switch (itemClass) {
             case NUMBER:
                 return Integer.valueOf(informationWords[0]);
@@ -228,7 +260,7 @@ public class InformationServiceImpl implements InformationService {
 
             }
 
-            default: { // NAME
+            default: { // NAME or anything else
                 final StringBuilder name = new StringBuilder();
                 for (int i = 0; i < informationWords.length; i++) {
                     final String word = informationWords[i];

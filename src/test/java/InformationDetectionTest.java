@@ -1,4 +1,3 @@
-import com.sun.xml.internal.ws.api.model.MEP;
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
@@ -6,6 +5,7 @@ import domain.enums.ItemClass;
 import domain.enums.SpeechType;
 import domain.information.Information;
 import domain.information.PersonalInformation;
+import domain.information.RelationshipsInformation;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,15 +17,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.PersonalInformationRepository;
-import services.api.ChatbotService;
 import services.api.InformationService;
-import services.impl.ChatbotServiceImpl;
 import services.impl.InformationServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static domain.enums.ItemClass.*;
+import static domain.enums.ItemClass.NAME;
+import static domain.enums.ItemClass.NOT_AN_INFORMATION;
 
 @DataJpaTest
 @RunWith(SpringRunner.class)
@@ -51,8 +50,8 @@ public class InformationDetectionTest {
         // add linguistic expression
         LinguisticExpression linguisticExpression = new LinguisticExpression();
         List<ExpressionItem> expressionItems = new ArrayList<>();
-        expressionItems.add(new ExpressionItem("eu", ItemClass.NOT_AN_INFORMATION));
-        expressionItems.add(new ExpressionItem("sunt", ItemClass.NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("eu", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("sunt", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
         for (ExpressionItem item : expressionItems) {
@@ -87,9 +86,9 @@ public class InformationDetectionTest {
         linguisticExpression = new LinguisticExpression();
         expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, NAME));
-        expressionItems.add(new ExpressionItem("e", ItemClass.NOT_AN_INFORMATION));
-        expressionItems.add(new ExpressionItem("numele", ItemClass.NOT_AN_INFORMATION));
-        expressionItems.add(new ExpressionItem("meu", ItemClass.NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("e", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("numele", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("meu", NOT_AN_INFORMATION));
         linguisticExpression.setItems(expressionItems);
         for (ExpressionItem item : expressionItems) {
             expressionItemRepository.save(item);
@@ -138,6 +137,19 @@ public class InformationDetectionTest {
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         personalInformation = (PersonalInformation) information;
         Assert.assertEquals("Andy", personalInformation.getFirstName());
+
+        // TEST 4: "Cred că eu sunt NAME."
+        // Test 3.1: firstName ("Cred că eu sunt NAME.")
+        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Cred că eu sunt Andy."));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        personalInformation = (PersonalInformation) information;
+        Assert.assertEquals("Andy", personalInformation.getFirstName());
+
+        // Test 3.1: firstName ("NAME.")
+        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Andy."));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        personalInformation = (PersonalInformation) information;
+        Assert.assertEquals("Andy", personalInformation.getFirstName());
     }
 
     @Test
@@ -147,7 +159,7 @@ public class InformationDetectionTest {
         // add linguistic expression
         LinguisticExpression linguisticExpression = new LinguisticExpression();
         List<ExpressionItem> expressionItems = new ArrayList<>();
-        expressionItems.add(new ExpressionItem("pe", ItemClass.NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("pe", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, ItemClass.DATE));
         linguisticExpression.setItems(expressionItems);
         for (ExpressionItem item : expressionItems) {
@@ -195,5 +207,84 @@ public class InformationDetectionTest {
         personalInformation = (PersonalInformation) information;
         Assert.assertEquals(24, personalInformation.getBirthDay().getDayOfMonth());
         Assert.assertEquals(10, personalInformation.getBirthDay().getMonthValue());
+    }
+
+    @Test
+    public void testPersonalInformation_Address() {
+        /* DIRECTIVE: "În ce oraș locuiești ?" */
+        // TEST 1: "În NAME"
+        // add linguistic expression
+        LinguisticExpression linguisticExpression = new LinguisticExpression();
+        List<ExpressionItem> expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("în", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, NAME));
+        linguisticExpression.setItems(expressionItems);
+        for (ExpressionItem item : expressionItems) {
+            expressionItemRepository.save(item);
+        }
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldName("homeAddress.locality");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
+
+        // Test 1.1: homeAddress.locality ("În NAME")
+        Information information = informationService.identifyInformation(PersonalInformation.class, "homeAddress.locality", new Message("În Cluj"));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        PersonalInformation personalInformation = (PersonalInformation) information;
+        Assert.assertEquals("Cluj", personalInformation.getHomeAddress().getLocality());
+
+        // Test 1.2: homeAddress.locality ("În NAME-NAME")
+        information = informationService.identifyInformation(PersonalInformation.class, "homeAddress.locality", new Message("În Cluj-Napoca"));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        personalInformation = (PersonalInformation) information;
+        Assert.assertEquals("Cluj-Napoca", personalInformation.getHomeAddress().getLocality());
+    }
+
+    @Test
+    public void testRelationshipInformation_MotherPersonalInformation_PersonalInformation_Name() {
+        /* DIRECTIVE: "Cum o cheamă pe mama ta ?" */
+        // TEST 1: "NAME"
+        // add linguistic expression
+        LinguisticExpression linguisticExpression = new LinguisticExpression();
+        List<ExpressionItem> expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem(null, NAME));
+        linguisticExpression.setItems(expressionItems);
+        for (ExpressionItem item : expressionItems) {
+            expressionItemRepository.save(item);
+        }
+        linguisticExpression.setInformationClass(RelationshipsInformation.class);
+        linguisticExpression.setInformationFieldName("motherPersonalInformation.firstName");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
+
+        // Test 1.1: motherPersonalInformation.firstName ("NAME")
+        Information information = informationService.identifyInformation(RelationshipsInformation.class, "motherPersonalInformation.firstName", new Message("Maria"));
+        Assert.assertEquals(RelationshipsInformation.class, information.getClass());
+        RelationshipsInformation relationshipsInformation = (RelationshipsInformation) information;
+        Assert.assertEquals("Maria", relationshipsInformation.getMotherPersonalInformation().getFirstName());
+
+        // TEST 2: "NAME e numele ei."
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem(null, NAME));
+        expressionItems.add(new ExpressionItem("e", NOT_AN_INFORMATION));
+        linguisticExpression.setItems(expressionItems);
+        for (ExpressionItem item : expressionItems) {
+            expressionItemRepository.save(item);
+        }
+        linguisticExpression.setInformationClass(RelationshipsInformation.class);
+        linguisticExpression.setInformationFieldName("motherPersonalInformation.firstName");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
+
+        // Test 2.1: motherPersonalInformation.firstName ("NAME e numele ei.")
+        information = informationService.identifyInformation(RelationshipsInformation.class, "motherPersonalInformation.firstName", new Message("Maria e numele ei."));
+        Assert.assertEquals(RelationshipsInformation.class, information.getClass());
+        relationshipsInformation = (RelationshipsInformation) information;
+        Assert.assertEquals("Maria", relationshipsInformation.getMotherPersonalInformation().getFirstName());
     }
 }
