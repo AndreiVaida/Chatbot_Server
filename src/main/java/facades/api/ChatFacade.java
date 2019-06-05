@@ -1,5 +1,6 @@
 package facades.api;
 
+import domain.enums.ChatbotRequestType;
 import dtos.MessageDto;
 import dtos.RequestSendMessageDto;
 
@@ -10,5 +11,5 @@ public interface ChatFacade {
 
     List<MessageDto> getMessages(final Long userId1, final Long userId2);
 
-    MessageDto requestMessageFromChatbot(final Long userId);
+    MessageDto requestMessageFromChatbot(final Long userId, final ChatbotRequestType chatbotRequestType);
 }

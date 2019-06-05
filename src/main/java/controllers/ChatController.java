@@ -1,5 +1,6 @@
 package controllers;
 
+import domain.enums.ChatbotRequestType;
 import dtos.MessageDto;
 import dtos.RequestSendMessageDto;
 import facades.api.ChatFacade;
@@ -39,8 +40,8 @@ public class ChatController extends AbstractController {
     }
 
     @GetMapping("/sample")
-    public ResponseEntity<MessageDto> requestMessageFromChatbot(@RequestParam final Long userId) {
-        final MessageDto message = chatFacade.requestMessageFromChatbot(userId);
+    public ResponseEntity<MessageDto> requestMessageFromChatbot(@RequestParam final Long userId, @RequestParam final ChatbotRequestType chatbotRequestType) {
+        final MessageDto message = chatFacade.requestMessageFromChatbot(userId, chatbotRequestType);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 }

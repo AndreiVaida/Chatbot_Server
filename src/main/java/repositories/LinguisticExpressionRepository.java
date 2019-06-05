@@ -11,7 +11,7 @@ import java.util.List;
 public interface LinguisticExpressionRepository extends JpaRepository<LinguisticExpression, Long> {
     List<LinguisticExpression> findAllBySpeechType(final SpeechType speechType);
 
-    List<LinguisticExpression> findAllByInformationClassAndInformationFieldNameAndSpeechType(final Class<Information> informationClass,
-                                                                                         final String informationFieldName,
+    List<LinguisticExpression> findAllByInformationClassAndInformationFieldNamePathAndSpeechType(final Class<Information> informationClass,
+                                                                                         final String informationFieldNamePath,
                                                                                          final SpeechType speechType);
 }

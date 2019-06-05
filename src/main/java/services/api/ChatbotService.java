@@ -2,6 +2,7 @@ package services.api;
 
 import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.entities.User;
 import domain.information.Information;
 
 import java.util.List;
@@ -50,4 +51,10 @@ public interface ChatbotService {
      * If no sentences are stored in DB, we create a new one with the text „Salut”
      */
     Sentence pickSentenceWithFewReplies();
+
+    /**
+     * @param user - the user for whom new information is desired
+     * @return a DIRECTIVE requesting a (probably) new information for the given user
+     */
+    Sentence pickSentenceRequestingInformation(final User user);
 }

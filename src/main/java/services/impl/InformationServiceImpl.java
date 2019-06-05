@@ -68,7 +68,11 @@ public class InformationServiceImpl implements InformationService {
     public Information identifyInformation(Class informationClass, String informationFieldNamePath, final Message answer) {
         if (informationClass == null) {
             informationClass = identifyInformationClass(answer);
-            informationFieldNamePath = answer.getEquivalentSentence().getInformationFieldName();
+            informationFieldNamePath = answer.getEquivalentSentence().getInformationFieldNamePath();
+
+            if (informationClass == null || informationFieldNamePath == null) {
+                return null;
+            }
         }
         final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, removeMapKeysFromPath(informationFieldNamePath), STATEMENT);
         ItemClass itemClass = null;
@@ -294,7 +298,8 @@ public class InformationServiceImpl implements InformationService {
      *                         if STRING: return informationWords[0] + informationWords[1] + ... + informationWords[informationWords.length]
      * @param itemClass        is the class which the effective information should be
      *                         if NAME: return String
-     *                         if NUMBER: return Integer
+     *                         if NUMBER: return integer
+     *                         if BOOLEAN: return boolean
      *                         if DATE: return LocalDate
      *                         if GENDER: return Gender
      *                         else: return String
@@ -302,8 +307,13 @@ public class InformationServiceImpl implements InformationService {
      */
     private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass) {
         switch (itemClass) {
-            case NUMBER:
+            case NUMBER: {
                 return Integer.valueOf(informationWords[0]);
+            }
+
+            case BOOLEAN: {
+                return informationWords[0].toLowerCase().startsWith("da");
+            }
 
             case DATE: {
                 if (informationWords.length < 2) {
@@ -345,8 +355,9 @@ public class InformationServiceImpl implements InformationService {
                 final StringBuilder name = new StringBuilder();
                 for (int i = 0; i < informationWords.length; i++) {
                     final String word = informationWords[i];
+
                     name.append(word);
-                    if (i < informationWords.length - 1) {
+                    if (i < informationWords.length - 1 && Character.isLetterOrDigit(informationWords[i+1].charAt(0))) {
                         name.append(" ");
                     }
                 }
@@ -361,7 +372,7 @@ public class InformationServiceImpl implements InformationService {
     private List<LinguisticExpression> getLinguisticExpressionsByClassAndFieldAndSpeechType(final Class<Information> informationClass,
                                                                                             final String informationField,
                                                                                             final SpeechType speechType) {
-        return linguisticExpressionRepository.findAllByInformationClassAndInformationFieldNameAndSpeechType(informationClass, informationField, speechType)
+        return linguisticExpressionRepository.findAllByInformationClassAndInformationFieldNamePathAndSpeechType(informationClass, informationField, speechType)
                 .stream()
                 .sorted((expression1, expression2) -> Integer.compare(expression2.getItems().size(), expression1.getItems().size()))
                 .collect(Collectors.toList());
@@ -369,7 +380,7 @@ public class InformationServiceImpl implements InformationService {
 
 //    /**
 //     * @param previousMessage is a directive, statement or acknowledgement (ex: „Care e numele tău ?” or „Spune-mi numele tău !”, „Eu sunt Andy.”, „Salut !”).
-//     *                        It must have set the fields: informationClass and informationFieldName. (ex: PersonalInformation and FirstName)
+//     *                        It must have set the fields: informationClass and informationFieldNamePath. (ex: PersonalInformation and FirstName)
 //     *                        It may be null. If it's null, we try to detect automatically what type of information is in answer.
 //     * @param answer          is a statement
 //     * @return a PersonalInformation object if we find at least 1 personal information; otherwise return <null>
@@ -377,8 +388,8 @@ public class InformationServiceImpl implements InformationService {
 //    private PersonalInformation identifyPersonalInformation(final Message previousMessage, final Message answer) {
 //        if (previousMessage != null) {
 //            final Class<Information> informationClass = previousMessage.getEquivalentSentence().getInformationClass();
-//            final Field informationFieldName = answer.getEquivalentSentence().getInformationFieldName();
-//            final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldName, STATEMENT);
+//            final Field informationFieldNamePath = answer.getEquivalentSentence().getInformationFieldNamePath();
+//            final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldNamePath, STATEMENT);
 //
 //        }
 //    }

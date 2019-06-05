@@ -49,7 +49,7 @@ public class LinguisticExpression {
     private Class<Information> informationClass;
 
     @Column
-    private String informationFieldName;
+    private String informationFieldNamePath;
 
     @Override
     public String toString() {

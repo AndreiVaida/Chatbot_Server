@@ -29,6 +29,9 @@ public class FacultyInformation implements Information {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(name = "IS_AT_FACULTY")
+    private Boolean isAtFaculty;
+
     @Column(name = "FACULTY_NAME")
     private String facultyName;
 

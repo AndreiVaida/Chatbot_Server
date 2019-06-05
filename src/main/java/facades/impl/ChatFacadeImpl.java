@@ -1,5 +1,6 @@
 package facades.impl;
 
+import domain.enums.ChatbotRequestType;
 import dtos.MessageDto;
 import dtos.RequestSendMessageDto;
 import facades.api.ChatFacade;
@@ -34,7 +35,7 @@ public class ChatFacadeImpl implements ChatFacade {
     }
 
     @Override
-    public MessageDto requestMessageFromChatbot(final Long userId) {
-        return MessageMapper.messageToMessageDto(chatService.requestMessageFromChatbot(userId));
+    public MessageDto requestMessageFromChatbot(final Long userId, final ChatbotRequestType chatbotRequestType) {
+        return MessageMapper.messageToMessageDto(chatService.requestMessageFromChatbot(userId, chatbotRequestType));
     }
 }

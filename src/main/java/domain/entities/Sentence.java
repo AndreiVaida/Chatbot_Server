@@ -52,7 +52,7 @@ public class Sentence {
     private Class<Information> informationClass;
 
     @Column
-    private String informationFieldName;
+    private String informationFieldNamePath;
 
     @ElementCollection
     @CollectionTable(name = "SENTENCE_SYNONYMS",

@@ -4,16 +4,20 @@ import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.entities.User;
 import domain.entities.Word;
 import domain.enums.ItemClass;
 import domain.enums.SpeechType;
 import domain.information.Information;
+import domain.information.PersonalInformation;
 import org.springframework.stereotype.Service;
 import repositories.LinguisticExpressionRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
 import services.api.ChatbotService;
 
+import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -230,10 +234,13 @@ public class ChatbotServiceImpl implements ChatbotService {
     @Override
     public String translateSentenceToText(final Sentence sentence) {
         final StringBuilder text = new StringBuilder();
-        for (Word word : sentence.getWords()) {
-            text.append(word.getText()).append(" ");
+        for (int i = 0; i < sentence.getWords().size(); i++) {
+            final Word word = sentence.getWords().get(i);
+            if (i > 0 && Character.isLetterOrDigit(word.getText().charAt(0))) {
+                text.append(" ");
+            }
+            text.append(word.getText());
         }
-        text.deleteCharAt(text.length() - 1);
 
         return text.toString();
     }
@@ -416,6 +423,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
+    @Transactional
     public Sentence pickRandomSentence() {
         final long nrOfSentences = sentenceRepository.count();
         if (nrOfSentences == 0) {
@@ -436,6 +444,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
+    @Transactional
     public Sentence pickSentenceWithFewReplies() {
         final long nrOfSentences = sentenceRepository.count();
         if (nrOfSentences == 0) {
@@ -448,13 +457,71 @@ public class ChatbotServiceImpl implements ChatbotService {
         }).get();
     }
 
+    @Override
+    @Transactional
+    public Sentence pickSentenceRequestingInformation(final User user) {
+        Class informationClass;
+        String informationFieldName;
+
+        // Personal Information
+        informationFieldName = getFirstNullItem(user.getPersonalInformation(), PersonalInformation.class);
+        if (informationFieldName != null) {
+            informationClass = PersonalInformation.class;
+        }
+        // Education Information
+        else {
+            informationFieldName = getFirstNullItem(user.getSchoolInformation(), PersonalInformation.class);
+        }
+//        List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldName(DIRECTIVE, informationClass, informationFieldNamePath);
+        return null;
+    }
+
+    /**
+     * information and informationClass should point same Information class
+     */
+    private String getFirstNullItem(@NotNull final Information information, final Class informationClass) {
+        if (information instanceof PersonalInformation) {
+            final PersonalInformation personalInformation = (PersonalInformation) information;
+            if (personalInformation == null) {
+
+            }
+        }
+        return null;
+    }
+
     static String[] splitInWords(final String string) {
         final String[] words = string.split(wordsSplitRegex);
+        final List<String> completeWordList = new ArrayList<>();
         for (int i = 0; i < words.length; i++) {
             String word = words[i];
-            word = word.replaceAll("[.,;?!]+", "");
-            words[i] = word;
+            // v1: removing punctuation
+//            word = word.replaceAll("[.,;?!]+", "");
+//            words[i] = word;
+
+            // v2: keep punctuation as a word
+            StringBuilder wordInConstruction = new StringBuilder();
+            for (int j = 0; j < word.length(); j++) {
+                char character = word.charAt(j);
+                if (Character.isLetterOrDigit(character) || character == '-') {
+                    wordInConstruction.append(character);
+                }
+                else {
+                    if (wordInConstruction.length() > 0) {
+                        completeWordList.add(wordInConstruction.toString());
+                        wordInConstruction = new StringBuilder();
+                    }
+                    completeWordList.add(String.valueOf(character));
+                }
+            }
+            if (wordInConstruction.length() > 0) {
+                completeWordList.add(wordInConstruction.toString());
+            }
         }
-        return words;
+
+        final String[] completeWordArray = new String[completeWordList.size()];
+        for (int i = 0; i < completeWordArray.length; i++) {
+            completeWordArray[i] = completeWordList.get(i);
+        }
+        return completeWordArray;
     }
 }

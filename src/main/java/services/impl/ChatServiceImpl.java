@@ -3,6 +3,7 @@ package services.impl;
 import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.User;
+import domain.enums.ChatbotRequestType;
 import domain.enums.MessageSource;
 import domain.information.Information;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +75,7 @@ public class ChatServiceImpl implements ChatService {
         String informationFieldName = null;
         if (previousMessage != null) {
             informationClass = previousMessage.getEquivalentSentence().getInformationClass();
-            informationFieldName = previousMessage.getEquivalentSentence().getInformationFieldName();
+            informationFieldName = previousMessage.getEquivalentSentence().getInformationFieldNamePath();
         }
         final Information information = informationService.identifyInformation(informationClass, informationFieldName, message);
         if (information != null) {
@@ -126,10 +127,19 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public Message requestMessageFromChatbot(final Long userId) {
-        final Sentence sentence = chatbotService.pickRandomSentence();
+    public Message requestMessageFromChatbot(final Long userId, ChatbotRequestType chatbotRequestType) {
+        if (chatbotRequestType == null) {
+            chatbotRequestType = ChatService.CHATBOT_REQUEST_TYPE;
+        }
         final User fromUser = userService.getUserById(CHATBOT_ID);
         final User toUser = userService.getUserById(userId);
+
+        final Sentence sentence;
+        switch (chatbotRequestType) {
+            case LEARN_TO_SPEAK: sentence = chatbotService.pickSentenceWithFewReplies(); break;
+            case GET_INFORMATION_FROM_USER: sentence = chatbotService.pickSentenceRequestingInformation(toUser); break;
+            default: sentence = chatbotService.pickRandomSentence(); break;
+        }
         return messageService.addMessage(chatbotService.translateSentenceToText(sentence), fromUser, toUser, sentence, MessageSource.USER_CHATBOT_CONVERSATION);
     }
 }

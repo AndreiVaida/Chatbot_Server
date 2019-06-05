@@ -36,7 +36,7 @@ public class InformationMapper {
         linguisticExpression.setItems(expressionItems);
         linguisticExpression.setSpeechType(linguisticExpressionDto.getSpeechType());
         linguisticExpression.setInformationClass(informationClassDtoToClassOfInformation(linguisticExpressionDto.getInformationClass()));
-        linguisticExpression.setInformationFieldName(linguisticExpressionDto.getInformationFieldName());
+        linguisticExpression.setInformationFieldNamePath(linguisticExpressionDto.getInformationFieldName());
         return linguisticExpression;
     }
 
@@ -69,7 +69,7 @@ public class InformationMapper {
         linguisticExpressionDto.setExpressionItems(expressionItemDtos);
         linguisticExpressionDto.setSpeechType(linguisticExpression.getSpeechType());
         linguisticExpressionDto.setInformationClass(informationClassToClassOfInformationDto(linguisticExpression.getInformationClass()));
-        linguisticExpressionDto.setInformationFieldName(linguisticExpression.getInformationFieldName());
+        linguisticExpressionDto.setInformationFieldName(linguisticExpression.getInformationFieldNamePath());
         return linguisticExpressionDto;
     }
 

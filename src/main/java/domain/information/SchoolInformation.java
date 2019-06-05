@@ -29,6 +29,9 @@ public class SchoolInformation implements Information {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(name = "IS_AT_SCHOOL")
+    private Boolean isAtSchool;
+
     @Column(name = "SCHOOL_NAME")
     private String schoolName;
 

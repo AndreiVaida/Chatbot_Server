@@ -25,6 +25,7 @@ import services.impl.InformationServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 
+import static domain.enums.ItemClass.BOOLEAN;
 import static domain.enums.ItemClass.GENDER;
 import static domain.enums.ItemClass.NAME;
 import static domain.enums.ItemClass.NOT_AN_INFORMATION;
@@ -62,7 +63,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(PersonalInformation.class);
-        linguisticExpression.setInformationFieldName("firstName");
+        linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
@@ -72,6 +73,23 @@ public class InformationDetectionTest {
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         PersonalInformation personalInformation = (PersonalInformation) information;
         Assert.assertEquals("Andy", personalInformation.getFirstName());
+
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("eu", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("sunt", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, NAME));
+        expressionItems.add(new ExpressionItem(".", NOT_AN_INFORMATION));
+        linguisticExpression.setItems(expressionItems);
+        for (ExpressionItem item : expressionItems) {
+            expressionItemRepository.save(item);
+        }
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldNamePath("firstName");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.2: firstName - normal answer 2 ("Eu sunt NAME.")
         information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Eu sunt Andy."));
@@ -98,10 +116,10 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(PersonalInformation.class);
-        linguisticExpression.setInformationFieldName("firstName");
+        linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
-        Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
+        Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: firstName ("NAME e numele meu")
         information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Andy e numele meu"));
@@ -125,10 +143,25 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(PersonalInformation.class);
-        linguisticExpression.setInformationFieldName("firstName");
+        linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
-        Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
+        Assert.assertEquals(4, informationService.getAllLinguisticExpressions().size());
+
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem(null, NAME));
+        expressionItems.add(new ExpressionItem(".",NOT_AN_INFORMATION));
+        linguisticExpression.setItems(expressionItems);
+        for (ExpressionItem item : expressionItems) {
+            expressionItemRepository.save(item);
+        }
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldNamePath("firstName");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(5, informationService.getAllLinguisticExpressions().size());
 
         // Test 3.1: firstName ("NAME")
         information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Andy"));
@@ -170,7 +203,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(PersonalInformation.class);
-        linguisticExpression.setInformationFieldName("birthDay");
+        linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
@@ -200,7 +233,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(PersonalInformation.class);
-        linguisticExpression.setInformationFieldName("birthDay");
+        linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
@@ -227,7 +260,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(PersonalInformation.class);
-        linguisticExpression.setInformationFieldName("homeAddress.locality");
+        linguisticExpression.setInformationFieldNamePath("homeAddress.locality");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
@@ -258,7 +291,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(RelationshipsInformation.class);
-        linguisticExpression.setInformationFieldName("motherPersonalInformation.firstName");
+        linguisticExpression.setInformationFieldNamePath("motherPersonalInformation.firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
@@ -280,7 +313,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(RelationshipsInformation.class);
-        linguisticExpression.setInformationFieldName("motherPersonalInformation.firstName");
+        linguisticExpression.setInformationFieldNamePath("motherPersonalInformation.firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
@@ -306,7 +339,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(PersonalInformation.class);
-        linguisticExpression.setInformationFieldName("gender");
+        linguisticExpression.setInformationFieldNamePath("gender");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
@@ -316,6 +349,80 @@ public class InformationDetectionTest {
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         PersonalInformation personalInformation = (PersonalInformation) information;
         Assert.assertEquals(Gender.MALE, personalInformation.getGender());
+    }
+
+    @Test
+    public void testDetectSchoolInformation_IsAtSchool() {
+        /* DIRECTIVE: "Ești la școală ?" */
+        // TEST 1: "BOOLEAN"
+        // add linguistic expression
+        LinguisticExpression linguisticExpression = new LinguisticExpression();
+        List<ExpressionItem> expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem(null, BOOLEAN));
+        linguisticExpression.setItems(expressionItems);
+        for (ExpressionItem item : expressionItems) {
+            expressionItemRepository.save(item);
+        }
+        linguisticExpression.setInformationClass(SchoolInformation.class);
+        linguisticExpression.setInformationFieldNamePath("isAtSchool");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
+
+        // Test 1.1: favouriteCourse ("NAME")
+        Information information = informationService.identifyInformation(SchoolInformation.class, "isAtSchool", new Message("Da"));
+        Assert.assertEquals(SchoolInformation.class, information.getClass());
+        SchoolInformation schoolInformation = (SchoolInformation) information;
+        Assert.assertEquals(true, schoolInformation.getIsAtSchool());
+        // the course should appear in coursesGrades map
+        Assert.assertEquals(true, schoolInformation.getIsAtSchool());
+
+        /* DIRECTIVE: "Ce notă iei de obicei la limba română ?" */
+        // TEST 2: "De obicei am NUMBER."
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("de", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("obicei", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("iau", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, NUMBER));
+        linguisticExpression.setItems(expressionItems);
+        for (ExpressionItem item : expressionItems) {
+            expressionItemRepository.save(item);
+        }
+        linguisticExpression.setInformationClass(SchoolInformation.class);
+        linguisticExpression.setInformationFieldNamePath("coursesGrades");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
+
+        // Test 2.1: coursesGrades ("De obicei iau 8")
+        information = informationService.identifyInformation(SchoolInformation.class, "coursesGrades#limba română", new Message("De obicei iau 8"));
+        Assert.assertEquals(SchoolInformation.class, information.getClass());
+        schoolInformation = (SchoolInformation) information;
+        Assert.assertEquals((Integer) 8, schoolInformation.getCoursesGrades().get("limba română"));
+
+        /* DIRECTIVE: "Ce materie ai la școală ?" */
+        // TEST 3: "NAME"
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem(null, NAME));
+        linguisticExpression.setItems(expressionItems);
+        for (ExpressionItem item : expressionItems) {
+            expressionItemRepository.save(item);
+        }
+        linguisticExpression.setInformationClass(SchoolInformation.class);
+        linguisticExpression.setInformationFieldNamePath("coursesGrades");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
+
+        // Test 2.1: coursesGrades ("De obicei iau 8")
+        information = informationService.identifyInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"));
+        Assert.assertEquals(SchoolInformation.class, information.getClass());
+        schoolInformation = (SchoolInformation) information;
+        Assert.assertNotNull(schoolInformation.getCoursesGrades().get("matematică"));
     }
 
     @Test
@@ -331,7 +438,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(SchoolInformation.class);
-        linguisticExpression.setInformationFieldName("favouriteCourse");
+        linguisticExpression.setInformationFieldNamePath("favouriteCourse");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
@@ -358,7 +465,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(SchoolInformation.class);
-        linguisticExpression.setInformationFieldName("coursesGrades");
+        linguisticExpression.setInformationFieldNamePath("coursesGrades");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
@@ -380,7 +487,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(SchoolInformation.class);
-        linguisticExpression.setInformationFieldName("coursesGrades");
+        linguisticExpression.setInformationFieldNamePath("coursesGrades");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
@@ -405,7 +512,7 @@ public class InformationDetectionTest {
             expressionItemRepository.save(item);
         }
         linguisticExpression.setInformationClass(RelationshipsInformation.class);
-        linguisticExpression.setInformationFieldName("brothersAndSistersPersonalInformation.firstName");
+        linguisticExpression.setInformationFieldNamePath("brothersAndSistersPersonalInformation.firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
