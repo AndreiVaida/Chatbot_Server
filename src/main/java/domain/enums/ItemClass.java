@@ -5,5 +5,6 @@ public enum ItemClass {
     NAME,
     NUMBER,
     DATE,
-    ADDRESS
+    ADDRESS,
+    GENDER
 }

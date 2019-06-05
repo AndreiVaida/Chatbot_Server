@@ -12,11 +12,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // Lombok
 @NoArgsConstructor
@@ -38,19 +41,31 @@ public class RelationshipsInformation implements Information {
     @JoinColumn(name = "FATHER_INFORMATION")
     private PersonalInformation fatherPersonalInformation;
 
+    @Column
+    private Integer numberOfBrothersAndSisters;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "BROTHERS_SISTERS_INFORMATION")
-    private List<PersonalInformation> brothersAndSistersPersonalInformation = new ArrayList<>();
+    @MapKey(name = "firstName")
+    private Map<String, PersonalInformation> brothersAndSistersPersonalInformation = new HashMap<>();
+
+    @Column
+    private Integer numberOfGrandparents;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "GRANDPARENTS_INFORMATION")
-    private List<PersonalInformation> grandparentsPersonalInformation = new ArrayList<>();
+    @MapKey(name = "firstName")
+    private Map<String, PersonalInformation> grandparentsPersonalInformation = new HashMap<>();
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "WIFE_HUSBAND_INFORMATION")
     private PersonalInformation wifeOrHusbandInformation;
 
+    @Column
+    private Integer numberOfKids;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "KIDS_INFORMATION")
-    private List<PersonalInformation> kidsPersonalInformation = new ArrayList<>();
+    @MapKey(name = "firstName")
+    private Map<String, PersonalInformation> kidsPersonalInformation = new HashMap<>(); // <kidFirstName, PersonalInformation>
 }

@@ -22,7 +22,12 @@ public interface InformationService {
      *                             This function identifies only 1 effective information, not an entire object Information or sub-object of Information.
      *                             Use "." (dot) to delimit hierarchy fields when you hant to identify an information which is in a sub-object of Information.
      *                             Example for PersonalInformation: "firstName", "birthDay", "address.street", "address.number". Just giving "address" will not work.
-     *                             Example for RelationshipInformation: "motherPersonalInformation.firstName", "motherPersonalInformation.address.street"
+     *                             Example for RelationshipInformation: "motherPersonalInformation.firstName", "motherPersonalInformation.address.street".
+     *
+     *                             The hierarchy may contain maps. In this case, the field name element should contain at the end the key of the element you want to update, separate with #.
+     *                             If after # follows ? it means that the field is a map and you want to add the information in map.
+     *                             Example for PersonalInformation: "grades#math"
+     *                             Example for RelationshipInformation: "kidsPersonalInformation#Matei.firstName", "brothersAndSistersPersonalInformation#?"
      * @param answer is a statement
      * @return the information object of the previousMessage if we it; otherwise return <null>
      */

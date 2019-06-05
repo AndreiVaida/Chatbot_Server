@@ -3,12 +3,15 @@ package services.impl;
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
+import domain.enums.Gender;
 import domain.enums.ItemClass;
 import domain.enums.SpeechType;
 import domain.information.Information;
+import domain.information.PersonalInformation;
 import org.springframework.stereotype.Service;
 import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
+import repositories.PersonalInformationRepository;
 import services.api.InformationService;
 
 import javax.persistence.EntityNotFoundException;
@@ -17,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static domain.enums.ItemClass.NOT_AN_INFORMATION;
@@ -27,10 +31,12 @@ import static services.impl.ChatbotServiceImpl.splitInWords;
 public class InformationServiceImpl implements InformationService {
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final ExpressionItemRepository expressionItemRepository;
+    private final PersonalInformationRepository personalInformationRepository;
 
-    public InformationServiceImpl(LinguisticExpressionRepository linguisticExpressionRepository, ExpressionItemRepository expressionItemRepository) {
+    public InformationServiceImpl(LinguisticExpressionRepository linguisticExpressionRepository, ExpressionItemRepository expressionItemRepository, PersonalInformationRepository personalInformationRepository) {
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         this.expressionItemRepository = expressionItemRepository;
+        this.personalInformationRepository = personalInformationRepository;
     }
 
     @Override
@@ -64,7 +70,7 @@ public class InformationServiceImpl implements InformationService {
             informationClass = identifyInformationClass(answer);
             informationFieldNamePath = answer.getEquivalentSentence().getInformationFieldName();
         }
-        final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldNamePath, STATEMENT);
+        final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, removeMapKeysFromPath(informationFieldNamePath), STATEMENT);
         ItemClass itemClass = null;
 
         final String[] answerWords = splitInWords(answer.getText());
@@ -175,35 +181,105 @@ public class InformationServiceImpl implements InformationService {
         return null;
     }
 
+    private String removeMapKeysFromPath(final String informationFieldNamePath) {
+        final String[] pathList = informationFieldNamePath.split("\\.");
+        final StringBuilder newInformationFieldNamePath = new StringBuilder();
+        for (int i = 0; i < pathList.length; i++) {
+            String[] path = pathList[i].split("#");
+            if (i > 0) {
+                newInformationFieldNamePath.append(".");
+            }
+            newInformationFieldNamePath.append(path[0]);
+        }
+        return newInformationFieldNamePath.toString();
+    }
+
     /**
      * Sets the informationAsItsType in the last child of the hierarchy. Recursive function.
      * If any of the fields (children) are null, create a new object for it.
      * @param parent - original parent, it will be a child if the hierarchy impose (length > 1)
      * @param fieldNameHierarchy - the parent is at index 0, the child is index 1 etc.
+     *                           The hierarchy may contain maps. In this case, the field name element should contain the key of the element you want to update separate with #.
+     *                           If after # follows ? it means that the field is a map and you want to add the information in map.
+     *                           Example for PersonalInformation: "[{grades#math}]"
+     *                           Example for RelationshipInformation: "[{kidsPersonalInformation#Matei},{firstName}]", "[{brothersAndSistersPersonalInformation#?}]"
      * @param informationAsItsType - the effective information which should be set for last child in hierarchy
      */
     private void setTheInformation(final Object parent, final String[] fieldNameHierarchy, final Object informationAsItsType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
-        final String fieldName = fieldNameHierarchy[0];
+        final String[] field = fieldNameHierarchy[0].split("#"); // get an array of 1 or 2 elements: fieldName and map key (if the field is a map)
+        final String fieldName = field[0];
+        String fieldKey = null;
+        if (field.length >= 2) {
+            fieldKey = field[1];
+        }
         final String fieldName_firstLetterCapitalize = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
         final Method getterOfChild = parent.getClass().getMethod("get" + fieldName_firstLetterCapitalize);
 
         if (fieldNameHierarchy.length == 1) {
-            final Class fieldClass = getterOfChild.getReturnType();
-            final Method setterOfInformation = parent.getClass().getMethod("set" + fieldName_firstLetterCapitalize, fieldClass);
-            setterOfInformation.invoke(parent, informationAsItsType);
+            // LAST CHILD IN HIERARCHY
+            if (fieldKey == null) {
+                // normal field, no map
+                final Class fieldClass = getterOfChild.getReturnType();
+                final Method setterOfInformation = parent.getClass().getMethod("set" + fieldName_firstLetterCapitalize, fieldClass);
+                setterOfInformation.invoke(parent, informationAsItsType);
+
+                // auxiliary code: update relevant fields to the changed one
+                if (fieldName.equals("favouriteCourse")) {
+                    final Method getterOfCoursesGradesMap = parent.getClass().getMethod("getCoursesGrades");
+                    final Map<String,Integer> coursesGrades = (Map<String, Integer>) getterOfCoursesGradesMap.invoke(parent);
+                    coursesGrades.put(String.valueOf(informationAsItsType), 10);
+                }
+            }
+            else {
+                // the field is a map
+                final Map map = (Map) getterOfChild.invoke(parent);
+                if (fieldKey.equals("?")) {
+                    if (fieldName.equals("coursesGrades")) {
+                        map.put(informationAsItsType, 10);
+                    }
+                    else { // number of members from a map from RelationshipInformation
+                        final PersonalInformation personalInformation = new PersonalInformation();
+                        personalInformationRepository.save(personalInformation);
+                        map.put(informationAsItsType, personalInformation);
+                    }
+                }
+                else {
+                    map.put(fieldKey, informationAsItsType);
+                }
+            }
         }
         else {
-            Object child = getterOfChild.invoke(parent);
-            if (child == null) {
-                final Class childClass = getterOfChild.getReturnType();
-                child = childClass.newInstance();
-                final Method setterOfChild = parent.getClass().getMethod("set" + fieldName_firstLetterCapitalize, childClass);
-                setterOfChild.invoke(parent, child);
-            }
+            // CHILD INSIDE HIERARCHY, NOT THE LAST ONE
+            if (fieldKey == null) {
+                // normal field, no map
+                Object child = getterOfChild.invoke(parent);
+                if (child == null) {
+                    final Class childClass = getterOfChild.getReturnType();
+                    child = childClass.newInstance();
+                    final Method setterOfChild = parent.getClass().getMethod("set" + fieldName_firstLetterCapitalize, childClass);
+                    setterOfChild.invoke(parent, child);
+                }
 
-            final String[] fieldNameHierarchyChild = new String[fieldNameHierarchy.length - 1];
-            System.arraycopy(fieldNameHierarchy, 1, fieldNameHierarchyChild, 0, fieldNameHierarchy.length - 1);
-            setTheInformation(child, fieldNameHierarchyChild, informationAsItsType);
+                final String[] fieldNameHierarchyChild = new String[fieldNameHierarchy.length - 1];
+                System.arraycopy(fieldNameHierarchy, 1, fieldNameHierarchyChild, 0, fieldNameHierarchy.length - 1);
+                setTheInformation(child, fieldNameHierarchyChild, informationAsItsType);
+            }
+            else {
+                // the field is a map
+                final Map map = (Map) getterOfChild.invoke(parent);
+                Object value = map.get(fieldKey);
+                if (value == null) {
+                    value = new PersonalInformation(); // TODO: use more than PersonalInformation
+                    personalInformationRepository.save((PersonalInformation) value);
+                    if (fieldKey.equals("?")) {
+                        fieldKey = (String) informationAsItsType;
+                    }
+                    map.put(fieldKey, value);
+                }
+                final String[] fieldNameHierarchyChild = new String[fieldNameHierarchy.length - 1];
+                System.arraycopy(fieldNameHierarchy, 1, fieldNameHierarchyChild, 0, fieldNameHierarchy.length - 1);
+                setTheInformation(value, fieldNameHierarchyChild, informationAsItsType);
+            }
         }
     }
 
@@ -220,6 +296,8 @@ public class InformationServiceImpl implements InformationService {
      *                         if NAME: return String
      *                         if NUMBER: return Integer
      *                         if DATE: return LocalDate
+     *                         if GENDER: return Gender
+     *                         else: return String
      * @return the information converted the corresponding Java class or <null> if it cannot be converted
      */
     private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass) {
@@ -256,8 +334,11 @@ public class InformationServiceImpl implements InformationService {
                 return LocalDate.of(year, month, day);
             }
 
-            case ADDRESS: {
-
+            case GENDER: {
+                if (informationWords[0].toLowerCase().startsWith("b")) {
+                    return Gender.MALE;
+                }
+                return Gender.FEMALE;
             }
 
             default: { // NAME or anything else
