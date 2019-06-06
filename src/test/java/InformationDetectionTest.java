@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static domain.enums.ItemClass.BOOLEAN;
+import static domain.enums.ItemClass.DATE;
 import static domain.enums.ItemClass.GENDER;
 import static domain.enums.ItemClass.NAME;
 import static domain.enums.ItemClass.NOT_AN_INFORMATION;
@@ -183,22 +184,39 @@ public class InformationDetectionTest {
         LinguisticExpression linguisticExpression = new LinguisticExpression();
         List<ExpressionItem> expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem("pe", NOT_AN_INFORMATION));
-        expressionItems.add(new ExpressionItem(null, ItemClass.DATE));
+        expressionItems.add(new ExpressionItem(null, DATE));
         linguisticExpression.setItems(expressionItems);
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("în", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, DATE));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldNamePath("birthDay");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
 
-        // Test 1.1: birthDay ("Pe DATE")
-        Information information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie"));
+        // Test 1.1: birthDay ("În MONTH")
+        Information information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("În octombrie"));
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         PersonalInformation personalInformation = (PersonalInformation) information;
+        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
+
+        // Test 1.2: birthDay ("Pe DAY MONTH")
+        information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie"));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        personalInformation = (PersonalInformation) information;
         Assert.assertEquals((Integer) 24, personalInformation.getBirthDay().getDay());
         Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
 
-        // Test 1.2: birthDay ("Pe DATE")
+        // Test 1.3: birthDay ("Pe DAY MONTH YEAR")
         information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie 1997"));
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         personalInformation = (PersonalInformation) information;
@@ -210,13 +228,13 @@ public class InformationDetectionTest {
         // add linguistic expression
         linguisticExpression = new LinguisticExpression();
         expressionItems = new ArrayList<>();
-        expressionItems.add(new ExpressionItem(null, ItemClass.DATE));
+        expressionItems.add(new ExpressionItem(null, DATE));
         linguisticExpression.setItems(expressionItems);
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationService.addLinguisticExpression(linguisticExpression);
-        Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
+        Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: birthDay ("DATE")
         information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("24 octombrie"));
@@ -224,6 +242,57 @@ public class InformationDetectionTest {
         personalInformation = (PersonalInformation) information;
         Assert.assertEquals((Integer)24, personalInformation.getBirthDay().getDay());
         Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
+
+        /* DIRECTIVE: "În ce an te-ai născut ?" */
+        // TEST 3: "În YEAR"
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("în", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, DATE));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldNamePath("birthDay.year");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("în", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, DATE));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldNamePath("birthDay.month");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("în", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, DATE));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldNamePath("birthDay.day");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+
+        // Test 3.1: birthDay ("În YEAR")
+        information = informationService.identifyInformation(PersonalInformation.class, "birthDay.year", new Message("în 1997"));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        personalInformation = (PersonalInformation) information;
+        Assert.assertEquals((Integer)1997, personalInformation.getBirthDay().getYear());
+
+        // Test 3.2: birthDay ("În MONTH")
+        information = informationService.identifyInformation(PersonalInformation.class, "birthDay.month", new Message("în octombrie"));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        personalInformation = (PersonalInformation) information;
+        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
+
+        // Test 3.3: birthDay ("În DAY")
+        information = informationService.identifyInformation(PersonalInformation.class, "birthDay.day", new Message("în 24"));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        personalInformation = (PersonalInformation) information;
+        Assert.assertEquals((Integer)24, personalInformation.getBirthDay().getDay());
     }
 
     @Test

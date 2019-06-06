@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MapKeyJoinColumn;
 import javax.persistence.Table;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,4 +59,19 @@ public class FacultyInformation implements Information {
     @MapKeyJoinColumn(name="COURSE")
     @Column(name="GRADE")
     private Map<String, Integer> coursesGrades = new HashMap<>();
+
+    @Override
+    public List<String> getFieldNamesInImportanceOrder() {
+        final List<String> fieldNamesInImportanceOrder = new ArrayList<>();
+        fieldNamesInImportanceOrder.add("isAtFaculty");
+        fieldNamesInImportanceOrder.add("facultyName");
+        fieldNamesInImportanceOrder.add("facultySpecialization");
+        fieldNamesInImportanceOrder.add("facultyYear");
+        fieldNamesInImportanceOrder.add("facultyGroup");
+        fieldNamesInImportanceOrder.add("favouriteCourse");
+        fieldNamesInImportanceOrder.add("favouriteProfessor");
+        fieldNamesInImportanceOrder.add("bestFriend");
+        fieldNamesInImportanceOrder.add("coursesGrades");
+        return fieldNamesInImportanceOrder;
+    }
 }

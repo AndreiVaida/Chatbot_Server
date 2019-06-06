@@ -37,6 +37,10 @@ public class Word {
             joinColumns=@JoinColumn(name="SYNONYM_ID"))
     private Map<Word, Integer> synonyms = new HashMap<>(); // <synonym, frequency>
 
+    public Word(String text) {
+        this.text = text;
+    }
+
     /**
      * Adds the given word as a synonym to this one.
      * If this word already has the given synonym, then is increased its frequency.

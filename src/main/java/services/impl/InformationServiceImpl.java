@@ -269,13 +269,21 @@ public class InformationServiceImpl implements InformationService {
         } else {
             // CHILD INSIDE HIERARCHY, NOT THE LAST ONE
             if (fieldKey == null) {
-                // normal field, no map
+                // normal field or SimpleDate, no map
                 Object child = getterOfChild.invoke(parent);
                 if (child == null) {
                     final Class childClass = getterOfChild.getReturnType();
                     child = childClass.newInstance();
                     final Method setterOfChild = parent.getClass().getMethod("set" + fieldName_firstLetterCapitalize, childClass);
                     setterOfChild.invoke(parent, child);
+                }
+                if (child instanceof SimpleDate) {
+                    // consider fieldNameHierarchy.length == 2
+                    final String dateFieldName_firstLetterCapitalize = fieldNameHierarchy[1].substring(0, 1).toUpperCase() + fieldNameHierarchy[1].substring(1);
+                    final Method setterOfDate = child.getClass().getMethod("set" + dateFieldName_firstLetterCapitalize, Integer.class);
+                    final Integer value = ((SimpleDate)informationAsItsType).getMonth();
+                    setterOfDate.invoke(child, value);
+                    return;
                 }
 
                 final String[] fieldNameHierarchyChild = new String[fieldNameHierarchy.length - 1];

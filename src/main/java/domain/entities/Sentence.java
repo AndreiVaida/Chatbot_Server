@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -36,7 +37,7 @@ public class Sentence {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "SENTENCES_WORDS",
             joinColumns = {@JoinColumn(name = "SENTENCE_ID")},
@@ -63,6 +64,13 @@ public class Sentence {
     @CollectionTable(name = "SENTENCE_RESPONSES",
             joinColumns = @JoinColumn(name = "SENTENCE_ID"))
     private Map<Sentence, Integer> responses = new HashMap<>(); // <response, frequency>
+
+    public Sentence(List<Word> words, SpeechType speechType, Class informationClass, String informationFieldNamePath) {
+        this.words = words;
+        this.speechType = speechType;
+        this.informationClass = informationClass;
+        this.informationFieldNamePath = informationFieldNamePath;
+    }
 
     /**
      * Adds the given sentence as a synonym to this one.

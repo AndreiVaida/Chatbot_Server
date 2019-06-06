@@ -29,7 +29,7 @@ public class FreeTimeInformation implements Information {
     // HOBBIES
     @Column(name = "HOBBIES")
     @ElementCollection
-    private List<String> hobbies = new ArrayList<>(); //TODO: ȘI ASTA
+    private List<String> hobbies = new ArrayList<>();
 
     // BOOKS
     @Column(name = "LIKE_READING")
@@ -60,4 +60,20 @@ public class FreeTimeInformation implements Information {
 
     @Column(name = "CURRENT_PLAYED_BOARD_GAME")
     private String currentBoardGame;
+
+    @Override
+    public List<String> getFieldNamesInImportanceOrder() {
+        final List<String> fieldNamesInImportanceOrder = new ArrayList<>();
+        fieldNamesInImportanceOrder.add("hobbies");
+        fieldNamesInImportanceOrder.add("likeReading");
+        fieldNamesInImportanceOrder.add("favouriteBook");
+        fieldNamesInImportanceOrder.add("currentReadingBook");
+        fieldNamesInImportanceOrder.add("likeVideoGames");
+        fieldNamesInImportanceOrder.add("favouriteVideoGame");
+        fieldNamesInImportanceOrder.add("currentPlayedGame");
+        fieldNamesInImportanceOrder.add("likeBoardGames");
+        fieldNamesInImportanceOrder.add("favouriteBoardGame");
+        fieldNamesInImportanceOrder.add("currentBoardGame");
+        return fieldNamesInImportanceOrder;
+    }
 }

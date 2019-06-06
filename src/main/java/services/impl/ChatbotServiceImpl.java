@@ -27,10 +27,8 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -454,7 +452,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         int i = 0;
         for (String wordE : expression) {
             final String wordS = sentence.get(i);
-            if (wordE.toLowerCase().equals(wordS.toLowerCase())) {
+            if (wordE == null || wordE.toLowerCase().equals(wordS.toLowerCase())) {
                 i++;
             } else if (i > 0) {
                 return false;
@@ -502,16 +500,65 @@ public class ChatbotServiceImpl implements ChatbotService {
     @Transactional
     public Sentence pickSentenceRequestingInformation(final User user) {
         Class informationClass = null;
-        String informationFieldNamePath;
+        String informationFieldNamePath = null;
+        final List<Class> informationClasses = new ArrayList<>();
+        informationClasses.add(PersonalInformation.class);
+        informationClasses.add(SchoolInformation.class);
+        informationClasses.add(FacultyInformation.class);
+        informationClasses.add(FreeTimeInformation.class);
+        informationClasses.add(RelationshipsInformation.class);
 
-        informationFieldNamePath = getFirstNullItemNamePath(user.getPersonalInformation(), PersonalInformation.class);
-        if (informationFieldNamePath != null) {
-            informationClass = PersonalInformation.class;
-        } else {
-            informationFieldNamePath = getFirstNullItemNamePath(user.getSchoolInformation(), PersonalInformation.class);
+        for (Class infoClass : informationClasses) {
+            try {
+                final Method getterOfUser = user.getClass().getMethod("get" + infoClass.getSimpleName());
+                final Information information = (Information) getterOfUser.invoke(user);
+
+                informationFieldNamePath = getFirstNullItemNamePath(information, infoClass);
+                if (informationFieldNamePath != null) {
+                    informationClass = infoClass;
+                    break;
+                }
+
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
+        if (informationClass == null || informationFieldNamePath == null) {
+            // pick random one
+            try {
+                informationClass = informationClasses.get(random.nextInt(informationClasses.size()));
+                informationFieldNamePath = pickRandomField(informationClass);
+            } catch (IntrospectionException e) {
+                e.printStackTrace();
+                return pickRandomSentence();
+            }
+        }
+
         final List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldNamePath(DIRECTIVE, informationClass, informationFieldNamePath);
         return sentences.get(random.nextInt(sentences.size()));
+    }
+
+    /**
+     * @return the path to a random field
+     */
+    private String pickRandomField(final Class objectClass) throws IntrospectionException {
+        final BeanInfo beanInformation = Introspector.getBeanInfo(objectClass, Object.class);
+        final PropertyDescriptor[] propertyDescriptors = beanInformation.getPropertyDescriptors();
+        PropertyDescriptor selectedPropertyDescriptor = null;
+        // take a random field, but not the id
+        do {
+            int index = random.nextInt(propertyDescriptors.length);
+            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                if (index == 0) {
+                    selectedPropertyDescriptor = propertyDescriptor;
+                }
+                index--;
+            }
+        } while (selectedPropertyDescriptor.getName().equals("id") || selectedPropertyDescriptor.getName().equals("email") || selectedPropertyDescriptor.getName().equals("password"));
+
+        final Method getterOfObject = selectedPropertyDescriptor.getReadMethod();
+        if (getterOfObject.getReturnType().equals(null)) return null;
+        return null;
     }
 
     /**
@@ -534,52 +581,51 @@ public class ChatbotServiceImpl implements ChatbotService {
 
         // The information is not null, but may be a field of it
         try {
-            final BeanInfo beanInformation = Introspector.getBeanInfo(information.getClass(), Object.class);
-            final PropertyDescriptor[] propertyDescriptors = beanInformation.getPropertyDescriptors(); // get all properties of the Information
-            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                final Method getterOfInformation = propertyDescriptor.getReadMethod();  // ex: getName()
-                final Object info = getterOfInformation.invoke(beanInformation);        // ex: get the name (a string)
+            final List<String> fieldNamesInImportanceOrder = information.getFieldNamesInImportanceOrder();
+            for (String fieldName : fieldNamesInImportanceOrder) {
+                final String fieldName_firstLetterCapitalize = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+                final Method getterOfInformation = information.getClass().getMethod("get" + fieldName_firstLetterCapitalize);
+                final Object info = getterOfInformation.invoke(information);
 
                 if (info == null) {
                     if (getterOfInformation.getReturnType().equals(HashMap.class) || getterOfInformation.getReturnType().equals(ArrayList.class)) {
-                        return propertyDescriptor.getName() + "#?";
+                        return fieldName + "#?";
                     }
-                    return propertyDescriptor.getName();
-                }
-                else {
+                    return fieldName;
+                } else {
                     // the information is not null, but, if it is a complex object (ex: SimpleDate, PersonalInformation, Map, List etc.)
                     if (info instanceof SimpleDate) {
                         final SimpleDate simpleDate = (SimpleDate) info;
                         if (simpleDate.getYear() == null) {
-                            return propertyDescriptor.getName() + ".year";
+                            return fieldName + ".year";
                         }
                         if (simpleDate.getDay() == null) {
-                            return propertyDescriptor.getName() + ".day";
+                            return fieldName + ".day";
                         }
                     }
                     if (info instanceof PersonalInformation) {
                         final PersonalInformation personalInformation = (PersonalInformation) info;
                         final String nullItemPathFromPersonalInformation = getFirstNullItemNamePath(personalInformation, informationClass);
                         if (nullItemPathFromPersonalInformation != null) {
-                            return propertyDescriptor.getName() + "." + nullItemPathFromPersonalInformation;
+                            return fieldName + "." + nullItemPathFromPersonalInformation;
                         }
                     }
                     if (info instanceof Map) {
                         final Map map = (Map) info;
                         if (map.isEmpty()) {
-                            return propertyDescriptor.getName() + "#?";
+                            return fieldName + "#?";
                         }
 
                         for (Object key : map.keySet()) {
                             final Object value = map.get(key);
                             if (value instanceof Integer && (Integer) value == 0) {
-                                return propertyDescriptor.getName() + "#" + key.toString();
+                                return fieldName + "#" + key.toString();
                             }
                             if (value instanceof PersonalInformation) {
                                 final PersonalInformation personalInformation = (PersonalInformation) value;
                                 final String nullItemPathFromPersonalInformation = getFirstNullItemNamePath(personalInformation, informationClass);
                                 if (nullItemPathFromPersonalInformation != null) {
-                                    return propertyDescriptor.getName() + "." + nullItemPathFromPersonalInformation;
+                                    return fieldName + "." + nullItemPathFromPersonalInformation;
                                 }
                             }
                         }
@@ -587,12 +633,12 @@ public class ChatbotServiceImpl implements ChatbotService {
                     if (info instanceof List) {
                         final List list = (List) info;
                         if (list.isEmpty()) {
-                            return propertyDescriptor.getName() + "#?";
+                            return fieldName + "#?";
                         }
                     }
                 }
             }
-        } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
             return null;
         }

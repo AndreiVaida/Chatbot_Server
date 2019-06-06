@@ -54,7 +54,8 @@ public interface ChatbotService {
 
     /**
      * @param user - the user for whom new information is desired
-     * @return a DIRECTIVE requesting a (probably) new information for the given user
+     * @return a DIRECTIVE requesting a new information for the given user
+     * If all the user information is known, then return a random directive.
      */
     Sentence pickSentenceRequestingInformation(final User user);
 }

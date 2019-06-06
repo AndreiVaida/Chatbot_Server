@@ -17,6 +17,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 // Lombok
 @NoArgsConstructor
@@ -36,7 +38,7 @@ public class PersonalInformation implements Information {
     @Column(name = "SURNAME")
     private String surname;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "BIRTH_DAY")
     private SimpleDate birthDay;
 
@@ -46,4 +48,15 @@ public class PersonalInformation implements Information {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "HOME_ADDRESS")
     private Address homeAddress;
+
+    @Override
+    public List<String> getFieldNamesInImportanceOrder() {
+        final List<String> fieldNamesInImportanceOrder = new ArrayList<>();
+        fieldNamesInImportanceOrder.add("firstName");
+        fieldNamesInImportanceOrder.add("surname");
+        fieldNamesInImportanceOrder.add("birthDay");
+        fieldNamesInImportanceOrder.add("gender");
+        fieldNamesInImportanceOrder.add("homeAddress");
+        return fieldNamesInImportanceOrder;
+    }
 }

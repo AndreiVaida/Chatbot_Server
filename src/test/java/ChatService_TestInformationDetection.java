@@ -4,6 +4,7 @@ import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.SimpleDate;
 import domain.entities.User;
+import domain.entities.Word;
 import domain.enums.ItemClass;
 import domain.enums.SpeechType;
 import domain.information.PersonalInformation;
@@ -34,14 +35,14 @@ import services.impl.InformationServiceImpl;
 import services.impl.MessageServiceImpl;
 import services.impl.UserServiceImpl;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import static app.Main.CHATBOT_ID;
-import static domain.enums.ChatbotRequestType.LEARN_TO_SPEAK;
+import static domain.enums.ChatbotRequestType.GET_INFORMATION_FROM_USER;
 import static domain.enums.ItemClass.NAME;
 import static domain.enums.ItemClass.NOT_AN_INFORMATION;
+import static domain.enums.SpeechType.DIRECTIVE;
 
 @DataJpaTest
 @RunWith(SpringRunner.class)
@@ -79,14 +80,15 @@ public class ChatService_TestInformationDetection {
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);
         CHATBOT_ID = andy.getId();
-        user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", new SimpleDate(1997, 10, 24));
+        user = new User(null, "andrei_vd2006@yahoo.com", "parola", null, null, null);
         userService.addUser(user);
 
         // add data
-        addLinguisticExpressions(); // TODO: requestMessageFromAndy să returneze o propoziție care îl întreabă informații
+        addLinguisticExpressions_STATEMENT();
+        addSentences_DIRECTIVE();
     }
 
-    private void addLinguisticExpressions() {
+    private void addLinguisticExpressions_STATEMENT() {
         // PersonalInformation
         // PersonalInformation.firstName
         LinguisticExpression linguisticExpression = new LinguisticExpression();
@@ -142,19 +144,47 @@ public class ChatService_TestInformationDetection {
         informationService.addLinguisticExpression(linguisticExpression);
     }
 
+    private void addSentences_DIRECTIVE() {
+        // PersonalInformation
+        // PersonalInformation.firstName
+        final Word word_Care = new Word("care");
+        final Word word_Este = new Word("este");
+        final Word word_Numele = new Word("numele");
+        final Word word_Tău = new Word("tău");
+        final Word word_semnulÎntrebării = new Word("?");
+        List<Word> words = new ArrayList<>();
+        words.add(word_Care);
+        words.add(word_Este);
+        words.add(word_Numele);
+        words.add(word_Tău);
+        words.add(word_semnulÎntrebării);
+        Sentence sentence = new Sentence(words, DIRECTIVE, PersonalInformation.class, "firstName");
+        sentenceRepository.save(sentence);
+
+        // PersonalInformation.birthDay
+        final Word word_Când = new Word("când");
+        final Word word_Ziua = new Word("ziua");
+        final Word word_Ta = new Word("ta");
+        words = new ArrayList<>();
+        words.add(word_Când);
+        words.add(word_Este);
+        words.add(word_Ziua);
+        words.add(word_Ta);
+        words.add(word_semnulÎntrebării);
+        sentence = new Sentence(words, DIRECTIVE, PersonalInformation.class, "birthDay");
+        sentenceRepository.save(sentence);
+    }
+
     @Test
-    public void testLearnHello() {
-        // learn "salut"
-        Message response = chatService.addMessageAndGetResponse("salut", user.getId(), andy.getId());
-        Assert.assertTrue(response.getIsUnknownMessage());
-
-        Message message = chatService.requestMessageFromChatbot(user.getId(), LEARN_TO_SPEAK);
-        Assert.assertEquals("salut", message.getText().toLowerCase());
-        Sentence sentence = message.getEquivalentSentence();
-        Assert.assertNotNull(sentence);
-
-        Assert.assertEquals(3, messageRepository.findAll().size());
-        Assert.assertEquals(1, sentenceRepository.findAll().size());
-
+    public void testDetectPersonalInformation() {
+        Assert.assertNull(user.getPersonalInformation().getFirstName());
+        // the chatbot request the name
+        Message messageFromChatbot = chatService.requestMessageFromChatbot(user.getId(), GET_INFORMATION_FROM_USER);
+        Assert.assertEquals(DIRECTIVE, messageFromChatbot.getEquivalentSentence().getSpeechType());
+        Assert.assertEquals(PersonalInformation.class, messageFromChatbot.getEquivalentSentence().getInformationClass());
+        Assert.assertEquals("firstName", messageFromChatbot.getEquivalentSentence().getInformationFieldNamePath());
+        // the user give his name
+        chatService.addMessageAndGetResponse("eu sunt Andrei", user.getId(), andy.getId());
+        Assert.assertEquals("Andrei", user.getPersonalInformation().getFirstName());
     }
 }
