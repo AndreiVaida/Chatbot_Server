@@ -1,7 +1,7 @@
 package app;
 
+import domain.entities.SimpleDate;
 import domain.entities.User;
-import dtos.MessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,8 +14,6 @@ import repositories.FacebookChatRepository;
 import services.api.FastLearningService;
 import services.api.UserService;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
@@ -23,10 +21,10 @@ import java.util.Objects;
 @EntityScan(basePackages = {"domain"})
 @ComponentScan(basePackages = {"services", "facades", "controllers", "configuration", "app", "repositories"})
 public class Main {
+    public static Long CHATBOT_ID;
     private final UserService userService;
     private final FastLearningService fastLearningService;
     private final FacebookChatRepository facebookChatRepository;
-    public static Long CHATBOT_ID;
 
     @Autowired
     public Main(UserService userService, FastLearningService fastLearningService, FacebookChatRepository facebookChatRepository, Environment environment) {
@@ -52,19 +50,19 @@ public class Main {
 //        }).start();
     }
 
+    public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
+        System.out.println("Server is on.");
+    }
+
     public void addChatbotInDb() {
-        final User andy = new User(CHATBOT_ID, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
+        final User andy = new User(CHATBOT_ID, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);
     }
 
     public void addAndreiInDb() {
         final User user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", null);
         userService.addUser(user);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(Main.class, args);
-        System.out.println("Server is on.");
     }
 
 }

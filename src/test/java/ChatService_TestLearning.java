@@ -1,5 +1,6 @@
 import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.enums.ChatbotRequestType;
 import org.junit.Assert;
@@ -69,10 +70,10 @@ public class ChatService_TestLearning {
         final InformationService informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationService);
         // add users
-        andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
+        andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);
         CHATBOT_ID = andy.getId();
-        user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", LocalDate.of(1997, 10, 24));
+        user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", new SimpleDate(1997, 10, 24));
         userService.addUser(user);
     }
 

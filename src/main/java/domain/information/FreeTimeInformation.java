@@ -29,7 +29,7 @@ public class FreeTimeInformation implements Information {
     // HOBBIES
     @Column(name = "HOBBIES")
     @ElementCollection
-    private List<String> hobbies = new ArrayList<>();
+    private List<String> hobbies = new ArrayList<>(); //TODO: ȘI ASTA
 
     // BOOKS
     @Column(name = "LIKE_READING")

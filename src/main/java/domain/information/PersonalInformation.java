@@ -1,11 +1,13 @@
 package domain.information;
 
 import domain.entities.Address;
+import domain.entities.SimpleDate;
 import domain.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,7 +17,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDate;
 
 // Lombok
 @NoArgsConstructor
@@ -35,8 +36,9 @@ public class PersonalInformation implements Information {
     @Column(name = "SURNAME")
     private String surname;
 
-    @Column(name = "BIRTH_DAY")
-    private LocalDate birthDay;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "BIRTH_DAY")
+    private SimpleDate birthDay;
 
     @Column(name = "GENDER")
     private Gender gender;

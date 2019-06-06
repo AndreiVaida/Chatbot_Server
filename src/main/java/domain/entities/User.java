@@ -72,7 +72,7 @@ public class User {
     @Column(name = "FAVOURITE_FOOD")
     private String favouriteFood; // TODO: GASTRONOMY INFORMATION
 
-    public User(Long id, String email, String password, String firstName, String surname, LocalDate birthDay) {
+    public User(Long id, String email, String password, String firstName, String surname, SimpleDate birthDay) {
         this.id = id;
         this.email = email;
         this.password = password;

@@ -4,12 +4,16 @@ import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.entities.Word;
-import domain.enums.ItemClass;
 import domain.enums.SpeechType;
+import domain.information.FacultyInformation;
+import domain.information.FreeTimeInformation;
 import domain.information.Information;
 import domain.information.PersonalInformation;
+import domain.information.RelationshipsInformation;
+import domain.information.SchoolInformation;
 import org.springframework.stereotype.Service;
 import repositories.LinguisticExpressionRepository;
 import repositories.SentenceRepository;
@@ -17,13 +21,16 @@ import repositories.WordRepository;
 import services.api.ChatbotService;
 
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-import java.lang.reflect.Field;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,24 +39,58 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static domain.enums.ItemClass.NOT_AN_INFORMATION;
 import static domain.enums.SpeechType.ACKNOWLEDGEMENT;
 import static domain.enums.SpeechType.DIRECTIVE;
 import static domain.enums.SpeechType.STATEMENT;
 
 @Service
 public class ChatbotServiceImpl implements ChatbotService {
+    private static final String wordsSplitRegex = "[\\s]+"; // TODO: change regex with a custom function which consider also the signs as items (, . ...)
     private final SentenceRepository sentenceRepository;
     private final WordRepository wordRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final Random random;
-    private static final String wordsSplitRegex = "[\\s]+"; // TODO: change regex with a custom function which consider also the signs as items (, . ...)
 
     public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         random = new Random();
+    }
+
+    static String[] splitInWords(final String string) {
+        final String[] words = string.split(wordsSplitRegex);
+        final List<String> completeWordList = new ArrayList<>();
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i];
+            // v1: removing punctuation
+//            word = word.replaceAll("[.,;?!]+", "");
+//            words[i] = word;
+
+            // v2: keep punctuation as a word
+            StringBuilder wordInConstruction = new StringBuilder();
+            for (int j = 0; j < word.length(); j++) {
+                char character = word.charAt(j);
+                if (Character.isLetterOrDigit(character) || character == '-') {
+                    wordInConstruction.append(character);
+                } else {
+                    if (wordInConstruction.length() > 0) {
+                        completeWordList.add(wordInConstruction.toString());
+                        wordInConstruction = new StringBuilder();
+                    }
+                    completeWordList.add(String.valueOf(character));
+                }
+            }
+            if (wordInConstruction.length() > 0) {
+                completeWordList.add(wordInConstruction.toString());
+            }
+        }
+
+        final String[] completeWordArray = new String[completeWordList.size()];
+        for (int i = 0; i < completeWordArray.length; i++) {
+            completeWordArray[i] = completeWordList.get(i);
+        }
+        return completeWordArray;
     }
 
     @Override
@@ -142,7 +183,7 @@ public class ChatbotServiceImpl implements ChatbotService {
      * The function does not change the sentence field "speechType".
      */
     private SpeechType identifySentenceType(final Sentence sentence) {
-        if (sentence.getWords().get(sentence.getWords().size()-1).getText().contains("?")) {
+        if (sentence.getWords().get(sentence.getWords().size() - 1).getText().contains("?")) {
             return DIRECTIVE;
         }
 
@@ -460,68 +501,101 @@ public class ChatbotServiceImpl implements ChatbotService {
     @Override
     @Transactional
     public Sentence pickSentenceRequestingInformation(final User user) {
-        Class informationClass;
-        String informationFieldName;
+        Class informationClass = null;
+        String informationFieldNamePath;
 
-        // Personal Information
-        informationFieldName = getFirstNullItem(user.getPersonalInformation(), PersonalInformation.class);
-        if (informationFieldName != null) {
+        informationFieldNamePath = getFirstNullItemNamePath(user.getPersonalInformation(), PersonalInformation.class);
+        if (informationFieldNamePath != null) {
             informationClass = PersonalInformation.class;
+        } else {
+            informationFieldNamePath = getFirstNullItemNamePath(user.getSchoolInformation(), PersonalInformation.class);
         }
-        // Education Information
-        else {
-            informationFieldName = getFirstNullItem(user.getSchoolInformation(), PersonalInformation.class);
-        }
-//        List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldName(DIRECTIVE, informationClass, informationFieldNamePath);
-        return null;
+        final List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldNamePath(DIRECTIVE, informationClass, informationFieldNamePath);
+        return sentences.get(random.nextInt(sentences.size()));
     }
 
     /**
-     * information and informationClass should point same Information class
+     * information and informationClass should point the same Information class
+     *
+     * @param information      may be null
+     * @param informationClass indicates the class to refer if @information is null
+     * @return first not set value of the information class in a preset order or null if all the fields of the information are filled
+     * Example for PersonalInformation: "firstName", "birthDay", "address.street", "address.number", "grades#math"
      */
-    private String getFirstNullItem(@NotNull final Information information, final Class informationClass) {
-        if (information instanceof PersonalInformation) {
-            final PersonalInformation personalInformation = (PersonalInformation) information;
-            if (personalInformation == null) {
-
-            }
+    private String getFirstNullItemNamePath(final Information information, final Class informationClass) {
+        // If information is null, then return the most significant field of the class
+        if (information == null) {
+            if (informationClass.equals(PersonalInformation.class)) return "firstName";
+            if (informationClass.equals(SchoolInformation.class)) return "isAtSchool";
+            if (informationClass.equals(FacultyInformation.class)) return "isAtFaculty";
+            if (informationClass.equals(FreeTimeInformation.class)) return "likeReading";
+            if (informationClass.equals(RelationshipsInformation.class)) return "numberOfBrothersAndSisters";
         }
-        return null;
-    }
 
-    static String[] splitInWords(final String string) {
-        final String[] words = string.split(wordsSplitRegex);
-        final List<String> completeWordList = new ArrayList<>();
-        for (int i = 0; i < words.length; i++) {
-            String word = words[i];
-            // v1: removing punctuation
-//            word = word.replaceAll("[.,;?!]+", "");
-//            words[i] = word;
+        // The information is not null, but may be a field of it
+        try {
+            final BeanInfo beanInformation = Introspector.getBeanInfo(information.getClass(), Object.class);
+            final PropertyDescriptor[] propertyDescriptors = beanInformation.getPropertyDescriptors(); // get all properties of the Information
+            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                final Method getterOfInformation = propertyDescriptor.getReadMethod();  // ex: getName()
+                final Object info = getterOfInformation.invoke(beanInformation);        // ex: get the name (a string)
 
-            // v2: keep punctuation as a word
-            StringBuilder wordInConstruction = new StringBuilder();
-            for (int j = 0; j < word.length(); j++) {
-                char character = word.charAt(j);
-                if (Character.isLetterOrDigit(character) || character == '-') {
-                    wordInConstruction.append(character);
+                if (info == null) {
+                    if (getterOfInformation.getReturnType().equals(HashMap.class) || getterOfInformation.getReturnType().equals(ArrayList.class)) {
+                        return propertyDescriptor.getName() + "#?";
+                    }
+                    return propertyDescriptor.getName();
                 }
                 else {
-                    if (wordInConstruction.length() > 0) {
-                        completeWordList.add(wordInConstruction.toString());
-                        wordInConstruction = new StringBuilder();
+                    // the information is not null, but, if it is a complex object (ex: SimpleDate, PersonalInformation, Map, List etc.)
+                    if (info instanceof SimpleDate) {
+                        final SimpleDate simpleDate = (SimpleDate) info;
+                        if (simpleDate.getYear() == null) {
+                            return propertyDescriptor.getName() + ".year";
+                        }
+                        if (simpleDate.getDay() == null) {
+                            return propertyDescriptor.getName() + ".day";
+                        }
                     }
-                    completeWordList.add(String.valueOf(character));
+                    if (info instanceof PersonalInformation) {
+                        final PersonalInformation personalInformation = (PersonalInformation) info;
+                        final String nullItemPathFromPersonalInformation = getFirstNullItemNamePath(personalInformation, informationClass);
+                        if (nullItemPathFromPersonalInformation != null) {
+                            return propertyDescriptor.getName() + "." + nullItemPathFromPersonalInformation;
+                        }
+                    }
+                    if (info instanceof Map) {
+                        final Map map = (Map) info;
+                        if (map.isEmpty()) {
+                            return propertyDescriptor.getName() + "#?";
+                        }
+
+                        for (Object key : map.keySet()) {
+                            final Object value = map.get(key);
+                            if (value instanceof Integer && (Integer) value == 0) {
+                                return propertyDescriptor.getName() + "#" + key.toString();
+                            }
+                            if (value instanceof PersonalInformation) {
+                                final PersonalInformation personalInformation = (PersonalInformation) value;
+                                final String nullItemPathFromPersonalInformation = getFirstNullItemNamePath(personalInformation, informationClass);
+                                if (nullItemPathFromPersonalInformation != null) {
+                                    return propertyDescriptor.getName() + "." + nullItemPathFromPersonalInformation;
+                                }
+                            }
+                        }
+                    }
+                    if (info instanceof List) {
+                        final List list = (List) info;
+                        if (list.isEmpty()) {
+                            return propertyDescriptor.getName() + "#?";
+                        }
+                    }
                 }
             }
-            if (wordInConstruction.length() > 0) {
-                completeWordList.add(wordInConstruction.toString());
-            }
+        } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {
+            e.printStackTrace();
+            return null;
         }
-
-        final String[] completeWordArray = new String[completeWordList.size()];
-        for (int i = 0; i < completeWordArray.length; i++) {
-            completeWordArray[i] = completeWordList.get(i);
-        }
-        return completeWordArray;
+        return null;
     }
 }

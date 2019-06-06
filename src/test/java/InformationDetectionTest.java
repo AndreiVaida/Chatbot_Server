@@ -4,6 +4,7 @@ import domain.entities.Message;
 import domain.enums.Gender;
 import domain.enums.ItemClass;
 import domain.enums.SpeechType;
+import domain.information.FreeTimeInformation;
 import domain.information.Information;
 import domain.information.PersonalInformation;
 import domain.information.RelationshipsInformation;
@@ -49,7 +50,7 @@ public class InformationDetectionTest {
     }
 
     @Test
-    public void testDetectPersonalInformation_Name() {
+    public void testDetectPersonalInformation_Name() throws InstantiationException, IllegalAccessException {
         /* DIRECTIVE: "Care e numele tău ?" */
         // TEST 1: "eu sunt NAME"
         // add linguistic expression
@@ -59,9 +60,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem("sunt", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -82,9 +80,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem(null, NAME));
         expressionItems.add(new ExpressionItem(".", NOT_AN_INFORMATION));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -112,9 +107,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem("numele", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem("meu", NOT_AN_INFORMATION));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -139,9 +131,6 @@ public class InformationDetectionTest {
         expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -154,9 +143,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem(null, NAME));
         expressionItems.add(new ExpressionItem(".",NOT_AN_INFORMATION));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -190,7 +176,7 @@ public class InformationDetectionTest {
     }
 
     @Test
-    public void testDetectPersonalInformation_BirthDay() {
+    public void testDetectPersonalInformation_BirthDay() throws InstantiationException, IllegalAccessException {
         /* DIRECTIVE: "Când e ziua ta ?" */
         // TEST 1: "Pe DATE"
         // add linguistic expression
@@ -199,9 +185,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem("pe", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, ItemClass.DATE));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -212,16 +195,16 @@ public class InformationDetectionTest {
         Information information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie"));
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         PersonalInformation personalInformation = (PersonalInformation) information;
-        Assert.assertEquals(24, personalInformation.getBirthDay().getDayOfMonth());
-        Assert.assertEquals(10, personalInformation.getBirthDay().getMonthValue());
+        Assert.assertEquals((Integer) 24, personalInformation.getBirthDay().getDay());
+        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
 
         // Test 1.2: birthDay ("Pe DATE")
         information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie 1997"));
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         personalInformation = (PersonalInformation) information;
-        Assert.assertEquals(24, personalInformation.getBirthDay().getDayOfMonth());
-        Assert.assertEquals(10, personalInformation.getBirthDay().getMonthValue());
-        Assert.assertEquals(1997, personalInformation.getBirthDay().getYear());
+        Assert.assertEquals((Integer)24, personalInformation.getBirthDay().getDay());
+        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
+        Assert.assertEquals((Integer)1997, personalInformation.getBirthDay().getYear());
 
         // TEST 2: "DATE"
         // add linguistic expression
@@ -229,9 +212,6 @@ public class InformationDetectionTest {
         expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, ItemClass.DATE));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -242,12 +222,12 @@ public class InformationDetectionTest {
         information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("24 octombrie"));
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         personalInformation = (PersonalInformation) information;
-        Assert.assertEquals(24, personalInformation.getBirthDay().getDayOfMonth());
-        Assert.assertEquals(10, personalInformation.getBirthDay().getMonthValue());
+        Assert.assertEquals((Integer)24, personalInformation.getBirthDay().getDay());
+        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
     }
 
     @Test
-    public void testPersonalInformation_Address() {
+    public void testPersonalInformation_Address() throws InstantiationException, IllegalAccessException {
         /* DIRECTIVE: "În ce oraș locuiești ?" */
         // TEST 1: "În NAME"
         // add linguistic expression
@@ -256,9 +236,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem("în", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("homeAddress.locality");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -279,7 +256,7 @@ public class InformationDetectionTest {
     }
 
     @Test
-    public void testRelationshipInformation_MotherPersonalInformation_PersonalInformation_Name() {
+    public void testRelationshipInformation_MotherPersonalInformation_PersonalInformation_Name() throws InstantiationException, IllegalAccessException {
         /* DIRECTIVE: "Cum o cheamă pe mama ta ?" */
         // TEST 1: "NAME"
         // add linguistic expression
@@ -287,9 +264,6 @@ public class InformationDetectionTest {
         List<ExpressionItem> expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(RelationshipsInformation.class);
         linguisticExpression.setInformationFieldNamePath("motherPersonalInformation.firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -309,9 +283,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem(null, NAME));
         expressionItems.add(new ExpressionItem("e", NOT_AN_INFORMATION));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(RelationshipsInformation.class);
         linguisticExpression.setInformationFieldNamePath("motherPersonalInformation.firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -326,7 +297,7 @@ public class InformationDetectionTest {
     }
 
     @Test
-    public void testDetectPersonalInformation_Gender() {
+    public void testDetectPersonalInformation_Gender() throws InstantiationException, IllegalAccessException {
         /* DIRECTIVE: "Ești băiat sau fată ?" */
         // TEST 1: "sunt NAME"
         // add linguistic expression
@@ -335,9 +306,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem("sunt", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, GENDER));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("gender");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -352,7 +320,7 @@ public class InformationDetectionTest {
     }
 
     @Test
-    public void testDetectSchoolInformation_IsAtSchool() {
+    public void testDetectSchoolInformation_IsAtSchool() throws InstantiationException, IllegalAccessException {
         /* DIRECTIVE: "Ești la școală ?" */
         // TEST 1: "BOOLEAN"
         // add linguistic expression
@@ -360,9 +328,6 @@ public class InformationDetectionTest {
         List<ExpressionItem> expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, BOOLEAN));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(SchoolInformation.class);
         linguisticExpression.setInformationFieldNamePath("isAtSchool");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -387,9 +352,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem("iau", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, NUMBER));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(SchoolInformation.class);
         linguisticExpression.setInformationFieldNamePath("coursesGrades");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -409,9 +371,6 @@ public class InformationDetectionTest {
         expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(SchoolInformation.class);
         linguisticExpression.setInformationFieldNamePath("coursesGrades");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -426,7 +385,7 @@ public class InformationDetectionTest {
     }
 
     @Test
-    public void testDetectSchoolInformation_FavouriteCoursesAndGrades() {
+    public void testDetectSchoolInformation_FavouriteCoursesAndGrades() throws InstantiationException, IllegalAccessException {
         /* DIRECTIVE: "Care e materia ta preferată ?" */
         // TEST 1: "NAME"
         // add linguistic expression
@@ -434,9 +393,6 @@ public class InformationDetectionTest {
         List<ExpressionItem> expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(SchoolInformation.class);
         linguisticExpression.setInformationFieldNamePath("favouriteCourse");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -461,9 +417,6 @@ public class InformationDetectionTest {
         expressionItems.add(new ExpressionItem("iau", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, NUMBER));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(SchoolInformation.class);
         linguisticExpression.setInformationFieldNamePath("coursesGrades");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -483,9 +436,6 @@ public class InformationDetectionTest {
         expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(SchoolInformation.class);
         linguisticExpression.setInformationFieldNamePath("coursesGrades");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -500,7 +450,7 @@ public class InformationDetectionTest {
     }
 
     @Test
-    public void testRelationshipInformation_BrothersAndSistersPersonalInformation_Name() {
+    public void testRelationshipInformation_BrothersAndSistersPersonalInformation_Name() throws InstantiationException, IllegalAccessException {
         /* DIRECTIVE: "Cum îl cheamă pe fratele tău ?" */
         // TEST 1: "Andrei"
         // add linguistic expression
@@ -508,9 +458,6 @@ public class InformationDetectionTest {
         List<ExpressionItem> expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(RelationshipsInformation.class);
         linguisticExpression.setInformationFieldNamePath("brothersAndSistersPersonalInformation.firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -522,5 +469,97 @@ public class InformationDetectionTest {
         Assert.assertEquals(RelationshipsInformation.class, information.getClass());
         RelationshipsInformation relationshipsInformation = (RelationshipsInformation) information;
         Assert.assertEquals("Andrei", relationshipsInformation.getBrothersAndSistersPersonalInformation().get("Andrei").getFirstName());
+    }
+
+    @Test
+    public void testFreeTimeInformation_Hobbies() throws InstantiationException, IllegalAccessException {
+        /* DIRECTIVE: "Ce îți place să faci în timpul liber ?" */
+        // TEST 1: "Îmi place să joc NAME"
+        // add linguistic expression
+        LinguisticExpression linguisticExpression = new LinguisticExpression();
+        List<ExpressionItem> expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("place", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("să", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("joc", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, NAME));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(FreeTimeInformation.class);
+        linguisticExpression.setInformationFieldNamePath("hobbies");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem(null, NAME));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(FreeTimeInformation.class);
+        linguisticExpression.setInformationFieldNamePath("hobbies");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
+
+        // Test 1.1: hobbies ("Îmi place să joc NAME")
+        Information information = informationService.identifyInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal"));
+        Assert.assertEquals(FreeTimeInformation.class, information.getClass());
+        FreeTimeInformation freeTimeInformation = (FreeTimeInformation) information;
+        Assert.assertEquals(1, freeTimeInformation.getHobbies().size());
+        Assert.assertTrue(freeTimeInformation.getHobbies().contains("fotbal"));
+
+        // Test 1.2: hobbies ("Îmi place să joc NAME, NAME și NAME")
+        information = informationService.identifyInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal, baschet și volei."));
+        Assert.assertEquals(FreeTimeInformation.class, information.getClass());
+        freeTimeInformation = (FreeTimeInformation) information;
+        Assert.assertEquals(3, freeTimeInformation.getHobbies().size());
+        Assert.assertTrue(freeTimeInformation.getHobbies().contains("fotbal"));
+        Assert.assertTrue(freeTimeInformation.getHobbies().contains("baschet"));
+        Assert.assertTrue(freeTimeInformation.getHobbies().contains("volei"));
+
+        // TEST 2: "Îmi place să joc NAME, să NAME, îmi place să NAME și îmi ador să NAME"
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("place", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("să", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, NAME));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(FreeTimeInformation.class);
+        linguisticExpression.setInformationFieldNamePath("hobbies");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("ador", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem("să", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, NAME));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(FreeTimeInformation.class);
+        linguisticExpression.setInformationFieldNamePath("hobbies");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(4, informationService.getAllLinguisticExpressions().size());
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("să", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, NAME));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(FreeTimeInformation.class);
+        linguisticExpression.setInformationFieldNamePath("hobbies");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(5, informationService.getAllLinguisticExpressions().size());
+
+        // Test 2.1: hobbies ("Îmi place să joc NAME, să NAME, îmi place să NAME și îmi ador să NAME")
+        information = informationService.identifyInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal, să pescuiesc, îmi place să citesc și ador să fac poze."));
+        Assert.assertEquals(FreeTimeInformation.class, information.getClass());
+        freeTimeInformation = (FreeTimeInformation) information;
+        Assert.assertEquals(4, freeTimeInformation.getHobbies().size());
+        Assert.assertTrue(freeTimeInformation.getHobbies().contains("fotbal"));
+        Assert.assertTrue(freeTimeInformation.getHobbies().contains("pescuiesc"));
+        Assert.assertTrue(freeTimeInformation.getHobbies().contains("citesc"));
+        Assert.assertTrue(freeTimeInformation.getHobbies().contains("fac poze"));
     }
 }

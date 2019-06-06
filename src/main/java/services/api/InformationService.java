@@ -31,5 +31,5 @@ public interface InformationService {
      * @param answer is a statement
      * @return the information object of the previousMessage if we it; otherwise return <null>
      */
-    Information identifyInformation(Class informationClass, String informationFieldNamePath, final Message answer);
+    Information identifyInformation(Class informationClass, String informationFieldNamePath, final Message answer) throws IllegalAccessException, InstantiationException;
 }

@@ -77,9 +77,13 @@ public class ChatServiceImpl implements ChatService {
             informationClass = previousMessage.getEquivalentSentence().getInformationClass();
             informationFieldName = previousMessage.getEquivalentSentence().getInformationFieldNamePath();
         }
-        final Information information = informationService.identifyInformation(informationClass, informationFieldName, message);
-        if (information != null) {
-            userService.updateUserInformation(information, fromUser);
+        try {
+            final Information information = informationService.identifyInformation(informationClass, informationFieldName, message);
+            if (information != null) {
+                userService.updateUserInformation(information, fromUser);
+            }
+        } catch (IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
         }
 
         // generate a response

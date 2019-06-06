@@ -1,7 +1,9 @@
 package mappers;
 
+import domain.entities.SimpleDate;
 import domain.entities.User;
 import dtos.RequestUserRegisterDto;
+import dtos.SimpleDateDto;
 import dtos.UserDto;
 import org.json.simple.JSONObject;
 
@@ -15,7 +17,7 @@ public class UserMapper {
         user.setPassword(requestUserRegisterDto.getPassword());
         user.getPersonalInformation().setFirstName(requestUserRegisterDto.getFirstName());
         user.getPersonalInformation().setSurname(requestUserRegisterDto.getSurname());
-        user.getPersonalInformation().setBirthDay(requestUserRegisterDto.getBirthDay());
+        user.getPersonalInformation().setBirthDay(simpleDateDtoToSimpleDate(requestUserRegisterDto.getBirthDay()));
         return user;
     }
 
@@ -25,8 +27,16 @@ public class UserMapper {
         userDto.setEmail(user.getEmail());
         userDto.setFirstName(user.getPersonalInformation().getFirstName());
         userDto.setSurname(user.getPersonalInformation().getSurname());
-        userDto.setBirthDay(user.getPersonalInformation().getBirthDay());
+        userDto.setBirthDay(simpleDateToSimpleDateDto(user.getPersonalInformation().getBirthDay()));
         return userDto;
+    }
+
+    private static SimpleDate simpleDateDtoToSimpleDate(final SimpleDateDto simpleDateDto) {
+        return new SimpleDate(simpleDateDto.getYear(), simpleDateDto.getMonth(), simpleDateDto.getDay());
+    }
+
+    private static SimpleDateDto simpleDateToSimpleDateDto(final SimpleDate simpleDate) {
+        return new SimpleDateDto(simpleDate.getYear(), simpleDate.getMonth(), simpleDate.getDay());
     }
 
     public static JSONObject userDtoToJson(final UserDto userDto) {

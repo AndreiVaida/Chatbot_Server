@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import java.time.LocalDate;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,5 +26,5 @@ public class RequestUserRegisterDto {
     @Size(min = 2, max = 255)
     private String surname;
 
-    private LocalDate birthDay;
+    private SimpleDateDto birthDay;
 }

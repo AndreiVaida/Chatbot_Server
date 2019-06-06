@@ -3,6 +3,7 @@ package services.impl;
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
+import domain.entities.SimpleDate;
 import domain.enums.Gender;
 import domain.enums.ItemClass;
 import domain.enums.SpeechType;
@@ -18,7 +19,6 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -65,7 +65,7 @@ public class InformationServiceImpl implements InformationService {
     }
 
     @Override
-    public Information identifyInformation(Class informationClass, String informationFieldNamePath, final Message answer) {
+    public Information identifyInformation(Class informationClass, String informationFieldNamePath, final Message answer) throws IllegalAccessException, InstantiationException {
         if (informationClass == null) {
             informationClass = identifyInformationClass(answer);
             informationFieldNamePath = answer.getEquivalentSentence().getInformationFieldNamePath();
@@ -77,112 +77,123 @@ public class InformationServiceImpl implements InformationService {
         final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, removeMapKeysFromPath(informationFieldNamePath), STATEMENT);
         ItemClass itemClass = null;
 
-        final String[] answerWords = splitInWords(answer.getText());
-        for (LinguisticExpression expression : expressions) {
-            // search the beginning of the expression in the answer
-            int iAnswer = 0;
-            int iInformationBegin = 0; // the index from the answer where the information starts
-            int iInformationEnd = -1; // the index from the answer where the information ends
-            int iExpression = 0;
-            String expressionWord = expression.getItems().get(0).getText();
-            if (expressionWord != null) {
-                expressionWord = expressionWord.toLowerCase();
-            }
+        Information information = null;
 
-            boolean matchingWords = false;
-            boolean matchingTheInformation = false; // the information consist of >=1 word
-            for (; iAnswer < answerWords.length; iAnswer++) {
-                final String answerWord = answerWords[iAnswer].toLowerCase();
-
-                // if we are matching the information, check for end of information (for first item after information in expression)
-                if (matchingTheInformation && answerWord.equals(expressionWord)) {
-                    matchingWords = true;
-                    matchingTheInformation = false;
-                    iExpression++;
-                    iInformationEnd = iAnswer;
-                    if (iExpression == expression.getItems().size()) {
-                        break;
-                    }
-                    expressionWord = expression.getItems().get(iExpression).getText();
-                    if (expressionWord != null) { // it will not be null
-                        expressionWord = expressionWord.toLowerCase();
-                    }
-                    continue;
+        // split the message by comma to delimit ideas
+        final String[] subsentences = splitInSubentences(answer.getText());
+        for (String subsentence : subsentences) {
+            final String[] answerWords = splitInWords(subsentence);
+            for (LinguisticExpression expression : expressions) {
+                // search the beginning of the expression in the answer
+                int iAnswer = 0;
+                int iInformationBegin = 0; // the index from the answer where the information starts
+                int iInformationEnd = -1; // the index from the answer where the information ends
+                int iExpression = 0;
+                String expressionWord = expression.getItems().get(0).getText();
+                if (expressionWord != null) {
+                    expressionWord = expressionWord.toLowerCase();
                 }
 
-                if (matchingTheInformation) {
-                    iInformationEnd = iAnswer + 1;
-                    continue;
-                }
+                boolean matchingWords = false;
+                boolean matchingTheInformation = false; // the information consist of >=1 word
+                for (; iAnswer < answerWords.length; iAnswer++) {
+                    final String answerWord = answerWords[iAnswer].toLowerCase();
 
-                // if the current item of the expression is the information to find, skip (at least) 1 word of the answer AND the expression item
-                if (!expression.getItems().get(iExpression).getItemClass().equals(NOT_AN_INFORMATION)) {
-                    itemClass = expression.getItems().get(iExpression).getItemClass(); // this should be set just once (itemClass should be final)
-                    matchingTheInformation = true;
-                    matchingWords = false;
-                    iInformationBegin = iAnswer;
-                    iExpression++;
-                    if (iExpression == expression.getItems().size()) {
+                    // if we are matching the information, check for end of information (for first item after information in expression)
+                    if (matchingTheInformation && answerWord.equals(expressionWord)) {
+                        matchingWords = true;
+                        matchingTheInformation = false;
+                        iExpression++;
+                        iInformationEnd = iAnswer;
+                        if (iExpression == expression.getItems().size()) {
+                            break;
+                        }
+                        expressionWord = expression.getItems().get(iExpression).getText();
+                        if (expressionWord != null) { // it will not be null
+                            expressionWord = expressionWord.toLowerCase();
+                        }
+                        continue;
+                    }
+
+                    if (matchingTheInformation) {
                         iInformationEnd = iAnswer + 1;
                         continue;
                     }
-                    expressionWord = expression.getItems().get(iExpression).getText();
-                    if (expressionWord != null) {
-                        expressionWord = expressionWord.toLowerCase();
-                    }
-                    continue;
-                }
 
-                // check if the answerWord == expressionWord
-                if (matchingWords && !answerWord.equals(expressionWord)) {
-                    // reset the search
-                    iExpression = 0;
-                    expressionWord = expression.getItems().get(iExpression).getText();
-                    if (expressionWord != null) {
-                        expressionWord = expressionWord.toLowerCase();
-                    }
-                    matchingWords = false;
-                    continue;
-                }
-                if (answerWord.equals(expressionWord)) { // && !matchingTheInformation
-                    matchingWords = true;
-                    iExpression++;
-                    if (iExpression == expression.getItems().size()) {
-                        break;
-                    }
-                    expressionWord = expression.getItems().get(iExpression).getText();
-                    if (expressionWord != null) {
-                        expressionWord = expressionWord.toLowerCase();
-                    }
-                    continue;
-                }
-            }
-
-            // if we matched all the items of the expression => we found the information
-            if (iExpression == expression.getItems().size()) {
-                String[] informationWords = new String[iInformationEnd - iInformationBegin];
-                for (int i = iInformationBegin; i < iInformationEnd; i++) {
-                    informationWords[i - iInformationBegin] = answerWords[i];
-                }
-                try {
-                    final Information information = (Information) informationClass.newInstance();
-                    final Object informationAsItsType = convertTextToInformation(informationWords, itemClass);
-                    if (informationAsItsType == null) {
-                        return null;
+                    // if the current item of the expression is the information to find, skip (at least) 1 word of the answer AND the expression item
+                    if (!expression.getItems().get(iExpression).getItemClass().equals(NOT_AN_INFORMATION)) {
+                        itemClass = expression.getItems().get(iExpression).getItemClass(); // this should be set just once (itemClass should be final)
+                        matchingTheInformation = true;
+                        matchingWords = false;
+                        iInformationBegin = iAnswer;
+                        iExpression++;
+                        if (iExpression == expression.getItems().size()) {
+                            iInformationEnd = iAnswer + 1;
+                            continue;
+                        }
+                        expressionWord = expression.getItems().get(iExpression).getText();
+                        if (expressionWord != null) {
+                            expressionWord = expressionWord.toLowerCase();
+                        }
+                        continue;
                     }
 
-                    // check if the effective information is a field of a field of the information
-                    final String[] fieldNameHierarchy = informationFieldNamePath.split("\\.");
-                    setTheInformation(information, fieldNameHierarchy, informationAsItsType);
-                    return information;
+                    // check if the answerWord == expressionWord
+                    if (matchingWords && !answerWord.equals(expressionWord)) {
+                        // reset the search
+                        iExpression = 0;
+                        expressionWord = expression.getItems().get(iExpression).getText();
+                        if (expressionWord != null) {
+                            expressionWord = expressionWord.toLowerCase();
+                        }
+                        matchingWords = false;
+                        continue;
+                    }
+                    if (answerWord.equals(expressionWord)) { // && !matchingTheInformation
+                        matchingWords = true;
+                        iExpression++;
+                        if (iExpression == expression.getItems().size()) {
+                            break;
+                        }
+                        expressionWord = expression.getItems().get(iExpression).getText();
+                        if (expressionWord != null) {
+                            expressionWord = expressionWord.toLowerCase();
+                        }
+                        continue;
+                    }
+                }
 
-                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                    e.printStackTrace();
+                // if we matched all the items of the expression => we found the information
+                if (iExpression == expression.getItems().size()) {
+                    String[] informationWords = new String[iInformationEnd - iInformationBegin];
+                    for (int i = iInformationBegin; i < iInformationEnd; i++) {
+                        informationWords[i - iInformationBegin] = answerWords[i];
+                    }
+                    try {
+                        final Object informationAsItsType = convertTextToInformation(informationWords, itemClass);
+                        if (informationAsItsType == null) {
+                            continue;
+                        }
+
+                        if (information == null) {
+                            information = (Information) informationClass.newInstance();
+                        }
+                        // check if the effective information is a field of a field of the information
+                        final String[] fieldNameHierarchy = informationFieldNamePath.split("\\.");
+                        setTheInformation(information, fieldNameHierarchy, informationAsItsType);
+                        break; // we found the information, skip the next linguistic expressions and go to next subsentence
+
+                    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
+        return information;
+    }
 
-        return null;
+    private String[] splitInSubentences(final String text) {
+        return text.split("([.,]+)|și");
     }
 
     private String removeMapKeysFromPath(final String informationFieldNamePath) {
@@ -201,12 +212,13 @@ public class InformationServiceImpl implements InformationService {
     /**
      * Sets the informationAsItsType in the last child of the hierarchy. Recursive function.
      * If any of the fields (children) are null, create a new object for it.
-     * @param parent - original parent, it will be a child if the hierarchy impose (length > 1)
-     * @param fieldNameHierarchy - the parent is at index 0, the child is index 1 etc.
-     *                           The hierarchy may contain maps. In this case, the field name element should contain the key of the element you want to update separate with #.
-     *                           If after # follows ? it means that the field is a map and you want to add the information in map.
-     *                           Example for PersonalInformation: "[{grades#math}]"
-     *                           Example for RelationshipInformation: "[{kidsPersonalInformation#Matei},{firstName}]", "[{brothersAndSistersPersonalInformation#?}]"
+     *
+     * @param parent               - original parent, it will be a child if the hierarchy impose (length > 1)
+     * @param fieldNameHierarchy   - the parent is at index 0, the child is index 1 etc.
+     *                             The hierarchy may contain maps. In this case, the field name element should contain the key of the element you want to update separate with #.
+     *                             If after # follows ? it means that the field is a map and you want to add the information in map.
+     *                             Example for PersonalInformation: "[{grades#math}]"
+     *                             Example for RelationshipInformation: "[{kidsPersonalInformation#Matei},{firstName}]", "[{brothersAndSistersPersonalInformation#?}]"
      * @param informationAsItsType - the effective information which should be set for last child in hierarchy
      */
     private void setTheInformation(final Object parent, final String[] fieldNameHierarchy, final Object informationAsItsType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
@@ -230,29 +242,31 @@ public class InformationServiceImpl implements InformationService {
                 // auxiliary code: update relevant fields to the changed one
                 if (fieldName.equals("favouriteCourse")) {
                     final Method getterOfCoursesGradesMap = parent.getClass().getMethod("getCoursesGrades");
-                    final Map<String,Integer> coursesGrades = (Map<String, Integer>) getterOfCoursesGradesMap.invoke(parent);
-                    coursesGrades.put(String.valueOf(informationAsItsType), 10);
+                    final Map<String, Integer> coursesGrades = (Map<String, Integer>) getterOfCoursesGradesMap.invoke(parent);
+                    coursesGrades.put(String.valueOf(informationAsItsType), 0);
+                }
+            } else {
+                // the field is a collection (map or list)
+                if (getterOfChild.getReturnType().equals(Map.class)) {
+                    final Map map = (Map) getterOfChild.invoke(parent);
+                    if (fieldKey.equals("?")) {
+                        if (fieldName.equals("coursesGrades")) {
+                            map.put(informationAsItsType, 0);
+                        } else { // number of members from a map from RelationshipInformation
+                            final PersonalInformation personalInformation = new PersonalInformation();
+                            personalInformationRepository.save(personalInformation);
+                            map.put(informationAsItsType, personalInformation);
+                        }
+                    } else {
+                        map.put(fieldKey, informationAsItsType);
+                    }
+                }
+                if (getterOfChild.getReturnType().equals(List.class)) {
+                    final List list = (List) getterOfChild.invoke(parent);
+                    list.add(informationAsItsType);
                 }
             }
-            else {
-                // the field is a map
-                final Map map = (Map) getterOfChild.invoke(parent);
-                if (fieldKey.equals("?")) {
-                    if (fieldName.equals("coursesGrades")) {
-                        map.put(informationAsItsType, 10);
-                    }
-                    else { // number of members from a map from RelationshipInformation
-                        final PersonalInformation personalInformation = new PersonalInformation();
-                        personalInformationRepository.save(personalInformation);
-                        map.put(informationAsItsType, personalInformation);
-                    }
-                }
-                else {
-                    map.put(fieldKey, informationAsItsType);
-                }
-            }
-        }
-        else {
+        } else {
             // CHILD INSIDE HIERARCHY, NOT THE LAST ONE
             if (fieldKey == null) {
                 // normal field, no map
@@ -267,8 +281,7 @@ public class InformationServiceImpl implements InformationService {
                 final String[] fieldNameHierarchyChild = new String[fieldNameHierarchy.length - 1];
                 System.arraycopy(fieldNameHierarchy, 1, fieldNameHierarchyChild, 0, fieldNameHierarchy.length - 1);
                 setTheInformation(child, fieldNameHierarchyChild, informationAsItsType);
-            }
-            else {
+            } else {
                 // the field is a map
                 final Map map = (Map) getterOfChild.invoke(parent);
                 Object value = map.get(fieldKey);
@@ -294,13 +307,13 @@ public class InformationServiceImpl implements InformationService {
     /**
      * @param informationWords the information as string
      *                         if NUMBER: return informationWords[0]
-     *                         if DATE: return {day: informationWords[0], month: informationWords[1], year: informationWords[2]}, where year is optional
+     *                         if DATE: return {day: informationWords[0], month: informationWords[1], year: informationWords[2]}, where day and year are optional
      *                         if STRING: return informationWords[0] + informationWords[1] + ... + informationWords[informationWords.length]
      * @param itemClass        is the class which the effective information should be
      *                         if NAME: return String
      *                         if NUMBER: return integer
      *                         if BOOLEAN: return boolean
-     *                         if DATE: return LocalDate
+     *                         if DATE: return SimpleDate
      *                         if GENDER: return Gender
      *                         else: return String
      * @return the information converted the corresponding Java class or <null> if it cannot be converted
@@ -316,32 +329,25 @@ public class InformationServiceImpl implements InformationService {
             }
 
             case DATE: {
-                if (informationWords.length < 2) {
-                    return null;
+                Integer day = null;
+                Integer month = null;
+                Integer year = null;
+                if (informationWords.length == 1) { // just month
+                    month = stringToMonth(informationWords[0]);
                 }
-                int day = Integer.valueOf(informationWords[0]);
-                int month = 1; // TODO: they should not be 1 as default
-                int year = 1;
-                try {
-                    month = Integer.parseInt(informationWords[1]);
-                } catch (NumberFormatException e) {
-                    if (informationWords[1].toLowerCase().startsWith("ian")) month = 1; // TODO: TAKE MONTHS FROM DB
-                    if (informationWords[1].toLowerCase().startsWith("feb")) month = 2;
-                    if (informationWords[1].toLowerCase().startsWith("mar")) month = 3;
-                    if (informationWords[1].toLowerCase().startsWith("apr")) month = 4;
-                    if (informationWords[1].toLowerCase().startsWith("mai")) month = 5;
-                    if (informationWords[1].toLowerCase().startsWith("iun")) month = 6;
-                    if (informationWords[1].toLowerCase().startsWith("iul")) month = 7;
-                    if (informationWords[1].toLowerCase().startsWith("aug")) month = 8;
-                    if (informationWords[1].toLowerCase().startsWith("sep")) month = 9;
-                    if (informationWords[1].toLowerCase().startsWith("oct")) month = 10;
-                    if (informationWords[1].toLowerCase().startsWith("no")) month = 11;
-                    if (informationWords[1].toLowerCase().startsWith("dec")) month = 12;
+                if (informationWords.length == 2) { // day + month
+                    day = Integer.valueOf(informationWords[0]);
+                    month = stringToMonth(informationWords[1]);
                 }
-                if (informationWords.length >= 3) {
+                if (informationWords.length >= 3) { // day + month + year
+                    day = Integer.valueOf(informationWords[0]);
+                    month = stringToMonth(informationWords[1]);
                     year = Integer.valueOf(informationWords[2]);
                 }
-                return LocalDate.of(year, month, day);
+                if (day == null && month == null && year == null) {
+                    return null;
+                }
+                return new SimpleDate(year, month, day);
             }
 
             case GENDER: {
@@ -357,13 +363,33 @@ public class InformationServiceImpl implements InformationService {
                     final String word = informationWords[i];
 
                     name.append(word);
-                    if (i < informationWords.length - 1 && Character.isLetterOrDigit(informationWords[i+1].charAt(0))) {
+                    if (i < informationWords.length - 1 && Character.isLetterOrDigit(informationWords[i + 1].charAt(0))) {
                         name.append(" ");
                     }
                 }
                 return name.toString();
             }
         }
+    }
+
+    private Integer stringToMonth(final String word) {
+        try {
+            return Integer.parseInt(word);
+        } catch (NumberFormatException e) {
+            if (word.toLowerCase().startsWith("ian")) return 1; // TODO: TAKE MONTHS FROM DB
+            if (word.toLowerCase().startsWith("feb")) return 2;
+            if (word.toLowerCase().startsWith("mar")) return 3;
+            if (word.toLowerCase().startsWith("apr")) return 4;
+            if (word.toLowerCase().startsWith("mai")) return 5;
+            if (word.toLowerCase().startsWith("iun")) return 6;
+            if (word.toLowerCase().startsWith("iul")) return 7;
+            if (word.toLowerCase().startsWith("aug")) return 8;
+            if (word.toLowerCase().startsWith("sep")) return 9;
+            if (word.toLowerCase().startsWith("oct")) return 10;
+            if (word.toLowerCase().startsWith("no")) return 11;
+            if (word.toLowerCase().startsWith("dec")) return 12;
+        }
+        return null;
     }
 
     /**

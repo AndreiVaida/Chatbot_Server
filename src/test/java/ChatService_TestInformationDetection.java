@@ -2,6 +2,7 @@ import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.enums.ItemClass;
 import domain.enums.SpeechType;
@@ -75,10 +76,10 @@ public class ChatService_TestInformationDetection {
         informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationService);
         // add users
-        andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", LocalDate.of(2016, 6, 26));
+        andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);
         CHATBOT_ID = andy.getId();
-        user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", LocalDate.of(1997, 10, 24));
+        user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", new SimpleDate(1997, 10, 24));
         userService.addUser(user);
 
         // add data
@@ -94,9 +95,6 @@ public class ChatService_TestInformationDetection {
         expressionItems.add(new ExpressionItem("sunt", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -109,9 +107,6 @@ public class ChatService_TestInformationDetection {
         expressionItems.add(new ExpressionItem("numele", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem("meu", NOT_AN_INFORMATION));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -121,9 +116,6 @@ public class ChatService_TestInformationDetection {
         expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, NAME));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -135,9 +127,6 @@ public class ChatService_TestInformationDetection {
         expressionItems.add(new ExpressionItem("pe", NOT_AN_INFORMATION));
         expressionItems.add(new ExpressionItem(null, ItemClass.DATE));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
@@ -147,9 +136,6 @@ public class ChatService_TestInformationDetection {
         expressionItems = new ArrayList<>();
         expressionItems.add(new ExpressionItem(null, ItemClass.DATE));
         linguisticExpression.setItems(expressionItems);
-        for (ExpressionItem item : expressionItems) {
-            expressionItemRepository.save(item);
-        }
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
