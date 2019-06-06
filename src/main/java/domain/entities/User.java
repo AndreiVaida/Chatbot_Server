@@ -18,10 +18,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.time.LocalDate;
 
 // Lombok
 @NoArgsConstructor
@@ -45,26 +43,26 @@ public class User {
     private String password;
 
     // PERSONAL INFORMATION
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "PERSONAL_INFORMATION")
     private PersonalInformation personalInformation;
 
     // RELATIONSHIPS
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "RELATIONSHIPS_INFORMATION")
     private RelationshipsInformation relationshipsInformation;
 
     // EDUCATION
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "SCHOOL_INFORMATION")
     private SchoolInformation schoolInformation;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "FACULTY_INFORMATION")
     private FacultyInformation facultyInformation;
 
     // FREE TIME
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "FREE_TIME_INFORMATION")
     private FreeTimeInformation freeTimeInformation;
 

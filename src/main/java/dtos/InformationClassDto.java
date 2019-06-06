@@ -1,6 +1,6 @@
 package dtos;
 
-public enum InformationClass {
+public enum InformationClassDto {
     PERSONAL_INFORMATION,
     RELATIONSHIPS_INFORMATION,
     SCHOOL_INFORMATION,

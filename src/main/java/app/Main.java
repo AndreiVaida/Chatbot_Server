@@ -34,8 +34,9 @@ public class Main {
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
 
         if (userService.findAll().isEmpty()) {
-            addChatbotInDb();
+            addChatbotInDb(environment);
             addAndreiInDb();
+            addAdminInDb();
         }
 
 //        new Thread(() -> {
@@ -55,14 +56,20 @@ public class Main {
         System.out.println("Server is on.");
     }
 
-    public void addChatbotInDb() {
+    public void addChatbotInDb(final Environment environment) {
         final User andy = new User(CHATBOT_ID, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);
+        CHATBOT_ID = andy.getId();
     }
 
     public void addAndreiInDb() {
         final User user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", null);
         userService.addUser(user);
+    }
+
+    private void addAdminInDb() {
+        final User admin = new User(null, "admin", "admin", "Admin", "Suprem", null);
+        userService.addUser(admin);
     }
 
 }

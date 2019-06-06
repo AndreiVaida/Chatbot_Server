@@ -56,6 +56,21 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public Message addMessageAndLearn(final String text, final Long fromUserId, Long toUserId, final MessageSource messageSource) {
+        if (toUserId == null || toUserId == 0) {
+            toUserId = CHATBOT_ID;
+        }
+
+        // save the message in DB
+        final User fromUser = userService.getUserById(fromUserId);
+        final User toUser = userService.getUserById(toUserId);
+
+        // save the message in DB and add this message as a response for previous one
+        final Message previousMessage = messageService.getLastMessage(toUserId, fromUserId);
+        return addMessageAndSetItAsResponse(text, fromUser, toUser, messageSource, previousMessage);
+    }
+
+    @Override
     @Transactional
     public Message addMessageAndGetResponse(final String text, final Long fromUserId, Long toUserId) {
         MessageSource messageSource = MessageSource.USER_USER_CONVERSATION;
@@ -93,7 +108,7 @@ public class ChatServiceImpl implements ChatService {
     private Message addMessageAndSetItAsResponse(final String text, final User fromUser, final User toUser, final MessageSource messageSource, final Message previousMessage) {
         final Sentence sentence = chatbotService.getSentence(text);
 
-        // save the message ind DB
+        // save the message in DB
         final Message message = messageService.addMessage(text, fromUser, toUser, sentence, messageSource);
 
         // add this message as a response for the previous message

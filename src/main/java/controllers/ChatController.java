@@ -7,6 +7,7 @@ import facades.api.ChatFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +41,7 @@ public class ChatController extends AbstractController {
     }
 
     @GetMapping("/sample")
-    public ResponseEntity<MessageDto> requestMessageFromChatbot(@RequestParam final Long userId, @RequestParam final ChatbotRequestType chatbotRequestType) {
+    public ResponseEntity<MessageDto> requestMessageFromChatbot(@RequestParam final Long userId, @Nullable @RequestParam ChatbotRequestType chatbotRequestType) {
         final MessageDto message = chatFacade.requestMessageFromChatbot(userId, chatbotRequestType);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }

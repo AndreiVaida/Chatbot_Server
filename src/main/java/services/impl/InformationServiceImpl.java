@@ -414,16 +414,16 @@ public class InformationServiceImpl implements InformationService {
 
 //    /**
 //     * @param previousMessage is a directive, statement or acknowledgement (ex: „Care e numele tău ?” or „Spune-mi numele tău !”, „Eu sunt Andy.”, „Salut !”).
-//     *                        It must have set the fields: informationClass and informationFieldNamePath. (ex: PersonalInformation and FirstName)
+//     *                        It must have set the fields: informationClassDto and informationFieldNamePath. (ex: PersonalInformation and FirstName)
 //     *                        It may be null. If it's null, we try to detect automatically what type of information is in answer.
 //     * @param answer          is a statement
 //     * @return a PersonalInformation object if we find at least 1 personal information; otherwise return <null>
 //     */
 //    private PersonalInformation identifyPersonalInformation(final Message previousMessage, final Message answer) {
 //        if (previousMessage != null) {
-//            final Class<Information> informationClass = previousMessage.getEquivalentSentence().getInformationClass();
+//            final Class<Information> informationClassDto = previousMessage.getEquivalentSentence().getInformationClassDto();
 //            final Field informationFieldNamePath = answer.getEquivalentSentence().getInformationFieldNamePath();
-//            final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, informationFieldNamePath, STATEMENT);
+//            final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClassDto, informationFieldNamePath, STATEMENT);
 //
 //        }
 //    }

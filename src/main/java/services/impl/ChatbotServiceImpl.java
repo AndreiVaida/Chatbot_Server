@@ -535,6 +535,9 @@ public class ChatbotServiceImpl implements ChatbotService {
         }
 
         final List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldNamePath(DIRECTIVE, informationClass, informationFieldNamePath);
+        if (sentences.isEmpty()) {
+            return generateDefaultSentence();
+        }
         return sentences.get(random.nextInt(sentences.size()));
     }
 
@@ -562,7 +565,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     /**
-     * information and informationClass should point the same Information class
+     * information and informationClassDto should point the same Information class
      *
      * @param information      may be null
      * @param informationClass indicates the class to refer if @information is null

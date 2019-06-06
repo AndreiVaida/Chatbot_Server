@@ -14,6 +14,6 @@ public class LinguisticExpressionDto {
     private Long id;
     private List<ExpressionItemDto> expressionItems;
     private SpeechType speechType;
-    private InformationClass informationClass;
+    private InformationClassDto informationClassDto;
     private String informationFieldName;
 }

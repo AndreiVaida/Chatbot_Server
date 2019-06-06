@@ -32,10 +32,16 @@ public class UserMapper {
     }
 
     private static SimpleDate simpleDateDtoToSimpleDate(final SimpleDateDto simpleDateDto) {
+        if (simpleDateDto == null) {
+            return null;
+        }
         return new SimpleDate(simpleDateDto.getYear(), simpleDateDto.getMonth(), simpleDateDto.getDay());
     }
 
     private static SimpleDateDto simpleDateToSimpleDateDto(final SimpleDate simpleDate) {
+        if (simpleDate == null) {
+            return null;
+        }
         return new SimpleDateDto(simpleDate.getYear(), simpleDate.getMonth(), simpleDate.getDay());
     }
 

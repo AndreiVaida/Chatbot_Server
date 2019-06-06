@@ -16,7 +16,7 @@ public interface InformationService {
 
     /**
      * @param previousMessage is a directive, statement or acknowledgement (ex: „Care e numele tău ?” or „Spune-mi numele tău !”, „Eu sunt Andy.”, „Salut !”).
-     *                        It must have set the fields: informationClass and informationFieldNamePath. (ex: PersonalInformation and FirstName)
+     *                        It must have set the fields: informationClassDto and informationFieldNamePath. (ex: PersonalInformation and FirstName)
      *                        TODO REMOVE It may be null. If it's null, we try to detect automatically what type of information is in answer.
      * @param informationFieldNamePath is the name of the field of the effective information you want to identify.
      *                             This function identifies only 1 effective information, not an entire object Information or sub-object of Information.

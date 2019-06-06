@@ -72,6 +72,10 @@ public class Sentence {
         this.informationFieldNamePath = informationFieldNamePath;
     }
 
+    public Sentence(Long id) {
+        this.id = id;
+    }
+
     /**
      * Adds the given sentence as a synonym to this one.
      * If this sentence already has the given synonym, then is increased its frequency.
@@ -121,7 +125,7 @@ public class Sentence {
                 "id=" + id +
                 ", words=" + words +
                 ", speechType=" + speechType +
-                ", informationClass=" + informationClass +
+                ", informationClassDto=" + informationClass +
                 ", informationFieldNamePath='" + informationFieldNamePath + '\'' +
                 '}';
     }
