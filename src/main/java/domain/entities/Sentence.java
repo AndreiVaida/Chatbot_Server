@@ -98,27 +98,31 @@ public class Sentence {
         responses.put(response, frequency);
     }
 
-    @Override
-    public String toString() {
-        return "Sentence{" +
-                "id=" + id +
-                ", items=" + words +
-                ", speechType=" + speechType +
-                '}';
-    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Sentence)) return false;
         Sentence sentence = (Sentence) o;
-        return Objects.equals(id, sentence.id) &&
-                Objects.equals(words, sentence.words) &&
-                speechType == sentence.speechType;
+        return Objects.equals(getWords(), sentence.getWords()) &&
+                getSpeechType() == sentence.getSpeechType() &&
+                Objects.equals(getInformationClass(), sentence.getInformationClass()) &&
+                Objects.equals(getInformationFieldNamePath(), sentence.getInformationFieldNamePath());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, words, speechType);
+        return Objects.hash(getWords(), getSpeechType(), getInformationClass(), getInformationFieldNamePath());
+    }
+
+    @Override
+    public String toString() {
+        return "Sentence{" +
+                "id=" + id +
+                ", words=" + words +
+                ", speechType=" + speechType +
+                ", informationClass=" + informationClass +
+                ", informationFieldNamePath='" + informationFieldNamePath + '\'' +
+                '}';
     }
 }

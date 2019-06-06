@@ -2,7 +2,6 @@ import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.SimpleDate;
 import domain.entities.User;
-import domain.enums.ChatbotRequestType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,12 +29,11 @@ import services.impl.InformationServiceImpl;
 import services.impl.MessageServiceImpl;
 import services.impl.UserServiceImpl;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static app.Main.CHATBOT_ID;
 import static domain.enums.ChatbotRequestType.LEARN_TO_SPEAK;
-import static domain.enums.ChatbotRequestType.RANDOM;
+import static domain.enums.MessageSource.USER_CHATBOT_CONVERSATION;
 
 @DataJpaTest
 @RunWith(SpringRunner.class)
@@ -110,9 +108,7 @@ public class ChatService_TestLearning {
         sentence = sentenceRepository.getOne(message.getEquivalentSentence().getId());
         Assert.assertEquals(2, sentence.getResponses().size());
 
-        do {
-            message = chatService.requestMessageFromChatbot(user.getId(), RANDOM);
-        } while (!message.getText().toLowerCase().equals("bună"));
+        message = chatService.addMessage("bună", andy.getId(), user.getId(), USER_CHATBOT_CONVERSATION);
         response = chatService.addMessageAndGetResponse("salut", user.getId(), andy.getId());
         Assert.assertTrue(response.getText().toLowerCase().equals("salut") || response.getText().toLowerCase().equals("bună"));
         Assert.assertEquals(1, message.getEquivalentSentence().getResponses().size());
@@ -149,9 +145,7 @@ public class ChatService_TestLearning {
                 .anyMatch(responseSentence -> responseSentence.getWords().size() == 5)); // „Care e numele tău ?”
 
         // add „Mă numesc Andrei” as reply for „Care e numele tău ?”
-        do {
-            message = chatService.requestMessageFromChatbot(user.getId(), RANDOM);
-        } while (!message.getText().toLowerCase().equals("care e numele tău?"));
+        message = chatService.addMessage("care e numele tău ?", andy.getId(), user.getId(), USER_CHATBOT_CONVERSATION);
         Sentence sentence = message.getEquivalentSentence();
         Assert.assertEquals(5, sentence.getWords().size()); // „Care e numele tău ?”
         response = chatService.addMessageAndGetResponse("Mă numesc Andrei.", user.getId(), andy.getId());
@@ -160,9 +154,7 @@ public class ChatService_TestLearning {
         Assert.assertEquals(1, sentence.getResponses().size()); // [„Mă numesc Andrei.”]
 
         // add „Eu sunt Andy.” as reply for „Mă numesc Andrei”
-        do {
-            message = chatService.requestMessageFromChatbot(user.getId(), RANDOM);
-        } while (!message.getText().toLowerCase().contains("mă numesc andrei"));
+        message = chatService.addMessage("mă numesc andrei", andy.getId(), user.getId(), USER_CHATBOT_CONVERSATION);
         sentence = message.getEquivalentSentence();
         Assert.assertTrue(sentence.getWords().get(0).getText().toLowerCase().equals("mă")
                 && sentence.getWords().get(1).getText().toLowerCase().equals("numesc")
@@ -173,9 +165,7 @@ public class ChatService_TestLearning {
         Assert.assertEquals(1, sentence.getResponses().size()); // [„Eu sunt Andy.”]
 
         // add „Eu sunt Andy.” as reply for „Care e numele tău ?”
-        do {
-            message = chatService.requestMessageFromChatbot(user.getId(), RANDOM);
-        } while (!message.getText().toLowerCase().equals("care e numele tău?"));
+        message = chatService.addMessage("care e numele tău ?", andy.getId(), user.getId(), USER_CHATBOT_CONVERSATION);
         sentence = message.getEquivalentSentence();
         Assert.assertEquals(1, sentence.getResponses().size());
         response = chatService.addMessageAndGetResponse("Eu sunt Andy.", user.getId(), andy.getId());
@@ -184,9 +174,7 @@ public class ChatService_TestLearning {
         Assert.assertEquals(2, sentence.getResponses().size()); // [„Mă numesc Andrei.”, „Eu sunt Andy.”]
 
         // add „Eu sunt Andrei.” as reply for „Eu sunt Andy” AND as synonym
-        do {
-            message = chatService.requestMessageFromChatbot(user.getId(), RANDOM);
-        } while (!message.getText().toLowerCase().contains("eu sunt andy"));
+        message = chatService.addMessage("eu sunt andy", andy.getId(), user.getId(), USER_CHATBOT_CONVERSATION);
         sentence = message.getEquivalentSentence();
         Assert.assertTrue(sentence.getWords().get(0).getText().toLowerCase().equals("eu")
                 && sentence.getWords().get(1).getText().toLowerCase().equals("sunt")
@@ -211,7 +199,7 @@ public class ChatService_TestLearning {
         Assert.assertFalse(response.getIsUnknownMessage());
         Assert.assertTrue(response.getText().toLowerCase().contains("eu sunt"));
 
-        response = chatService.addMessageAndGetResponse("care e numele tău?", user.getId(), andy.getId());
+        response = chatService.addMessageAndGetResponse("care e numele tău ?", user.getId(), andy.getId());
         Assert.assertFalse(response.getIsUnknownMessage());
         Assert.assertTrue(response.getText().toLowerCase().contains("eu sunt") || response.getText().toLowerCase().contains("mă numesc"));
 

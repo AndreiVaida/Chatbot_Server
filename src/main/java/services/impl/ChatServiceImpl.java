@@ -47,10 +47,10 @@ public class ChatServiceImpl implements ChatService {
         final Sentence sentence = chatbotService.getSentence(text);
         final Message message = messageService.addMessage(text, fromUser, toUser, sentence, messageSource);
 
-        final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
-        if (previousMessage != null) {
-            chatbotService.addResponseAndSynonym(previousMessage.getEquivalentSentence(), sentence);
-        }
+//        final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
+//        if (previousMessage != null) {
+//            chatbotService.addResponseAndSynonym(previousMessage.getEquivalentSentence(), sentence);
+//        }
 
         return message;
     }
