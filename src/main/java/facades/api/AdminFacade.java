@@ -22,4 +22,6 @@ public interface AdminFacade {
     Integer addMessageDtos(final List<MessageDto> messageDtos);
 
     Integer addMessages(final List<String> messages);
+
+    Integer addMessagesFromCsvString(final String csvString);
 }

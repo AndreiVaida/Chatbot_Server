@@ -69,4 +69,14 @@ public class AdminController extends AbstractController {
         final Integer numberOfAddedMessages = adminFacade.addMessagesFromFile(file);
         return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
     }
+
+    /**
+     * The csv file from Google Forms.
+     * @param csvString the content of the csv file as string. Its structure is: "TimeStamp","Message"
+     */
+    @PostMapping("/messageCsv")
+    public ResponseEntity<Integer> addMessagesFromCsvString(@RequestBody String csvString) {
+        final Integer numberOfAddedMessages = adminFacade.addMessagesFromCsvString(csvString);
+        return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
+    }
 }

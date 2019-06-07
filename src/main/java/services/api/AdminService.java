@@ -22,4 +22,11 @@ public interface AdminService {
     Integer addMessageDtos(final List<MessageDto> messageDtos);
 
     Integer addMessages(final List<String> messages);
+
+    /**
+     * The csv file from Google Forms.
+     * @param csvString the content of the csv file as string. Its structure is: "TimeStamp","Message"
+     * @return number of conversations added (we will not add existing conversation)
+     */
+    Integer addMessagesFromCsvString(final String csvString);
 }

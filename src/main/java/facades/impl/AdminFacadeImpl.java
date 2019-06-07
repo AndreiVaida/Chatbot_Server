@@ -60,4 +60,9 @@ public class AdminFacadeImpl implements AdminFacade {
     public Integer addMessages(final List<String> messages) {
         return adminService.addMessages(messages);
     }
+
+    @Override
+    public Integer addMessagesFromCsvString(final String csvString) {
+        return adminService.addMessagesFromCsvString(csvString);
+    }
 }

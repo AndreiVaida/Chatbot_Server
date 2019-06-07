@@ -1,6 +1,7 @@
 package services.impl;
 
 import app.Main;
+import domain.entities.CsvConversationTimestamp;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
 import domain.enums.MessageSource;
@@ -11,6 +12,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import repositories.CsvConversationTimestampRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.SentenceRepository;
 import services.api.AdminService;
@@ -18,18 +20,24 @@ import services.api.ChatService;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AdminServiceImpl implements AdminService {
     private final SentenceRepository sentenceRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final ChatService chatService;
+    private final CsvConversationTimestampRepository csvConversationTimestampRepository;
 
-    public AdminServiceImpl(SentenceRepository sentenceRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService) {
+    public AdminServiceImpl(SentenceRepository sentenceRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, CsvConversationTimestampRepository csvConversationTimestampRepository) {
         this.sentenceRepository = sentenceRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         this.chatService = chatService;
+        this.csvConversationTimestampRepository = csvConversationTimestampRepository;
     }
 
     @Override
@@ -107,5 +115,59 @@ public class AdminServiceImpl implements AdminService {
             user2Id = auxId;
         }
         return numberOfAddedMessages;
+    }
+
+    @Override
+    @Transactional
+    public Integer addMessagesFromCsvString(final String csvString) {
+        final Map<LocalDateTime, List<String>> conversations = getConversationsFromCsvString(csvString);
+
+        int numberOfAddedConversations = 0;
+        for (LocalDateTime timestamp : conversations.keySet()) {
+            if (!csvConversationTimestampRepository.existsByTimestamp(timestamp)) {
+                addMessages(conversations.get(timestamp));
+                csvConversationTimestampRepository.save(new CsvConversationTimestamp(timestamp));
+                numberOfAddedConversations++;
+            }
+        }
+
+        return numberOfAddedConversations;
+    }
+
+    private Map<LocalDateTime, List<String>> getConversationsFromCsvString(final String csvString) {
+        final String[] lines = csvString.split("\\R");
+        final Map<LocalDateTime, List<String>> conversations = new HashMap<>();
+        List<String> conversation = new ArrayList<>();
+        for (int i = 1; i < lines.length; i++) {
+            final String line = lines[i];
+            if (line.startsWith("\"")) {
+                // new conversation
+                final String[] timestampAndFirstMessage = line.split("\",\"");
+                final LocalDateTime timestamp = convertStringToLocalDateTime(timestampAndFirstMessage[0].substring(1));
+                final String message = timestampAndFirstMessage[1];
+                conversation = new ArrayList<>();
+                conversation.add(message);
+                conversations.put(timestamp, conversation);
+            } else {
+                // inside a conversation
+                if (line.endsWith("\"")) {
+                    // end of conversation
+                    final String message = line.substring(0, line.length() - 1);
+                    conversation.add(message);
+                }
+                else {
+                    conversation.add(line);
+                }
+            }
+        }
+        return conversations;
+    }
+
+    private LocalDateTime convertStringToLocalDateTime(final String timestampeString) {
+        final String[] sections = timestampeString.split(" ");
+        final String[] dateSection = sections[0].split("/");
+        final String[] timeSection = sections[1].split(":");
+        return LocalDateTime.of(Integer.parseInt(dateSection[0]), Integer.parseInt(dateSection[1]), Integer.parseInt(dateSection[2]),
+                Integer.parseInt(timeSection[0]), Integer.parseInt(timeSection[1]), Integer.parseInt(timeSection[2]));
     }
 }
