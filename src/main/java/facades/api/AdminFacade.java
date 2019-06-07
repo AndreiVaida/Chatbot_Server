@@ -1,6 +1,7 @@
 package facades.api;
 
 import dtos.LinguisticExpressionDto;
+import dtos.MessageDto;
 import dtos.SentenceDto;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,5 +17,7 @@ public interface AdminFacade {
 
     LinguisticExpressionDto saveLinguisticExpression(final LinguisticExpressionDto linguisticExpressionDto);
 
-    Integer addMessages(final MultipartFile fileWithMessages) throws IOException;
+    Integer addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException;
+
+    Integer addMessages(final List<MessageDto> messageDtos);
 }

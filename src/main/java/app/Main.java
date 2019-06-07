@@ -35,15 +35,16 @@ public class Main {
 
         if (userService.findAll().isEmpty()) {
             addChatbotInDb(environment);
-            addAndreiInDb();
             addAdminInDb();
+            addUserForLearningInDb();
+            addAndreiInDb();
         }
 
 //        new Thread(() -> {
 //            try {
 //                Thread.sleep(5000);
 //                final List<MessageDto> messageDtos = facebookChatRepository.readChatFromJsonFile("message_1.json");
-//                fastLearningService.addMessages(messageDtos);
+//                fastLearningService.addMessagesFromFile(messageDtos);
 //                System.out.println("Learning finished successfully");
 //            } catch (Exception e) {
 //                e.printStackTrace();
@@ -62,14 +63,21 @@ public class Main {
         CHATBOT_ID = andy.getId();
     }
 
-    public void addAndreiInDb() {
-        final User user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", null);
-        userService.addUser(user);
-    }
-
     private void addAdminInDb() {
         final User admin = new User(null, "admin", "admin", "Admin", "Suprem", null);
         userService.addUser(admin);
+    }
+
+    private void addUserForLearningInDb() {
+        final User user1 = new User(null, "user1@yahoo.com", "parola", "User 1", "User 2", null);
+        final User user2 = new User(null, "user2@yahoo.com", "parola", "User 2", "User 2", null);
+        userService.addUser(user1);
+        userService.addUser(user2);
+    }
+
+    public void addAndreiInDb() {
+        final User user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", null);
+        userService.addUser(user);
     }
 
 }

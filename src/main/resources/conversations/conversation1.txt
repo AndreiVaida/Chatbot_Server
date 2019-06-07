@@ -1,6 +1,42 @@
-1
-2
-salut
-salutare
-ce mai faci ?
-bine, am luat o pauză de la învățat
+[
+    {
+    "fromUserId": "5",
+    "toUserId": "7",
+    "text": "salut",
+    },
+    {
+    "fromUserId": "7",
+    "toUserId": "5",
+    "text": "salut",
+    },
+    {
+    "fromUserId": "5",
+    "toUserId": "7",
+    "text": "bună",
+    },
+    {
+    "fromUserId": "7",
+    "toUserId": "5",
+    "text": "bună",
+    },
+    {
+    "fromUserId": "5",
+    "toUserId": "7",
+    "text": "salut",
+    },
+    {
+    "fromUserId": "7",
+    "toUserId": "5",
+    "text": "ce faci ?",
+    },
+    {
+    "fromUserId": "5",
+    "toUserId": "7",
+    "text": "bine, pe acasă",
+    },
+    {
+    "fromUserId": "7",
+    "toUserId": "5",
+    "text": "eu sunt la lucru",
+    },
+]

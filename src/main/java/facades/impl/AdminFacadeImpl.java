@@ -3,6 +3,7 @@ package facades.impl;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
 import dtos.LinguisticExpressionDto;
+import dtos.MessageDto;
 import dtos.SentenceDto;
 import facades.api.AdminFacade;
 import mappers.InformationMapper;
@@ -46,7 +47,12 @@ public class AdminFacadeImpl implements AdminFacade {
     }
 
     @Override
-    public Integer addMessages(final MultipartFile fileWithMessages) throws IOException {
-        return adminService.addMessages(fileWithMessages);
+    public Integer addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException {
+        return adminService.addMessagesFromFile(fileWithMessages);
+    }
+
+    @Override
+    public Integer addMessages(final List<MessageDto> messageDtos) {
+        return adminService.addMessages(messageDtos);
     }
 }

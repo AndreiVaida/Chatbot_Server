@@ -15,8 +15,8 @@ import repositories.SentenceRepository;
 import services.api.AdminService;
 import services.api.ChatService;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -32,27 +32,32 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public List<Sentence> getAllSentences() {
         return sentenceRepository.findAll();
     }
 
     @Override
+    @Transactional
     public Sentence saveSentence(final Sentence sentence) {
         return sentenceRepository.save(sentence);
     }
 
     @Override
+    @Transactional
     public List<LinguisticExpression> getAllLinguisticExpressions() {
         return linguisticExpressionRepository.findAll();
     }
 
     @Override
+    @Transactional
     public LinguisticExpression saveLinguisticExpression(final LinguisticExpression linguisticExpression) {
         return linguisticExpressionRepository.save(linguisticExpression);
     }
 
     @Override
-    public Integer addMessages(final MultipartFile fileWithMessags) throws IOException {
+    @Transactional
+    public Integer addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException {
         int numberOfAddedMessages = 0;
         final JSONParser jsonParser = new JSONParser(fileWithMessags.getInputStream());
         try {
@@ -69,6 +74,17 @@ public class AdminServiceImpl implements AdminService {
             e.printStackTrace();
         }
 
+        return numberOfAddedMessages;
+    }
+
+    @Override
+    @Transactional
+    public Integer addMessages(final List<MessageDto> messageDtos) {
+        int numberOfAddedMessages = 0;
+        for (MessageDto messageDto : messageDtos) {
+            chatService.addMessageAndLearn(messageDto.getMessage(), messageDto.getFromUserId(), messageDto.getToUserId(), MessageSource.USER_USER_CONVERSATION);
+            numberOfAddedMessages++;
+        }
         return numberOfAddedMessages;
     }
 }

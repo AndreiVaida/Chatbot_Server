@@ -15,5 +15,5 @@ public class LinguisticExpressionDto {
     private List<ExpressionItemDto> expressionItems;
     private SpeechType speechType;
     private InformationClassDto informationClassDto;
-    private String informationFieldName;
+    private String informationFieldNamePath;
 }

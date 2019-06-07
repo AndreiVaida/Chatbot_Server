@@ -2,6 +2,7 @@ package services.api;
 
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
+import dtos.MessageDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -16,5 +17,7 @@ public interface AdminService {
 
     LinguisticExpression saveLinguisticExpression(final LinguisticExpression linguisticExpression);
 
-    Integer addMessages(final MultipartFile fileWithMessags) throws IOException;
+    Integer addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException;
+
+    Integer addMessages(final List<MessageDto> messageDtos);
 }

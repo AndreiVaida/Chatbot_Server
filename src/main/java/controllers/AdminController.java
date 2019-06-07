@@ -1,6 +1,7 @@
 package controllers;
 
 import dtos.LinguisticExpressionDto;
+import dtos.MessageDto;
 import dtos.SentenceDto;
 import facades.api.AdminFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +52,15 @@ public class AdminController extends AbstractController {
         return new ResponseEntity<>(linguisticExpressionDto, HttpStatus.OK);
     }
 
-    @PostMapping("message")
-    public ResponseEntity<Integer> addMessages(@RequestParam("file") MultipartFile fileWithMessages) throws IOException {
-        final Integer numberOfAddedMessages = adminFacade.addMessages(fileWithMessages);
+    @PostMapping("/message")
+    public ResponseEntity<Integer> addMessages(@RequestBody List<MessageDto> messageDtos) {
+        final Integer numberOfAddedMessages = adminFacade.addMessages(messageDtos);
+        return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
+    }
+
+    @PostMapping("/messageFile")
+    public ResponseEntity<Integer> addMessagesFromFile(@RequestParam("file") MultipartFile file) throws IOException {
+        final Integer numberOfAddedMessages = adminFacade.addMessagesFromFile(file);
         return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
     }
 }
