@@ -5,6 +5,7 @@ import domain.entities.CsvConversationTimestamp;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
 import domain.enums.MessageSource;
+import dtos.AddedDataStatus;
 import dtos.MessageDto;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
@@ -66,7 +67,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public Integer addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException {
+    public AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException {
+        int numberOfMessages = 0;
         int numberOfAddedMessages = 0;
         final JSONParser jsonParser = new JSONParser(fileWithMessags.getInputStream());
         try {
@@ -77,34 +79,39 @@ public class AdminServiceImpl implements AdminService {
                 final Long toUserId = (Long) messageJson.get("toUserId");
                 final String text = (String) messageJson.get("text");
                 chatService.addMessageAndLearn(text, fromUserId, toUserId, MessageSource.USER_USER_CONVERSATION);
+                numberOfMessages++;
                 numberOfAddedMessages++;
             }
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        return numberOfAddedMessages;
+        return new AddedDataStatus(numberOfMessages, numberOfAddedMessages);
     }
 
     @Override
     @Transactional
-    public Integer addMessageDtos(final List<MessageDto> messageDtos) {
+    public AddedDataStatus addMessageDtos(final List<MessageDto> messageDtos) {
+        int numberOfMessages = 0;
         int numberOfAddedMessages = 0;
         for (MessageDto messageDto : messageDtos) {
             chatService.addMessageAndLearn(messageDto.getMessage(), messageDto.getFromUserId(), messageDto.getToUserId(), MessageSource.USER_USER_CONVERSATION);
+            numberOfMessages++;
             numberOfAddedMessages++;
         }
-        return numberOfAddedMessages;
+        return new AddedDataStatus(numberOfMessages, numberOfAddedMessages);
     }
 
     @Override
     @Transactional
-    public Integer addMessages(List<String> messages) {
+    public AddedDataStatus addMessages(List<String> messages) {
         Long user1Id = Main.USER_FOR_LEARNING_1_ID;
         Long user2Id = Main.USER_FOR_LEARNING_2_ID;
 
+        int numberOfMessages = 0;
         int numberOfAddedMessages = 0;
         for (String message : messages) {
+            numberOfMessages++;
             if (message.isEmpty()) {
                 continue;
             }
@@ -114,16 +121,18 @@ public class AdminServiceImpl implements AdminService {
             user1Id = user2Id;
             user2Id = auxId;
         }
-        return numberOfAddedMessages;
+        return new AddedDataStatus(numberOfMessages, numberOfAddedMessages);
     }
 
     @Override
     @Transactional
-    public Integer addMessagesFromCsvString(final String csvString) {
+    public AddedDataStatus addMessagesFromCsvString(final String csvString) {
         final Map<LocalDateTime, List<String>> conversations = getConversationsFromCsvString(csvString);
 
+        int numberOfConversations = 0;
         int numberOfAddedConversations = 0;
         for (LocalDateTime timestamp : conversations.keySet()) {
+            numberOfConversations++;
             if (!csvConversationTimestampRepository.existsByTimestamp(timestamp)) {
                 addMessages(conversations.get(timestamp));
                 csvConversationTimestampRepository.save(new CsvConversationTimestamp(timestamp));
@@ -131,7 +140,7 @@ public class AdminServiceImpl implements AdminService {
             }
         }
 
-        return numberOfAddedConversations;
+        return new AddedDataStatus(numberOfConversations, numberOfAddedConversations);
     }
 
     private Map<LocalDateTime, List<String>> getConversationsFromCsvString(final String csvString) {
@@ -140,6 +149,9 @@ public class AdminServiceImpl implements AdminService {
         List<String> conversation = new ArrayList<>();
         for (int i = 1; i < lines.length; i++) {
             final String line = lines[i];
+            if (line.replaceAll("\\s+","").isEmpty()) {
+                continue;
+            }
             if (line.startsWith("\"")) {
                 // new conversation
                 final String[] timestampAndFirstMessage = line.split("\",\"");

@@ -69,14 +69,31 @@ public class ChatbotServiceImpl implements ChatbotService {
             StringBuilder wordInConstruction = new StringBuilder();
             for (int j = 0; j < word.length(); j++) {
                 char character = word.charAt(j);
-                if (Character.isLetterOrDigit(character) || character == '-') {
-                    wordInConstruction.append(character);
-                } else {
-                    if (wordInConstruction.length() > 0) {
+                // check if the word in construction is a word/number or emoticon/... (3 dots)
+                if (wordInConstruction.length() == 0
+                        || (wordInConstruction.length() > 0 && (Character.isLetterOrDigit(wordInConstruction.charAt(0)) || wordInConstruction.charAt(0) == '-'))) {
+                    // normal word
+                    if (Character.isLetterOrDigit(character) || character == '-') {
+                        // continue add a letter to normal word
+                        wordInConstruction.append(character);
+                    } else {
+                        // the normal word ended, so save it and start building a word of punctuation marks
                         completeWordList.add(wordInConstruction.toString());
                         wordInConstruction = new StringBuilder();
+                        wordInConstruction.append(character);
                     }
-                    completeWordList.add(String.valueOf(character));
+                }
+                else {
+                    // word of punctuation marks
+                    if (!(Character.isLetterOrDigit(character) || character == '-')) {
+                        // continue add a punctuation to punctuation word
+                        wordInConstruction.append(character);
+                    } else {
+                        // the punctuation word ended, so save it and start building a normal word
+                        completeWordList.add(wordInConstruction.toString());
+                        wordInConstruction = new StringBuilder();
+                        wordInConstruction.append(character);
+                    }
                 }
             }
             if (wordInConstruction.length() > 0) {

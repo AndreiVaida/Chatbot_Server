@@ -2,6 +2,7 @@ package services.api;
 
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
+import dtos.AddedDataStatus;
 import dtos.MessageDto;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,16 +18,16 @@ public interface AdminService {
 
     LinguisticExpression saveLinguisticExpression(final LinguisticExpression linguisticExpression);
 
-    Integer addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException;
+    AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException;
 
-    Integer addMessageDtos(final List<MessageDto> messageDtos);
+    AddedDataStatus addMessageDtos(final List<MessageDto> messageDtos);
 
-    Integer addMessages(final List<String> messages);
+    AddedDataStatus addMessages(final List<String> messages);
 
     /**
      * The csv file from Google Forms.
      * @param csvString the content of the csv file as string. Its structure is: "TimeStamp","Message"
      * @return number of conversations added (we will not add existing conversation)
      */
-    Integer addMessagesFromCsvString(final String csvString);
+    AddedDataStatus addMessagesFromCsvString(final String csvString);
 }

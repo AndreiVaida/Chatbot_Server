@@ -1,5 +1,6 @@
 package facades.api;
 
+import dtos.AddedDataStatus;
 import dtos.LinguisticExpressionDto;
 import dtos.MessageDto;
 import dtos.SentenceDto;
@@ -17,11 +18,11 @@ public interface AdminFacade {
 
     LinguisticExpressionDto saveLinguisticExpression(final LinguisticExpressionDto linguisticExpressionDto);
 
-    Integer addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException;
+    AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException;
 
-    Integer addMessageDtos(final List<MessageDto> messageDtos);
+    AddedDataStatus addMessageDtos(final List<MessageDto> messageDtos);
 
-    Integer addMessages(final List<String> messages);
+    AddedDataStatus addMessages(final List<String> messages);
 
-    Integer addMessagesFromCsvString(final String csvString);
+    AddedDataStatus addMessagesFromCsvString(final String csvString);
 }

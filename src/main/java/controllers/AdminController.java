@@ -1,5 +1,6 @@
 package controllers;
 
+import dtos.AddedDataStatus;
 import dtos.LinguisticExpressionDto;
 import dtos.MessageDto;
 import dtos.SentenceDto;
@@ -53,21 +54,21 @@ public class AdminController extends AbstractController {
     }
 
     @PostMapping("/messageDto")
-    public ResponseEntity<Integer> addMessagesDto(@RequestBody List<MessageDto> messageDtos) {
-        final Integer numberOfAddedMessages = adminFacade.addMessageDtos(messageDtos);
-        return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
+    public ResponseEntity<AddedDataStatus> addMessagesDto(@RequestBody List<MessageDto> messageDtos) {
+        final AddedDataStatus addedDataStatus = adminFacade.addMessageDtos(messageDtos);
+        return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
     }
 
     @PostMapping("/message")
-    public ResponseEntity<Integer> addMessages(@RequestBody List<String> messages) {
-        final Integer numberOfAddedMessages = adminFacade.addMessages(messages);
-        return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
+    public ResponseEntity<AddedDataStatus> addMessages(@RequestBody List<String> messages) {
+        final AddedDataStatus addedDataStatus = adminFacade.addMessages(messages);
+        return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
     }
 
     @PostMapping("/messageFile")
-    public ResponseEntity<Integer> addMessagesFromFile(@RequestParam("file") MultipartFile file) throws IOException {
-        final Integer numberOfAddedMessages = adminFacade.addMessagesFromFile(file);
-        return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
+    public ResponseEntity<AddedDataStatus> addMessagesFromFile(@RequestParam("file") MultipartFile file) throws IOException {
+        final AddedDataStatus addedDataStatus = adminFacade.addMessagesFromFile(file);
+        return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
     }
 
     /**
@@ -75,8 +76,8 @@ public class AdminController extends AbstractController {
      * @param csvString the content of the csv file as string. Its structure is: "TimeStamp","Message"
      */
     @PostMapping("/messageCsv")
-    public ResponseEntity<Integer> addMessagesFromCsvString(@RequestBody String csvString) {
-        final Integer numberOfAddedMessages = adminFacade.addMessagesFromCsvString(csvString);
-        return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
+    public ResponseEntity<AddedDataStatus> addMessagesFromCsvString(@RequestBody String csvString) {
+        final AddedDataStatus addedDataStatus = adminFacade.addMessagesFromCsvString(csvString);
+        return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
     }
 }
