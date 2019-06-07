@@ -22,6 +22,8 @@ import java.util.Objects;
 @ComponentScan(basePackages = {"services", "facades", "controllers", "configuration", "app", "repositories"})
 public class Main {
     public static Long CHATBOT_ID;
+    public static Long USER_FOR_LEARNING_1_ID;
+    public static Long USER_FOR_LEARNING_2_ID;
     private final UserService userService;
     private final FastLearningService fastLearningService;
     private final FacebookChatRepository facebookChatRepository;
@@ -32,6 +34,8 @@ public class Main {
         this.fastLearningService = fastLearningService;
         this.facebookChatRepository = facebookChatRepository;
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
+        CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning1.id")));
+        CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning2.id")));
 
         if (userService.findAll().isEmpty()) {
             addChatbotInDb(environment);
@@ -73,6 +77,8 @@ public class Main {
         final User user2 = new User(null, "user2@yahoo.com", "parola", "User 2", "User 2", null);
         userService.addUser(user1);
         userService.addUser(user2);
+        USER_FOR_LEARNING_1_ID = user1.getId();
+        USER_FOR_LEARNING_2_ID = user2.getId();
     }
 
     public void addAndreiInDb() {

@@ -1,5 +1,6 @@
 package services.impl;
 
+import app.Main;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
 import domain.enums.MessageSource;
@@ -79,11 +80,31 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public Integer addMessages(final List<MessageDto> messageDtos) {
+    public Integer addMessageDtos(final List<MessageDto> messageDtos) {
         int numberOfAddedMessages = 0;
         for (MessageDto messageDto : messageDtos) {
             chatService.addMessageAndLearn(messageDto.getMessage(), messageDto.getFromUserId(), messageDto.getToUserId(), MessageSource.USER_USER_CONVERSATION);
             numberOfAddedMessages++;
+        }
+        return numberOfAddedMessages;
+    }
+
+    @Override
+    @Transactional
+    public Integer addMessages(List<String> messages) {
+        Long user1Id = Main.USER_FOR_LEARNING_1_ID;
+        Long user2Id = Main.USER_FOR_LEARNING_2_ID;
+
+        int numberOfAddedMessages = 0;
+        for (String message : messages) {
+            if (message.isEmpty()) {
+                continue;
+            }
+            chatService.addMessageAndLearn(message, user1Id, user2Id, MessageSource.USER_USER_CONVERSATION);
+            numberOfAddedMessages++;
+            final Long auxId = user1Id;
+            user1Id = user2Id;
+            user2Id = auxId;
         }
         return numberOfAddedMessages;
     }

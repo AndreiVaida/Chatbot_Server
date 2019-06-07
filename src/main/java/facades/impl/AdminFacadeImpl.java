@@ -52,7 +52,12 @@ public class AdminFacadeImpl implements AdminFacade {
     }
 
     @Override
-    public Integer addMessages(final List<MessageDto> messageDtos) {
-        return adminService.addMessages(messageDtos);
+    public Integer addMessageDtos(final List<MessageDto> messageDtos) {
+        return adminService.addMessageDtos(messageDtos);
+    }
+
+    @Override
+    public Integer addMessages(final List<String> messages) {
+        return adminService.addMessages(messages);
     }
 }

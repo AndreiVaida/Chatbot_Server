@@ -52,9 +52,15 @@ public class AdminController extends AbstractController {
         return new ResponseEntity<>(linguisticExpressionDto, HttpStatus.OK);
     }
 
+    @PostMapping("/messageDto")
+    public ResponseEntity<Integer> addMessagesDto(@RequestBody List<MessageDto> messageDtos) {
+        final Integer numberOfAddedMessages = adminFacade.addMessageDtos(messageDtos);
+        return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
+    }
+
     @PostMapping("/message")
-    public ResponseEntity<Integer> addMessages(@RequestBody List<MessageDto> messageDtos) {
-        final Integer numberOfAddedMessages = adminFacade.addMessages(messageDtos);
+    public ResponseEntity<Integer> addMessages(@RequestBody List<String> messages) {
+        final Integer numberOfAddedMessages = adminFacade.addMessages(messages);
         return new ResponseEntity<>(numberOfAddedMessages, HttpStatus.OK);
     }
 

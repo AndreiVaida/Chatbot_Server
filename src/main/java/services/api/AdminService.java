@@ -19,5 +19,7 @@ public interface AdminService {
 
     Integer addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException;
 
-    Integer addMessages(final List<MessageDto> messageDtos);
+    Integer addMessageDtos(final List<MessageDto> messageDtos);
+
+    Integer addMessages(final List<String> messages);
 }
