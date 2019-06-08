@@ -29,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -82,8 +83,7 @@ public class ChatbotServiceImpl implements ChatbotService {
                         wordInConstruction = new StringBuilder();
                         wordInConstruction.append(character);
                     }
-                }
-                else {
+                } else {
                     // word of punctuation marks
                     if (!(Character.isLetterOrDigit(character) || character == '-')) {
                         // continue add a punctuation to punctuation word
@@ -489,14 +489,22 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     private Sentence generateDefaultSentence() {
-        final Word word = new Word();
-        word.setText("Salut");
-        wordRepository.save(word);
-        final Sentence sentence = new Sentence();
-        sentence.getWords().add(word);
-        sentence.setSpeechType(STATEMENT);
-        sentenceRepository.save(sentence);
-        return sentence;
+        Word word = wordRepository.getByTextIgnoreCase("salut");
+        boolean wordExists = word != null;
+        if (wordExists) {
+            final List<Word> words = new ArrayList<>();
+            words.add(word);
+            return sentenceRepository.getAllByWords(words).stream().min(Comparator.comparingInt(s -> s.getWords().size())).get();
+        } else {
+            word = new Word();
+            word.setText("Salut");
+            //wordRepository.save(word);
+            final Sentence sentence = new Sentence();
+            sentence.getWords().add(word);
+            sentence.setSpeechType(STATEMENT);
+            sentenceRepository.save(sentence);
+            return sentence;
+        }
     }
 
     @Override

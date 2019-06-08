@@ -29,7 +29,7 @@ public class Word {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column
+    @Column(unique = true)
     private String text;
 
     @ElementCollection
@@ -68,7 +68,7 @@ public class Word {
         if (o == null || getClass() != o.getClass()) return false;
         Word word = (Word) o;
         return Objects.equals(id, word.id) &&
-                Objects.equals(text, word.text);
+                Objects.equals(text.toLowerCase(), word.text.toLowerCase());
     }
 
     @Override
