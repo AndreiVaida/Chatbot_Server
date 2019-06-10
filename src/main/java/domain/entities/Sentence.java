@@ -37,7 +37,7 @@ public class Sentence {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany
     @JoinTable(
             name = "SENTENCES_WORDS",
             joinColumns = {@JoinColumn(name = "SENTENCE_ID")},

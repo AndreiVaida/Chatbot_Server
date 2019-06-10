@@ -1,0 +1,20 @@
+[
+  {
+    "text": "Care e numele tău ?",
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "firstName"
+  },
+  {
+    "text": "Care e numele tău de familie ?",
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "surname"
+  },
+  {
+    "text": "Care e prenumele tău ?",
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "firstName"
+  }
+]

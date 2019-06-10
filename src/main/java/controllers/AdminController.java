@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +31,7 @@ public class AdminController extends AbstractController {
         this.adminFacade = adminFacade;
     }
 
+    // SENTENCE
     @GetMapping("/sentence")
     public ResponseEntity<List<SentenceDto>> getAllSentences() {
         final List<SentenceDto> sentencesDto = adminFacade.getAllSentences();
@@ -41,6 +44,7 @@ public class AdminController extends AbstractController {
         return new ResponseEntity<>(sentenceDto, HttpStatus.OK);
     }
 
+    // LINGUISTIC EXPRESSION
     @GetMapping("/linguisticExpression")
     public ResponseEntity<List<LinguisticExpressionDto>> getAllLinguisticExpressions() {
         final List<LinguisticExpressionDto> linguisticExpressionDtos = adminFacade.getAllLinguisticExpressions();
@@ -53,6 +57,7 @@ public class AdminController extends AbstractController {
         return new ResponseEntity<>(linguisticExpressionDto, HttpStatus.OK);
     }
 
+    // MESSAGE
     @PostMapping("/messageDto")
     public ResponseEntity<AddedDataStatus> addMessagesDto(@RequestBody List<MessageDto> messageDtos) {
         final AddedDataStatus addedDataStatus = adminFacade.addMessageDtos(messageDtos);
@@ -65,10 +70,36 @@ public class AdminController extends AbstractController {
         return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
     }
 
-    @PostMapping("/messageFile")
-    public ResponseEntity<AddedDataStatus> addMessagesFromFile(@RequestParam("file") MultipartFile file) throws IOException {
-        final AddedDataStatus addedDataStatus = adminFacade.addMessagesFromFile(file);
-        return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
+    /**
+     * @param file = a file with Conversations (CSV), QuestionsAndAnswers (CSV), LinguisticExpressions (JSON) or Sentences (JSON)
+     * @param fileContentType: "questionsAndAnswers", "sentences", "linguisticExpressions"
+     * @return the number of added data (only new data is added)
+     */
+    @PostMapping("/fileWithData/{fileContentType}")
+    public ResponseEntity<AddedDataStatus> addMessagesFromFile(@RequestParam("file") MultipartFile file, @PathVariable String fileContentType) throws IOException {
+        switch (fileContentType) {
+            case "conversations": {
+                final AddedDataStatus addedDataStatus = adminFacade.addMessagesFromFile(file);
+                return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
+            }
+            case "questionsAndAnswers": {
+//                final AddedDataStatus addedDataStatus = adminFacade.addQuestionsAndAnswersFromCsvFile(file);
+//                return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
+                return new ResponseEntity<>(new AddedDataStatus(0,0), HttpStatus.ACCEPTED);
+            }
+            case "sentences": {
+                final AddedDataStatus addedDataStatus = adminFacade.addSentencesFromJsonFile(file);
+                return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
+            }
+            case "linguisticExpressions": {
+//                final AddedDataStatus addedDataStatus = adminFacade.addLinguisticExpressionsFromJsonFile(file);
+//                return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
+                return new ResponseEntity<>(new AddedDataStatus(0,0), HttpStatus.ACCEPTED);
+            }
+            default: {
+                return new ResponseEntity<>(new AddedDataStatus(0,0), HttpStatus.BAD_REQUEST);
+            }
+        }
     }
 
     /**

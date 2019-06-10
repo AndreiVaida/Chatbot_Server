@@ -2,10 +2,14 @@ package mappers;
 
 import domain.entities.Sentence;
 import domain.entities.Word;
+import domain.enums.SpeechType;
+import dtos.InformationClassDto;
 import dtos.SentenceDto;
 import dtos.WordDto;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -46,21 +50,39 @@ public class SentenceMapper {
         return sentence;
     }
 
+    public static Sentence sentenceJsonToSentence(final String[] wordArray, final SpeechType speechType, final InformationClassDto informationClassDto, final String informationFieldNamePath) {
+        final Sentence sentence = new Sentence();
+        final List<Word> words = new ArrayList<>();
+        for (String wordText : wordArray) {
+            words.add(new Word(wordText));
+        }
+        sentence.setWords(words);
+        sentence.setSpeechType(speechType);
+        sentence.setInformationClass(InformationMapper.informationClassDtoToClassOfInformation(informationClassDto));
+        sentence.setInformationFieldNamePath(informationFieldNamePath);
+        return sentence;
+    }
+
     private static WordDto wordToWordDto(final Word word) {
         final WordDto wordDto = new WordDto();
         wordDto.setId(word.getId());
         wordDto.setText(word.getText());
-        wordDto.setSynonyms(word.getSynonyms().keySet().stream().collect(Collectors.toMap(SentenceMapper::wordToWordDto, synonym -> word.getSynonyms().get(synonym))));
+        wordDto.setSynonyms(word.getSynonyms().keySet().stream().collect(Collectors.toMap(Word::getId, synonym -> word.getSynonyms().get(synonym))));
         return wordDto;
     }
 
-    private static Word wordDtoToWord(final WordDto wordDto1) {
+    /**
+     * WARNING: the synonyms have only the id
+     */
+    private static Word wordDtoToWord(final WordDto wordDto) {
         final Word word = new Word();
-        word.setId(wordDto1.getId());
-        word.setText(wordDto1.getText());
+        word.setId(wordDto.getId());
+        word.setText(wordDto.getText());
         final Map<Word, Integer> synonyms = new HashMap<>();
-        for (WordDto wordDto : wordDto1.getSynonyms().keySet()) {
-            synonyms.put(wordDtoToWord(wordDto), wordDto1.getSynonyms().get(wordDto));
+        for (Long synonymId : wordDto.getSynonyms().keySet()) {
+            final Word synonym = new Word();
+            synonym.setId(synonymId);
+            synonyms.put(word, wordDto.getSynonyms().get(synonymId));
         }
         word.setSynonyms(synonyms);
         return word;

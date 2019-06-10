@@ -67,8 +67,28 @@ public class Word {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Word word = (Word) o;
-        return Objects.equals(id, word.id) &&
-                Objects.equals(text.toLowerCase(), word.text.toLowerCase());
+        return Objects.equals(id, word.id) ||
+                Objects.equals(text.toLowerCase(), word.text.toLowerCase()) ||
+                Objects.equals(replaceDiacritics(text.toLowerCase()), replaceDiacritics(word.text.toLowerCase()));
+    }
+
+    /**
+     * Replace ăîșțâ with aista
+     */
+    private String replaceDiacritics(final String text) {
+        // lowercase
+        String newText = text.replaceAll("ă", "a");
+        newText = newText.replaceAll("â", "a");
+        newText = newText.replaceAll("ș", "s");
+        newText = newText.replaceAll("ț", "t");
+        newText = newText.replaceAll("î", "i");
+        // uppercase
+        newText = newText.replaceAll("Ă", "A");
+        newText = newText.replaceAll("Â", "A");
+        newText = newText.replaceAll("Ș", "S");
+        newText = newText.replaceAll("Ț", "T");
+        newText = newText.replaceAll("Î", "I");
+        return newText;
     }
 
     @Override

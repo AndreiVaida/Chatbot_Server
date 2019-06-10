@@ -13,5 +13,5 @@ import java.util.Map;
 public class WordDto {
     private Long id;
     private String text;
-    private Map<WordDto, Integer> synonyms = new HashMap<>(); // <synonym, frequency>
+    private Map<Long, Integer> synonyms = new HashMap<>(); // <synonymId, frequency>
 }

@@ -44,7 +44,7 @@ public class RelationshipsInformation implements Information {
     @Column
     private Integer numberOfBrothersAndSisters;
 
-    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
     @JoinColumn(name = "BROTHERS_SISTERS_INFORMATION")
     @MapKey(name = "firstName")
     private Map<String, PersonalInformation> brothersAndSistersPersonalInformation = new HashMap<>();
@@ -52,7 +52,7 @@ public class RelationshipsInformation implements Information {
     @Column
     private Integer numberOfGrandparents;
 
-    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
     @JoinColumn(name = "GRANDPARENTS_INFORMATION")
     @MapKey(name = "firstName")
     private Map<String, PersonalInformation> grandparentsPersonalInformation = new HashMap<>();
@@ -64,7 +64,7 @@ public class RelationshipsInformation implements Information {
     @Column
     private Integer numberOfKids;
 
-    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
     @JoinColumn(name = "KIDS_INFORMATION")
     @MapKey(name = "firstName")
     private Map<String, PersonalInformation> kidsPersonalInformation = new HashMap<>(); // <kidFirstName, PersonalInformation>

@@ -25,4 +25,6 @@ public interface AdminFacade {
     AddedDataStatus addMessages(final List<String> messages);
 
     AddedDataStatus addMessagesFromCsvString(final String csvString);
+
+    AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException;
 }

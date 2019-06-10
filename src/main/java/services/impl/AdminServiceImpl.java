@@ -4,9 +4,14 @@ import app.Main;
 import domain.entities.CsvConversationTimestamp;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
+import domain.entities.Word;
 import domain.enums.MessageSource;
+import domain.enums.SpeechType;
 import dtos.AddedDataStatus;
+import dtos.InformationClassDto;
 import dtos.MessageDto;
+import dtos.WordDto;
+import mappers.SentenceMapper;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
 import org.json.simple.JSONArray;
@@ -16,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import repositories.CsvConversationTimestampRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.SentenceRepository;
+import repositories.WordRepository;
 import services.api.AdminService;
 import services.api.ChatService;
 
@@ -27,15 +33,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static services.impl.ChatbotServiceImpl.splitInWords;
+
 @Service
 public class AdminServiceImpl implements AdminService {
     private final SentenceRepository sentenceRepository;
+    private final WordRepository wordRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final ChatService chatService;
     private final CsvConversationTimestampRepository csvConversationTimestampRepository;
 
-    public AdminServiceImpl(SentenceRepository sentenceRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, CsvConversationTimestampRepository csvConversationTimestampRepository) {
+    public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, CsvConversationTimestampRepository csvConversationTimestampRepository) {
         this.sentenceRepository = sentenceRepository;
+        this.wordRepository = wordRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         this.chatService = chatService;
         this.csvConversationTimestampRepository = csvConversationTimestampRepository;
@@ -50,6 +60,16 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public Sentence saveSentence(final Sentence sentence) {
+        for (int i = 0; i < sentence.getWords().size(); i++) {
+            final Word word = sentence.getWords().get(i);
+            final Word existingWord = wordRepository.getByTextIgnoreCase(word.getText());
+            if (existingWord == null) {
+                wordRepository.save(word);
+            }
+            else {
+                sentence.getWords().set(i, existingWord);
+            }
+        }
         return sentenceRepository.save(sentence);
     }
 
@@ -141,6 +161,46 @@ public class AdminServiceImpl implements AdminService {
         }
 
         return new AddedDataStatus(numberOfConversations, numberOfAddedConversations);
+    }
+
+    @Override
+    public AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException {
+        int numberOfSentences = 0;
+        int numberOfAddedSentences = 0;
+        final JSONParser jsonParser = new JSONParser(sentencesJsonFile.getInputStream());
+        try {
+            final List<Object> jsonSentences = (List<Object>) jsonParser.parse();
+            for (Object sentenceObject : jsonSentences) {
+                final Map<String, Object> sentenceJsonMap = (Map<String, Object>) sentenceObject;
+                final String text = (String) sentenceJsonMap.get("text");
+                final String[] words = splitInWords(text);
+                final SpeechType speechType = SpeechType.valueOf((String) sentenceJsonMap.get("speechType"));
+                final InformationClassDto informationClassDto = InformationClassDto.valueOf((String) sentenceJsonMap.get("informationClassDto"));
+                final String informationFieldNamePath = (String) sentenceJsonMap.get("informationFieldNamePath");
+
+                final Sentence sentence = SentenceMapper.sentenceJsonToSentence(words, speechType, informationClassDto, informationFieldNamePath);
+                saveSentence(sentence);
+                numberOfSentences++;
+                numberOfAddedSentences++;
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return new AddedDataStatus(numberOfSentences, numberOfAddedSentences);
+    }
+
+    private List<WordDto> convertWordJsonArrayToWordDtoList(final JSONArray wordsJson) {
+        final List<WordDto> wordDtos = new ArrayList<>();
+        for (Object wordObject : wordsJson) {
+            final JSONObject wordJson = (JSONObject) wordObject;
+            final String text = (String) wordJson.get("text");
+            final Object synonyms = wordJson.get("synonyms");
+            final WordDto wordDto = new WordDto();
+            wordDto.setText(text);
+            wordDtos.add(wordDto);
+        }
+        return wordDtos;
     }
 
     private Map<LocalDateTime, List<String>> getConversationsFromCsvString(final String csvString) {

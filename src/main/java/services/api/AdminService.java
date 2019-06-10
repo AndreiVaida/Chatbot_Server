@@ -30,4 +30,14 @@ public interface AdminService {
      * @return number of conversations added (we will not add existing conversation)
      */
     AddedDataStatus addMessagesFromCsvString(final String csvString);
+
+    /**
+     * WARNING: add all sentences, it does not verify if a sentence already exists
+     * A sentence should have:
+     *      text: String
+     *      speechType: SpeechType
+     *      informationClassDto: InformationClassDto
+     *      informationFieldNamePath: String
+     */
+    AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException;
 }
