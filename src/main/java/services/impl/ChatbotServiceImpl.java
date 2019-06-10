@@ -79,7 +79,9 @@ public class ChatbotServiceImpl implements ChatbotService {
                         wordInConstruction.append(character);
                     } else {
                         // the normal word ended, so save it and start building a word of punctuation marks
-                        completeWordList.add(wordInConstruction.toString());
+                        if (wordInConstruction.length() > 0) {
+                            completeWordList.add(wordInConstruction.toString());
+                        }
                         wordInConstruction = new StringBuilder();
                         wordInConstruction.append(character);
                     }
@@ -90,7 +92,9 @@ public class ChatbotServiceImpl implements ChatbotService {
                         wordInConstruction.append(character);
                     } else {
                         // the punctuation word ended, so save it and start building a normal word
-                        completeWordList.add(wordInConstruction.toString());
+                        if (wordInConstruction.length() > 0) {
+                            completeWordList.add(wordInConstruction.toString());
+                        }
                         wordInConstruction = new StringBuilder();
                         wordInConstruction.append(character);
                     }
