@@ -49,11 +49,11 @@ public class Address {
     private String street;
 
     @Column(name = "STREET_NUMBER")
-    private String streetNumber;
+    private Integer streetNumber;
 
     @Column(name = "FLOOR")
-    private String floor;
+    private Integer floor;
 
     @Column(name = "APARTMENT_NUMBER")
-    private String apartmentNumber;
+    private Integer apartmentNumber;
 }

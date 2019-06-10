@@ -157,7 +157,7 @@ public class ChatServiceImpl implements ChatService {
         switch (chatbotRequestType) {
             case LEARN_TO_SPEAK: sentence = chatbotService.pickSentenceWithFewReplies(); break;
             case GET_INFORMATION_FROM_USER: sentence = chatbotService.pickSentenceRequestingInformation(toUser); break;
-            default: sentence = chatbotService.pickRandomSentence(); break;
+            default: sentence = chatbotService.pickSentenceRequestingInformation(toUser); break;
         }
         return messageService.addMessage(chatbotService.translateSentenceToText(sentence), fromUser, toUser, sentence, MessageSource.USER_CHATBOT_CONVERSATION);
     }

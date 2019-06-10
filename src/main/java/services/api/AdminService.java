@@ -33,11 +33,13 @@ public interface AdminService {
 
     /**
      * WARNING: add all sentences, it does not verify if a sentence already exists
-     * A sentence should have:
-     *      text: String
+     * A JSON sentence have:
+     *      texts: String[]
      *      speechType: SpeechType
      *      informationClassDto: InformationClassDto
      *      informationFieldNamePath: String
      */
     AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException;
+
+    AddedDataStatus addLinguisticExpressionsFromJsonFile(final MultipartFile linguisticExpressionsJsonFile) throws IOException;
 }

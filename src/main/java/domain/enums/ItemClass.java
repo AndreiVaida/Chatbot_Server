@@ -6,6 +6,6 @@ public enum ItemClass {
     NUMBER,
     BOOLEAN,
     DATE,
-    ADDRESS,
+    LOCALITY_TYPE,
     GENDER
 }

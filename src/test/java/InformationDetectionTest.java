@@ -3,6 +3,7 @@ import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.enums.Gender;
 import domain.enums.ItemClass;
+import domain.enums.LocalityType;
 import domain.enums.SpeechType;
 import domain.information.FreeTimeInformation;
 import domain.information.Information;
@@ -29,6 +30,7 @@ import java.util.List;
 import static domain.enums.ItemClass.BOOLEAN;
 import static domain.enums.ItemClass.DATE;
 import static domain.enums.ItemClass.GENDER;
+import static domain.enums.ItemClass.LOCALITY_TYPE;
 import static domain.enums.ItemClass.NAME;
 import static domain.enums.ItemClass.NOT_AN_INFORMATION;
 import static domain.enums.ItemClass.NUMBER;
@@ -322,6 +324,25 @@ public class InformationDetectionTest {
         Assert.assertEquals(PersonalInformation.class, information.getClass());
         personalInformation = (PersonalInformation) information;
         Assert.assertEquals("Cluj-Napoca", personalInformation.getHomeAddress().getLocality());
+
+        /* DIRECTIVE: "Locuiești la țară sau la oraș ?" */
+        // TEST 1: "Locuiesc la țară"
+        // add linguistic expression
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("la", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, LOCALITY_TYPE));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldNamePath("homeAddress.localityType");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationService.addLinguisticExpression(linguisticExpression);
+
+        // Test 1.1: homeAddress.localityType ("la NAME")
+        information = informationService.identifyInformation(PersonalInformation.class, "homeAddress.localityType", new Message("Locuiesc la țară"));
+        Assert.assertEquals(PersonalInformation.class, information.getClass());
+        personalInformation = (PersonalInformation) information;
+        Assert.assertEquals(LocalityType.RURAL, personalInformation.getHomeAddress().getLocalityType());
     }
 
     @Test

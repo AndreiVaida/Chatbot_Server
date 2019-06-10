@@ -32,6 +32,9 @@ public class Word {
     @Column(unique = true)
     private String text;
 
+    @Column
+    private String textWithoutDiacritics;
+
     @ElementCollection
     @CollectionTable(name="WORD_SYNONYMS",
             joinColumns=@JoinColumn(name="SYNONYM_ID"))
@@ -39,6 +42,12 @@ public class Word {
 
     public Word(String text) {
         this.text = text;
+        this.textWithoutDiacritics = replaceDiacritics(text);
+    }
+
+    public void setText(String text) {
+        this.text = text;
+        this.textWithoutDiacritics = replaceDiacritics(text);
     }
 
     /**
@@ -75,7 +84,7 @@ public class Word {
     /**
      * Replace ăîșțâ with aista
      */
-    private String replaceDiacritics(final String text) {
+    public static String replaceDiacritics(final String text) {
         // lowercase
         String newText = text.replaceAll("ă", "a");
         newText = newText.replaceAll("â", "a");

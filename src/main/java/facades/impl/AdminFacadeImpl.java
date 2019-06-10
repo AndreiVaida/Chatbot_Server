@@ -71,4 +71,9 @@ public class AdminFacadeImpl implements AdminFacade {
     public AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException {
         return adminService.addSentencesFromJsonFile(sentencesJsonFile);
     }
+
+    @Override
+    public AddedDataStatus addLinguisticExpressionsFromJsonFile(final MultipartFile linguisticExpressionsJsonFile) throws IOException {
+        return adminService.addLinguisticExpressionsFromJsonFile(linguisticExpressionsJsonFile);
+    }
 }

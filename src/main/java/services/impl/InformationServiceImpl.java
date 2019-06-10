@@ -6,6 +6,7 @@ import domain.entities.Message;
 import domain.entities.SimpleDate;
 import domain.enums.Gender;
 import domain.enums.ItemClass;
+import domain.enums.LocalityType;
 import domain.enums.SpeechType;
 import domain.information.Information;
 import domain.information.PersonalInformation;
@@ -323,12 +324,16 @@ public class InformationServiceImpl implements InformationService {
      *                         if BOOLEAN: return boolean
      *                         if DATE: return SimpleDate
      *                         if GENDER: return Gender
+     *                         if LOCALITY_TYPE: return AddressType
      *                         else: return String
      * @return the information converted the corresponding Java class or <null> if it cannot be converted
      */
     private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass) {
         switch (itemClass) {
             case NUMBER: {
+                if (informationWords[0].toLowerCase().equals("parter")) return 0;
+                if (informationWords[0].toLowerCase().equals("subsol")) return -1;
+                if (informationWords[0].toLowerCase().equals("ultimul")) return 10;
                 return Integer.valueOf(informationWords[0]);
             }
 
@@ -359,10 +364,23 @@ public class InformationServiceImpl implements InformationService {
             }
 
             case GENDER: {
-                if (informationWords[0].toLowerCase().startsWith("b")) {
+                if (informationWords[0].toLowerCase().startsWith("b") || informationWords[0].toLowerCase().startsWith("mas")) {
                     return Gender.MALE;
                 }
-                return Gender.FEMALE;
+                if (informationWords[0].toLowerCase().startsWith("f")) {
+                    return Gender.FEMALE;
+                }
+                return null;
+            }
+
+            case LOCALITY_TYPE: {
+                if (informationWords[0].toLowerCase().startsWith("ța") || informationWords[0].toLowerCase().startsWith("ta") || informationWords[0].toLowerCase().startsWith("sat") || informationWords[0].toLowerCase().startsWith("ru")) { // țară || sat || rural
+                    return LocalityType.RURAL;
+                }
+                if (informationWords[0].toLowerCase().startsWith("or") || informationWords[0].toLowerCase().startsWith("ur")) { // oraș || urban
+                    return LocalityType.RURAL;
+                }
+                return null;
             }
 
             default: { // NAME or anything else

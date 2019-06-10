@@ -1,5 +1,6 @@
 package services.impl;
 
+import domain.entities.Address;
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
@@ -7,6 +8,7 @@ import domain.entities.Sentence;
 import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.entities.Word;
+import domain.enums.LocalityType;
 import domain.enums.SpeechType;
 import domain.information.FacultyInformation;
 import domain.information.FreeTimeInformation;
@@ -34,10 +36,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static domain.enums.LocalityType.RURAL;
+import static domain.enums.LocalityType.URBAN;
 import static domain.enums.SpeechType.ACKNOWLEDGEMENT;
 import static domain.enums.SpeechType.DIRECTIVE;
 import static domain.enums.SpeechType.STATEMENT;
@@ -120,9 +125,9 @@ public class ChatbotServiceImpl implements ChatbotService {
         final List<Word> sentenceWords = new ArrayList<>();
         for (String word : words) {
             // check if the word already exists in DB - if not: create a new one
-            final Word existingWord = wordRepository.getByTextIgnoreCase(word);
-            if (existingWord != null) {
-                sentenceWords.add(existingWord);
+            final List<Word> existingWords = wordRepository.getByTextWithoutDiacriticsIgnoreCase(Word.replaceDiacritics(word));
+            if (!existingWords.isEmpty()) {
+                sentenceWords.add(existingWords.get(0));
             } else {
                 final Word newWord = new Word();
                 newWord.setText(word);
@@ -170,7 +175,7 @@ public class ChatbotServiceImpl implements ChatbotService {
                     continue; // ok - matched a synonym
                 }
             }
-            if (existingSentence.getWords().stream().anyMatch(word -> word.getText().toLowerCase().equals(newSentenceWord.toLowerCase()))) {
+            if (existingSentence.getWords().stream().anyMatch(word -> word.equals(new Word(newSentenceWord)))) {
                 allWordsAreInTheSamePositions = false;
                 nrOfMatchedWords++;
                 continue; // ok - the word is somewhere else in the sentence
@@ -472,6 +477,9 @@ public class ChatbotServiceImpl implements ChatbotService {
     private boolean containsExpression(final List<String> sentence, final List<String> expression) {
         int i = 0;
         for (String wordE : expression) {
+            if (i >= sentence.size()) {
+                return false;
+            }
             final String wordS = sentence.get(i);
             if (wordE == null || wordE.toLowerCase().equals(wordS.toLowerCase())) {
                 i++;
@@ -493,14 +501,14 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     private Sentence generateDefaultSentence() {
-        Word word = wordRepository.getByTextIgnoreCase("salut");
-        boolean wordExists = word != null;
+        final List<Word> wordsWithoutDiacritics = wordRepository.getByTextWithoutDiacriticsIgnoreCase("salut");
+        boolean wordExists = !wordsWithoutDiacritics.isEmpty();
         if (wordExists) {
             final List<Word> words = new ArrayList<>();
-            words.add(word);
+            words.add(wordsWithoutDiacritics.get(0));
             return sentenceRepository.getAllByWords(words).stream().min(Comparator.comparingInt(s -> s.getWords().size())).get();
         } else {
-            word = new Word();
+            final Word word = new Word();
             word.setText("Salut");
             //wordRepository.save(word);
             final Sentence sentence = new Sentence();
@@ -567,7 +575,27 @@ public class ChatbotServiceImpl implements ChatbotService {
         if (sentences.isEmpty()) {
             return generateDefaultSentence();
         }
+        if (informationFieldNamePath.endsWith("locality") && user.getPersonalInformation().getHomeAddress().getLocalityType() != null) {
+            String localityType = "sat";
+            if (user.getPersonalInformation().getHomeAddress().getLocalityType().equals(URBAN)) {
+                localityType = "oraș";
+            }
+            final List<Sentence> sentencesByLocalityType = getSentencesThatContains(sentences, new Word(localityType));
+            return sentencesByLocalityType.get(random.nextInt(sentencesByLocalityType.size()));
+        }
         return sentences.get(random.nextInt(sentences.size()));
+    }
+
+    private List<Sentence> getSentencesThatContains(final List<Sentence> sentences, final Word wordToContain) {
+        final List<Sentence> sentencesThatContainsTheWord = new ArrayList<>();
+        for (Sentence sentence : sentences) {
+            for (Word word : sentence.getWords()) {
+                if (word.equals(wordToContain)) {
+                    sentencesThatContainsTheWord.add(sentence);
+                }
+            }
+        }
+        return sentencesThatContainsTheWord;
     }
 
     /**
@@ -623,9 +651,16 @@ public class ChatbotServiceImpl implements ChatbotService {
                     if (getterOfInformation.getReturnType().equals(HashMap.class) || getterOfInformation.getReturnType().equals(ArrayList.class)) {
                         return fieldName + "#?";
                     }
+                    if (fieldName.startsWith("homeAddress")) {
+                        final Method getterOfAddress = Address.class.getMethod("getLocalityType");
+                        final LocalityType localityType = (LocalityType) getterOfAddress.invoke(information);
+                        if (localityType != null && localityType.equals(RURAL) && (fieldName.endsWith("neighborhood") || fieldName.endsWith("floor") || fieldName.endsWith("apartmentNumber"))) {
+                            continue;
+                        }
+                    }
                     return fieldName;
                 } else {
-                    // the information is not null, but, if it is a complex object (ex: SimpleDate, PersonalInformation, Map, List etc.)
+                    // the information is not null, but if it's a complex object (ex: SimpleDate, PersonalInformation, Map, List etc.) check if has null attributes
                     if (info instanceof SimpleDate) {
                         final SimpleDate simpleDate = (SimpleDate) info;
                         if (simpleDate.getYear() == null) {

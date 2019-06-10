@@ -2,15 +2,20 @@ package services.impl;
 
 import app.Main;
 import domain.entities.CsvConversationTimestamp;
+import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
 import domain.entities.Word;
+import domain.enums.ItemClass;
 import domain.enums.MessageSource;
 import domain.enums.SpeechType;
 import dtos.AddedDataStatus;
+import dtos.ExpressionItemDto;
 import dtos.InformationClassDto;
+import dtos.LinguisticExpressionDto;
 import dtos.MessageDto;
 import dtos.WordDto;
+import mappers.InformationMapper;
 import mappers.SentenceMapper;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
@@ -62,12 +67,12 @@ public class AdminServiceImpl implements AdminService {
     public Sentence saveSentence(final Sentence sentence) {
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
-            final Word existingWord = wordRepository.getByTextIgnoreCase(word.getText());
-            if (existingWord == null) {
+            final List<Word> existingWords = wordRepository.getByTextWithoutDiacriticsIgnoreCase(word.getTextWithoutDiacritics());
+            if (existingWords == null) {
                 wordRepository.save(word);
             }
             else {
-                sentence.getWords().set(i, existingWord);
+                sentence.getWords().set(i, existingWords.get(0));
             }
         }
         return sentenceRepository.save(sentence);
@@ -172,22 +177,59 @@ public class AdminServiceImpl implements AdminService {
             final List<Object> jsonSentences = (List<Object>) jsonParser.parse();
             for (Object sentenceObject : jsonSentences) {
                 final Map<String, Object> sentenceJsonMap = (Map<String, Object>) sentenceObject;
-                final String text = (String) sentenceJsonMap.get("text");
-                final String[] words = splitInWords(text);
+                final List<Object> texts = (List<Object>) sentenceJsonMap.get("texts");
                 final SpeechType speechType = SpeechType.valueOf((String) sentenceJsonMap.get("speechType"));
                 final InformationClassDto informationClassDto = InformationClassDto.valueOf((String) sentenceJsonMap.get("informationClassDto"));
                 final String informationFieldNamePath = (String) sentenceJsonMap.get("informationFieldNamePath");
 
-                final Sentence sentence = SentenceMapper.sentenceJsonToSentence(words, speechType, informationClassDto, informationFieldNamePath);
-                saveSentence(sentence);
-                numberOfSentences++;
-                numberOfAddedSentences++;
+                for (Object textObject : texts) {
+                    final String[] words = splitInWords((String) textObject);
+                    final Sentence sentence = SentenceMapper.sentenceJsonToSentence(words, speechType, informationClassDto, informationFieldNamePath);
+                    saveSentence(sentence);
+                    numberOfSentences++;
+                    numberOfAddedSentences++;
+                }
             }
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
         return new AddedDataStatus(numberOfSentences, numberOfAddedSentences);
+    }
+
+    @Override
+    public AddedDataStatus addLinguisticExpressionsFromJsonFile(MultipartFile linguisticExpressionsJsonFile) throws IOException {
+        int numberOfLinguisticExpressions = 0;
+        int numberOfAddedLinguisticExpressions = 0;
+        final JSONParser jsonParser = new JSONParser(linguisticExpressionsJsonFile.getInputStream());
+        try {
+            final List<Object> jsonLinguisticExpression = (List<Object>) jsonParser.parse();
+            for (Object linguisticExpressionObject : jsonLinguisticExpression) {
+                final Map<String, Object> linguisticExpressionJsonMap = (Map<String, Object>) linguisticExpressionObject;
+                final List<List<Object>> expressionItemsLists = (List<List<Object>>) linguisticExpressionJsonMap.get("expressionItems");
+                final SpeechType speechType = SpeechType.valueOf((String) linguisticExpressionJsonMap.get("speechType"));
+                final InformationClassDto informationClassDto = InformationClassDto.valueOf((String) linguisticExpressionJsonMap.get("informationClassDto"));
+                final String informationFieldNamePath = (String) linguisticExpressionJsonMap.get("informationFieldNamePath");
+
+                for (List<Object> expressionItemsObjects : expressionItemsLists) {
+                    final List<ExpressionItemDto> expressionItemDtos = new ArrayList<>();
+                    for (Object expressionItemObject : expressionItemsObjects) {
+                        final Map<String, Object> expressionItemJsonMap = (Map<String, Object>) expressionItemObject;
+                        final String text = (String) expressionItemJsonMap.get("text");
+                        final ItemClass itemClass = ItemClass.valueOf((String) expressionItemJsonMap.get("itemClass"));
+                        expressionItemDtos.add(new ExpressionItemDto(text, itemClass));
+                    }
+                    final LinguisticExpression linguisticExpression = InformationMapper.linguisticExpressionDtoToLinguisticExpression(new LinguisticExpressionDto(null, expressionItemDtos, speechType, informationClassDto, informationFieldNamePath));
+                    saveLinguisticExpression(linguisticExpression);
+                    numberOfLinguisticExpressions++;
+                    numberOfAddedLinguisticExpressions++;
+                }
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return new AddedDataStatus(numberOfLinguisticExpressions, numberOfAddedLinguisticExpressions);
     }
 
     private List<WordDto> convertWordJsonArrayToWordDtoList(final JSONArray wordsJson) {
