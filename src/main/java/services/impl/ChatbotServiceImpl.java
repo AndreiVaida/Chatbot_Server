@@ -160,45 +160,57 @@ public class ChatbotServiceImpl implements ChatbotService {
         boolean allWordsAreInTheSamePositions = true;
         int nrOfMatchedWords = 0;
         for (int i = 0; i < newSentence.getWords().size(); i++) {
-            final String newSentenceWord = newSentence.getWords().get(i).getText();
+            final String newSentenceWord = Word.replaceDiacritics(newSentence.getWords().get(i).getText());
             // check if the new word is equal with the existing word (on same position in sentences) or equal with a synonym of the existing word
             if (i < existingSentence.getWords().size()) {
-                final String existingSentenceWord = existingSentence.getWords().get(i).getText();
+                final String existingSentenceWord = Word.replaceDiacritics(existingSentence.getWords().get(i).getText());
                 if (newSentenceWord.toLowerCase().equals(existingSentenceWord.toLowerCase())) {
                     nrOfMatchedWords++;
                     continue; // ok - matched the word
                 }
-                if (existingSentence.getWords().get(i).getSynonyms().keySet().stream()
-                        .anyMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase()))) {
-                    nrOfMatchedWords++;
-                    continue; // ok - matched a synonym
-                }
+//                if (existingSentence.getWords().get(i).getSynonyms().keySet().stream()
+//                        .anyMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase()))) {
+//                    nrOfMatchedWords++;
+//                    continue; // ok - matched a synonym
+//                }
             }
             if (existingSentence.getWords().stream().anyMatch(word -> word.equals(new Word(newSentenceWord)))) {
                 allWordsAreInTheSamePositions = false;
                 nrOfMatchedWords++;
                 continue; // ok - the word is somewhere else in the sentence
             }
-            if (existingSentence.getWords().stream().anyMatch(existingWord -> existingWord.getSynonyms().keySet().stream()
-                    .anyMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase())))) {
-                allWordsAreInTheSamePositions = false;
-                nrOfMatchedWords++;
-                continue; // ok - the word has a synonym somewhere else in the sentence
-            }
+//            if (existingSentence.getWords().stream().anyMatch(existingWord -> existingWord.getSynonyms().keySet().stream()
+//                    .anyMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase())))) {
+//                allWordsAreInTheSamePositions = false;
+//                nrOfMatchedWords++;
+//                continue; // ok - the word has a synonym somewhere else in the sentence
+//            }
         }
 
-        final int minimumWordsToMatch = Math.min(newSentence.getWords().size(), existingSentence.getWords().size()) - wordCountDifference / 2;
-        if (!allWordsAreInTheSamePositions || nrOfMatchedWords < minimumWordsToMatch) {
+        if (allWordsAreInTheSamePositions && wordCountDifference == 0 && nrOfMatchedWords == newSentence.getWords().size()) {
+            return existingSentence; // exact same sentence (probably allWordsAreInTheSamePositions==true is sufficient)
+        }
+
+        /*
+        length 1 => synonym can have 0 extra words
+        length 2 => synonym can have 1 extra words
+        length 3 => synonym can have 1 extra words
+        length 4 => synonym can have 2 extra words
+        length 5 => synonym can have 2 extra words
+        length 6 => synonym can have 3 extra words
+        ...
+        */
+        final int minSentencesSize = Math.min(existingSentence.getWords().size(), newSentence.getWords().size());
+        boolean canBeSynonymSentence = (minSentencesSize / 2 >= wordCountDifference) && (minSentencesSize / 2 <= nrOfMatchedWords);
+        if (!allWordsAreInTheSamePositions && canBeSynonymSentence) {
             // the sentences are different, but synonyms
             newSentence.addSynonym(existingSentence);
             sentenceRepository.save(newSentence);
             existingSentence.addSynonym(newSentence);
-            sentenceRepository.save(existingSentence);
-            return newSentence;
         }
 
-        // the sentences are identically
-        return existingSentence;
+        sentenceRepository.save(existingSentence);
+        return newSentence;
     }
 
     /**
@@ -275,9 +287,12 @@ public class ChatbotServiceImpl implements ChatbotService {
         if (sentence == null) {
             return null;
         }
+        System.out.println("--------------------------------------------------");
+        System.out.println("Equivalent Sentence: " + sentence);
 
         Sentence response = pickGoodResponseForSentence(sentence);
         if (response != null) {
+            System.out.println("Response Sentence: " + response);
             return response;
         }
 
@@ -288,6 +303,8 @@ public class ChatbotServiceImpl implements ChatbotService {
         for (Sentence synonym : orderedSynonyms) {
             response = pickGoodResponseForSentence(synonym);
             if (response != null) {
+                System.out.println("Synonym of Sentence: " + synonym);
+                System.out.println("Response Sentence from synonym: " + response);
                 return response;
             }
         }
@@ -382,19 +399,20 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     /**
-     * @return best sentence identified (it should have at last half of items matched with the provided text) or <null> if no proper sentence is found
+     * @return best sentence identified (it should have at last 75% of items matched with the provided text) or <null> if no proper sentence is found
      * We search in every sentence's items and in sentence's items synonyms.
      */
     private Sentence identifySentence(final String text) {
         // find those sentences that containsExpression the items from the given text
         final List<String> words = Arrays.asList(splitInWords(text));
         final int[] bestMatchedCount = {0};
-        final List<Sentence> matchedSentences = sentenceRepository.findAll().stream()
+        final List<Sentence> matchedSentences = sentenceRepository.findAll().parallelStream()
                 .filter(sentence -> {
                     // 1. check in sentence's own items
                     final List<String> sentenceWords = sentence.getWords().stream().map(Word::getText).collect(Collectors.toList());
                     final int nrOfMatchesSentenceWords = calculateNrOfMatches(sentenceWords, words);
-                    if (nrOfMatchesSentenceWords > words.size() / 2) {
+                    if (nrOfMatchesSentenceWords > Math.min(words.size(), sentence.getWords().size()) / 1.5
+                            || (nrOfMatchesSentenceWords >= 1 && nrOfMatchesSentenceWords <= 2 && Math.max(words.size(), sentence.getWords().size()) <= 3)) {
                         return true;
                     }
                     // 2. check in items's synonyms
@@ -525,7 +543,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         if (nrOfSentences == 0) {
             return generateDefaultSentence();
         }
-        return sentenceRepository.findAll().stream().min((sentence1, sentence2) -> {
+        return sentenceRepository.findAll().parallelStream().min((sentence1, sentence2) -> {
             final Integer nrOfResponses_sentence1 = sentence1.getResponses().size();
             final Integer nrOfResponses_sentence2 = sentence2.getResponses().size();
             return nrOfResponses_sentence1.compareTo(nrOfResponses_sentence2);

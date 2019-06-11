@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -38,7 +39,7 @@ public class Message {
     private User toUser;
 
     @NotNull
-    @Column
+    @Column(length = 1024)
     private String text;
 
     @Column
@@ -50,7 +51,7 @@ public class Message {
     @Column
     private Boolean isUnknownMessage = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "EQUIVALENT_SENTENCE")
     private Sentence equivalentSentence;
 

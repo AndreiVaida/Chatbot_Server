@@ -2,6 +2,7 @@ package app;
 
 import domain.entities.SimpleDate;
 import domain.entities.User;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,10 +11,15 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import repositories.FacebookChatRepository;
+import services.api.AdminService;
 import services.api.FastLearningService;
 import services.api.UserService;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Objects;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
@@ -25,23 +31,30 @@ public class Main {
     public static Long USER_FOR_LEARNING_1_ID;
     public static Long USER_FOR_LEARNING_2_ID;
     private final UserService userService;
+    private final AdminService adminService;
     private final FastLearningService fastLearningService;
     private final FacebookChatRepository facebookChatRepository;
 
     @Autowired
-    public Main(UserService userService, FastLearningService fastLearningService, FacebookChatRepository facebookChatRepository, Environment environment) {
+    public Main(UserService userService, FastLearningService fastLearningService, FacebookChatRepository facebookChatRepository, Environment environment, AdminService adminService) {
         this.userService = userService;
         this.fastLearningService = fastLearningService;
+        this.adminService = adminService;
         this.facebookChatRepository = facebookChatRepository;
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
-        CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning1.id")));
-        CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning2.id")));
+        USER_FOR_LEARNING_1_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning1.id")));
+        USER_FOR_LEARNING_2_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning2.id")));
 
         if (userService.findAll().isEmpty()) {
+            // add users
             addChatbotInDb(environment);
             addAdminInDb();
             addUserForLearningInDb();
             addAndreiInDb();
+            // add Sentences, LinguisticExpressions and messages
+//            uploadSentencesFile();
+//            uploadLinguisticExpressionFile();
+//            uploadMessagesFiles();
         }
 
 //        new Thread(() -> {
@@ -59,6 +72,17 @@ public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
         System.out.println("Server is on.");
+    }
+
+    private void uploadSentencesFile() {
+        try {
+            final File file = new File("src/main/resources/informationDetectionData/PersonalInformation_Sentences_Directive.json");
+            FileInputStream input = new FileInputStream(file);
+            MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(input));
+            adminService.addSentencesFromJsonFile(multipartFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void addChatbotInDb(final Environment environment) {

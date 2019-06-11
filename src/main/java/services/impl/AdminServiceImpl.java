@@ -2,7 +2,6 @@ package services.impl;
 
 import app.Main;
 import domain.entities.CsvConversationTimestamp;
-import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
 import domain.entities.Word;
@@ -38,6 +37,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static services.impl.ChatbotServiceImpl.splitInWords;
 
@@ -58,19 +60,18 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    @Transactional
     public List<Sentence> getAllSentences() {
         return sentenceRepository.findAll();
     }
 
     @Override
-    @Transactional
     public Sentence saveSentence(final Sentence sentence) {
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
             final List<Word> existingWords = wordRepository.getByTextIgnoreCase(word.getText());
             if (existingWords == null || existingWords.isEmpty()) {
                 wordRepository.save(word);
+                wordRepository.flush();
             }
             else {
                 sentence.getWords().set(i, existingWords.get(0));
@@ -151,18 +152,22 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    @Transactional
     public AddedDataStatus addMessagesFromCsvString(final String csvString) {
         final Map<LocalDateTime, List<String>> conversations = getConversationsFromCsvString(csvString);
 
         int numberOfConversations = 0;
         int numberOfAddedConversations = 0;
+        //AtomicInteger numberOfAddedConversations = new AtomicInteger();
+        //final Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         for (LocalDateTime timestamp : conversations.keySet()) {
             numberOfConversations++;
             if (!csvConversationTimestampRepository.existsByTimestamp(timestamp)) {
+                //executor.execute(() -> {
                 addMessages(conversations.get(timestamp));
                 csvConversationTimestampRepository.save(new CsvConversationTimestamp(timestamp));
                 numberOfAddedConversations++;
+                //numberOfAddedConversations.getAndIncrement();
+                //});
             }
         }
 
@@ -309,7 +314,7 @@ public class AdminServiceImpl implements AdminService {
             if (line.replaceAll("\\s+","").isEmpty()) {
                 continue;
             }
-            if (line.startsWith("\"")) {
+            if (line.startsWith("\"") && line.length() > 1) {
                 // new conversation
                 final String[] timestampAndFirstMessage = line.split("\",\"");
                 final LocalDateTime timestamp = convertStringToLocalDateTime(timestampAndFirstMessage[0].substring(1));
