@@ -2,6 +2,7 @@ package facades.impl;
 
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
+import domain.enums.ChatbotRequestType;
 import dtos.AddedDataStatus;
 import dtos.LinguisticExpressionDto;
 import dtos.MessageDto;
@@ -75,5 +76,15 @@ public class AdminFacadeImpl implements AdminFacade {
     @Override
     public AddedDataStatus addLinguisticExpressionsFromJsonFile(final MultipartFile linguisticExpressionsJsonFile) throws IOException {
         return adminService.addLinguisticExpressionsFromJsonFile(linguisticExpressionsJsonFile);
+    }
+
+    @Override
+    public ChatbotRequestType getChatbotRequestType() {
+        return adminService.getChatbotRequestType();
+    }
+
+    @Override
+    public void setChatbotRequestType(final ChatbotRequestType chatbotRequestType) {
+        adminService.setChatbotRequestType(chatbotRequestType);
     }
 }

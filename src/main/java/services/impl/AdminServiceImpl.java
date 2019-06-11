@@ -6,6 +6,7 @@ import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
 import domain.entities.Word;
+import domain.enums.ChatbotRequestType;
 import domain.enums.ItemClass;
 import domain.enums.MessageSource;
 import domain.enums.SpeechType;
@@ -274,6 +275,16 @@ public class AdminServiceImpl implements AdminService {
         }
 
         return new AddedDataStatus(numberOfLinguisticExpressions, numberOfAddedLinguisticExpressions);
+    }
+
+    @Override
+    public ChatbotRequestType getChatbotRequestType() {
+        return chatService.getChatbotRequestType();
+    }
+
+    @Override
+    public void setChatbotRequestType(final ChatbotRequestType chatbotRequestType) {
+        chatService.setChatbotRequestType(chatbotRequestType);
     }
 
     private List<WordDto> convertWordJsonArrayToWordDtoList(final JSONArray wordsJson) {

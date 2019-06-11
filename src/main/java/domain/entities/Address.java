@@ -11,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 // Lombok
 @NoArgsConstructor
@@ -56,4 +58,24 @@ public class Address {
 
     @Column(name = "APARTMENT_NUMBER")
     private Integer apartmentNumber;
+
+    public List<String> getFieldNamesInImportanceOrder() {
+        final List<String> fieldNamesInImportanceOrder = new ArrayList<>();
+        fieldNamesInImportanceOrder.add("planet");
+        fieldNamesInImportanceOrder.add("continent");
+        fieldNamesInImportanceOrder.add("country");
+        fieldNamesInImportanceOrder.add("county");
+        fieldNamesInImportanceOrder.add("localityType");
+        fieldNamesInImportanceOrder.add("locality");
+        fieldNamesInImportanceOrder.add("street");
+        return fieldNamesInImportanceOrder;
+    }
+
+    public List<String> getUrbanFieldNamesInImportanceOrder() {
+        final List<String> fieldNamesInImportanceOrder = new ArrayList<>();
+        fieldNamesInImportanceOrder.add("neighborhood");
+        fieldNamesInImportanceOrder.add("floor");
+        fieldNamesInImportanceOrder.add("apartmentNumber");
+        return fieldNamesInImportanceOrder;
+    }
 }

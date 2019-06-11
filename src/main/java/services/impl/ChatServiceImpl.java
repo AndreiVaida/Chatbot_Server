@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 import static app.Main.CHATBOT_ID;
+import static domain.enums.ChatbotRequestType.GET_INFORMATION_FROM_USER;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -25,6 +26,7 @@ public class ChatServiceImpl implements ChatService {
     private final MessageService messageService;
     private final ChatbotService chatbotService;
     private final InformationService informationService;
+    private ChatbotRequestType chatbotRequestType = GET_INFORMATION_FROM_USER;
 
     @Autowired
     public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService, InformationService informationService) {
@@ -32,6 +34,16 @@ public class ChatServiceImpl implements ChatService {
         this.userService = userService;
         this.chatbotService = chatbotService;
         this.informationService = informationService;
+    }
+
+    @Override
+    public ChatbotRequestType getChatbotRequestType() {
+        return chatbotRequestType;
+    }
+
+    @Override
+    public void setChatbotRequestType(final ChatbotRequestType chatbotRequestType) {
+        this.chatbotRequestType = chatbotRequestType;
     }
 
     @Override
@@ -124,7 +136,7 @@ public class ChatServiceImpl implements ChatService {
         Sentence responseSentence = chatbotService.generateResponse(message);
         boolean isUnknownMessage = false;
         if (responseSentence == null) {
-            responseSentence = chatbotService.pickSentenceWithFewReplies();
+            responseSentence = getSentenceAccordingToUserAndRequestType(message.getFromUser(), null);
             isUnknownMessage = true;
         }
 
@@ -147,18 +159,24 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public Message requestMessageFromChatbot(final Long userId, ChatbotRequestType chatbotRequestType) {
-        if (chatbotRequestType == null) {
-            chatbotRequestType = ChatService.CHATBOT_REQUEST_TYPE;
-        }
         final User fromUser = userService.getUserById(CHATBOT_ID);
         final User toUser = userService.getUserById(userId);
 
-        final Sentence sentence;
-        switch (chatbotRequestType) {
-            case LEARN_TO_SPEAK: sentence = chatbotService.pickSentenceWithFewReplies(); break;
-            case GET_INFORMATION_FROM_USER: sentence = chatbotService.pickSentenceRequestingInformation(toUser); break;
-            default: sentence = chatbotService.pickSentenceRequestingInformation(toUser); break;
-        }
+        final Sentence sentence = getSentenceAccordingToUserAndRequestType(toUser, chatbotRequestType);
         return messageService.addMessage(chatbotService.translateSentenceToText(sentence), fromUser, toUser, sentence, MessageSource.USER_CHATBOT_CONVERSATION);
+    }
+
+    private Sentence getSentenceAccordingToUserAndRequestType(final User toUser, ChatbotRequestType chatbotRequestType) {
+        if (chatbotRequestType == null) {
+            chatbotRequestType = this.chatbotRequestType;
+        }
+        switch (chatbotRequestType) {
+            case LEARN_TO_SPEAK:
+                return chatbotService.pickSentenceWithFewReplies();
+            case GET_INFORMATION_FROM_USER:
+                return chatbotService.pickSentenceRequestingInformation(toUser);
+            default:
+                return chatbotService.pickSentenceRequestingInformation(toUser);
+        }
     }
 }

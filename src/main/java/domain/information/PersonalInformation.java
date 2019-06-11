@@ -45,7 +45,7 @@ public class PersonalInformation implements Information {
     @Column(name = "GENDER")
     private Gender gender;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "HOME_ADDRESS")
     private Address homeAddress;
 
@@ -56,17 +56,7 @@ public class PersonalInformation implements Information {
         fieldNamesInImportanceOrder.add("surname");
         fieldNamesInImportanceOrder.add("birthDay");
         fieldNamesInImportanceOrder.add("gender");
-        fieldNamesInImportanceOrder.add("homeAddress.planet");
-        fieldNamesInImportanceOrder.add("homeAddress.continent");
-        fieldNamesInImportanceOrder.add("homeAddress.country");
-        fieldNamesInImportanceOrder.add("homeAddress.county");
-        fieldNamesInImportanceOrder.add("homeAddress.locality");
-        fieldNamesInImportanceOrder.add("homeAddress.localityType");
-        fieldNamesInImportanceOrder.add("homeAddress.neighborhood");
-        fieldNamesInImportanceOrder.add("homeAddress.street");
-        fieldNamesInImportanceOrder.add("homeAddress.streetNumber");
-        fieldNamesInImportanceOrder.add("homeAddress.floor");
-        fieldNamesInImportanceOrder.add("homeAddress.apartmentNumber");
+        fieldNamesInImportanceOrder.add("homeAddress");
         return fieldNamesInImportanceOrder;
     }
 }

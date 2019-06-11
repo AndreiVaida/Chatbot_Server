@@ -1,5 +1,6 @@
 package controllers;
 
+import domain.enums.ChatbotRequestType;
 import dtos.AddedDataStatus;
 import dtos.LinguisticExpressionDto;
 import dtos.MessageDto;
@@ -11,11 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import services.api.ChatService;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +31,18 @@ public class AdminController extends AbstractController {
     @Autowired
     public AdminController(AdminFacade adminFacade) {
         this.adminFacade = adminFacade;
+    }
+
+    // CHATBOT REQUEST TYPE
+    @GetMapping("/chatbotRequestType")
+    public ResponseEntity<ChatbotRequestType> getChatbotRequestType() {
+        return new ResponseEntity<>(adminFacade.getChatbotRequestType(), HttpStatus.OK);
+    }
+
+    @PostMapping("/chatbotRequestType")
+    public ResponseEntity<?> setChatbotRequestType(@RequestParam ChatbotRequestType chatbotRequestType) {
+        adminFacade.setChatbotRequestType(chatbotRequestType);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
     // SENTENCE

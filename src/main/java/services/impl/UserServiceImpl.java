@@ -95,6 +95,8 @@ public class UserServiceImpl implements UserService {
                         setterOfUser.invoke(user, userInformation);
                     }
                     setterOfInformation.invoke(userInformation, info);                              // ex: personalInformation.setName("Andy")
+                    userRepository.save(user);
+                    return;
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | IntrospectionException | InstantiationException e) {

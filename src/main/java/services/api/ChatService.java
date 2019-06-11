@@ -10,7 +10,8 @@ import java.util.List;
 import static domain.enums.ChatbotRequestType.GET_INFORMATION_FROM_USER;
 
 public interface ChatService {
-    ChatbotRequestType CHATBOT_REQUEST_TYPE = GET_INFORMATION_FROM_USER;
+    ChatbotRequestType getChatbotRequestType();
+    void setChatbotRequestType(final ChatbotRequestType chatbotRequestType);
 
     /**
      * This method does not update synonyms and responses.

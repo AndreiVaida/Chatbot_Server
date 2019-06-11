@@ -1,5 +1,6 @@
 package facades.api;
 
+import domain.enums.ChatbotRequestType;
 import dtos.AddedDataStatus;
 import dtos.LinguisticExpressionDto;
 import dtos.MessageDto;
@@ -29,4 +30,8 @@ public interface AdminFacade {
     AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException;
 
     AddedDataStatus addLinguisticExpressionsFromJsonFile(final MultipartFile linguisticExpressionsJsonFile) throws IOException;
+
+    ChatbotRequestType getChatbotRequestType();
+
+    void setChatbotRequestType(final ChatbotRequestType chatbotRequestType);
 }

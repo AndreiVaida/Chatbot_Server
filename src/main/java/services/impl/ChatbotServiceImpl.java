@@ -533,7 +533,6 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
-    @Transactional
     public Sentence pickSentenceRequestingInformation(final User user) {
         Class informationClass = null;
         String informationFieldNamePath = null;
@@ -651,15 +650,19 @@ public class ChatbotServiceImpl implements ChatbotService {
                         return fieldName + "#?";
                     }
                     if (fieldName.startsWith("homeAddress")) {
-                        final Method getterOfAddress = Address.class.getMethod("getLocalityType");
-                        final LocalityType localityType = (LocalityType) getterOfAddress.invoke(information);
+                        final Address address = (Address) getterOfInformation.invoke(information);
+                        if (address == null) {
+                            return "homeAddress.planet";
+                        }
+                        final Method getterOfAddress = address.getClass().getMethod("getLocalityType");
+                        final LocalityType localityType = (LocalityType) getterOfAddress.invoke(address);
                         if (localityType != null && localityType.equals(RURAL) && (fieldName.endsWith("neighborhood") || fieldName.endsWith("floor") || fieldName.endsWith("apartmentNumber"))) {
                             continue;
                         }
                     }
                     return fieldName;
                 } else {
-                    // the information is not null, but if it's a complex object (ex: SimpleDate, PersonalInformation, Map, List etc.) check if has null attributes
+                    // the information is not null, but if it's a complex object (ex: SimpleDate, Address, PersonalInformation, Map, List etc.) check if has null attributes
                     if (info instanceof SimpleDate) {
                         final SimpleDate simpleDate = (SimpleDate) info;
                         if (simpleDate.getYear() == null) {
@@ -675,6 +678,33 @@ public class ChatbotServiceImpl implements ChatbotService {
                         if (nullItemPathFromPersonalInformation != null) {
                             return fieldName + "." + nullItemPathFromPersonalInformation;
                         }
+                    }
+                    if (info instanceof Address) {
+                        final Address address = (Address) info;
+                        final List<String> addressFieldNamesInImportanceOrder = address.getFieldNamesInImportanceOrder();
+                        for (String addressFieldName : addressFieldNamesInImportanceOrder) {
+                            final String addressFieldName_firstLetterCapitalize = addressFieldName.substring(0, 1).toUpperCase() + addressFieldName.substring(1);
+                            final Method getterOfAddress = address.getClass().getMethod("get"+ addressFieldName_firstLetterCapitalize);
+                            final Object addressField = getterOfAddress.invoke(address);
+                            if (addressField == null) {
+                                return fieldName + "." + addressFieldName;
+                            }
+                        }
+                        // The fields from the list are not null. If localityType == URBAN, check the remaining (urban) fields.
+                        final Method getterOfAddress = address.getClass().getMethod("getLocalityType");
+                        final LocalityType localityType = (LocalityType) getterOfAddress.invoke(address);
+                        if (localityType.equals(URBAN)) {
+                            final List<String> addressUrbanFieldNamesInImportanceOrder = address.getUrbanFieldNamesInImportanceOrder();
+                            for (String addressFieldName : addressUrbanFieldNamesInImportanceOrder) {
+                                final String addressFieldName_firstLetterCapitalize = addressFieldName.substring(0, 1).toUpperCase() + addressFieldName.substring(1);
+                                final Method getterOfAddress2 = address.getClass().getMethod("get"+ addressFieldName_firstLetterCapitalize);
+                                final Object addressField = getterOfAddress2.invoke(address);
+                                if (addressField == null) {
+                                    return fieldName + "." + addressFieldName;
+                                }
+                            }
+                        }
+                        return null;
                     }
                     if (info instanceof Map) {
                         final Map map = (Map) info;

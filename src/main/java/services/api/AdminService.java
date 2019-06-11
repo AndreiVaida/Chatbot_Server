@@ -2,6 +2,7 @@ package services.api;
 
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
+import domain.enums.ChatbotRequestType;
 import dtos.AddedDataStatus;
 import dtos.MessageDto;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,4 +43,8 @@ public interface AdminService {
     AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException;
 
     AddedDataStatus addLinguisticExpressionsFromJsonFile(final MultipartFile linguisticExpressionsJsonFile) throws IOException;
+
+    ChatbotRequestType getChatbotRequestType();
+
+    void setChatbotRequestType(final ChatbotRequestType chatbotRequestType);
 }
