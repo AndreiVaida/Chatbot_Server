@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -506,7 +505,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         if (wordExists) {
             final List<Word> words = new ArrayList<>();
             words.add(wordsWithoutDiacritics.get(0));
-            return sentenceRepository.getAllByWords(words).stream().min(Comparator.comparingInt(s -> s.getWords().size())).get();
+            return sentenceRepository.findAllByWords(words).stream().min(Comparator.comparingInt(s -> s.getWords().size())).get();
         } else {
             final Word word = new Word();
             word.setText("Salut");

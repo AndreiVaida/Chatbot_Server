@@ -42,7 +42,7 @@
     "informationFieldNamePath": "birthDay.day"
   },
   {
-    "texts": ["Ești fată sau băiat ?", "Ești bărbat sau femeie ?", "Ești mascul sau femeie ?"],
+    "texts": ["Ești fată sau băiat ?", "Ești bărbat sau femeie ?"],
     "speechType": "DIRECTIVE",
     "informationClassDto": "PERSONAL_INFORMATION",
     "informationFieldNamePath": "gender"

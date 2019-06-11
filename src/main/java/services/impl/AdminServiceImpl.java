@@ -67,8 +67,8 @@ public class AdminServiceImpl implements AdminService {
     public Sentence saveSentence(final Sentence sentence) {
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
-            final List<Word> existingWords = wordRepository.getByTextWithoutDiacriticsIgnoreCase(word.getTextWithoutDiacritics());
-            if (existingWords == null) {
+            final List<Word> existingWords = wordRepository.getByTextIgnoreCase(word.getText());
+            if (existingWords == null || existingWords.isEmpty()) {
                 wordRepository.save(word);
             }
             else {
@@ -185,9 +185,11 @@ public class AdminServiceImpl implements AdminService {
                 for (Object textObject : texts) {
                     final String[] words = splitInWords((String) textObject);
                     final Sentence sentence = SentenceMapper.sentenceJsonToSentence(words, speechType, informationClassDto, informationFieldNamePath);
-                    saveSentence(sentence);
+                    if (!existsByWords(sentence)) {
+                        saveSentence(sentence);
+                        numberOfAddedSentences++;
+                    }
                     numberOfSentences++;
-                    numberOfAddedSentences++;
                 }
             }
         } catch (ParseException e) {
@@ -195,6 +197,46 @@ public class AdminServiceImpl implements AdminService {
         }
 
         return new AddedDataStatus(numberOfSentences, numberOfAddedSentences);
+    }
+
+    private boolean existsByWords(final Sentence sentence) {
+        // check if all the words exists and, if a words exists in DB, update the word from the given sentence with the word from DB
+        for (int i = 0; i < sentence.getWords().size(); i++) {
+            final Word word = sentence.getWords().get(i);
+            final List<Word> existingWords = wordRepository.getByTextWithoutDiacriticsIgnoreCase(word.getTextWithoutDiacritics());
+            final Word existingWord = getByTextIgnoreCase(existingWords, word);
+            if (existingWord == null) {
+                return false;
+            }
+            sentence.getWords().set(i, existingWord);
+        }
+        // all the words exists
+        final List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldNamePath(sentence.getSpeechType(), sentence.getInformationClass(), sentence.getInformationFieldNamePath());
+        for (Sentence existingSentence : sentences) {
+            if (sentence.getWords().equals(existingSentence.getWords())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Word getByTextIgnoreCase(final List<Word> words, final Word wordToFind) {
+        for (Word word : words) {
+            if (wordToFind.getText().toLowerCase().equals(word.getText().toLowerCase())) {
+                return word;
+            }
+        }
+        return null;
+    }
+
+    private boolean existsByExpressionItems(final LinguisticExpression linguisticExpression) {
+        final List<LinguisticExpression> linguisticExpressions = linguisticExpressionRepository.findAllByInformationClassAndInformationFieldNamePathAndSpeechType(linguisticExpression.getInformationClass(), linguisticExpression.getInformationFieldNamePath(), linguisticExpression.getSpeechType());
+        for (LinguisticExpression existingLinguisticExpression : linguisticExpressions) {
+            if (linguisticExpression.getItems().equals(existingLinguisticExpression.getItems())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -220,9 +262,11 @@ public class AdminServiceImpl implements AdminService {
                         expressionItemDtos.add(new ExpressionItemDto(text, itemClass));
                     }
                     final LinguisticExpression linguisticExpression = InformationMapper.linguisticExpressionDtoToLinguisticExpression(new LinguisticExpressionDto(null, expressionItemDtos, speechType, informationClassDto, informationFieldNamePath));
-                    saveLinguisticExpression(linguisticExpression);
+                    if (!existsByExpressionItems(linguisticExpression)) {
+                        saveLinguisticExpression(linguisticExpression);
+                        numberOfAddedLinguisticExpressions++;
+                    }
                     numberOfLinguisticExpressions++;
-                    numberOfAddedLinguisticExpressions++;
                 }
             }
         } catch (ParseException e) {

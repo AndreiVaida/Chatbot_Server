@@ -1,6 +1,7 @@
 package repositories;
 
 
+import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.enums.SpeechType;
 import domain.information.Information;
@@ -12,6 +13,11 @@ public interface LinguisticExpressionRepository extends JpaRepository<Linguistic
     List<LinguisticExpression> findAllBySpeechType(final SpeechType speechType);
 
     List<LinguisticExpression> findAllByInformationClassAndInformationFieldNamePathAndSpeechType(final Class<Information> informationClass,
-                                                                                         final String informationFieldNamePath,
-                                                                                         final SpeechType speechType);
+                                                                                                 final String informationFieldNamePath,
+                                                                                                 final SpeechType speechType);
+
+    List<LinguisticExpression> findAllByItemsAndInformationClassAndInformationFieldNamePathAndSpeechType(final List<ExpressionItem> expressionItems,
+                                                                                                         final Class<Information> informationClass,
+                                                                                                         final String informationFieldNamePath,
+                                                                                                         final SpeechType speechType);
 }

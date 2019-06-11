@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface SentenceRepository extends JpaRepository<Sentence, Long> {
     List<Sentence> findAllBySpeechTypeAndInformationClassAndInformationFieldNamePath(SpeechType speechType, Class<Information> informationClass, String informationFieldNamePath);
-    List<Sentence> getAllByWords(List<Word> words);
+    List<Sentence> findAllByWords(List<Word> words);
 }

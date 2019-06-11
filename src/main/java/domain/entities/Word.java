@@ -77,8 +77,8 @@ public class Word {
         if (o == null || getClass() != o.getClass()) return false;
         Word word = (Word) o;
         return Objects.equals(id, word.id) ||
-                Objects.equals(text.toLowerCase(), word.text.toLowerCase()) ||
-                Objects.equals(replaceDiacritics(text.toLowerCase()), replaceDiacritics(word.text.toLowerCase()));
+                Objects.equals(text.toLowerCase(), word.text.toLowerCase()); // ||
+//                Objects.equals(replaceDiacritics(text.toLowerCase()), replaceDiacritics(word.text.toLowerCase()));
     }
 
     /**

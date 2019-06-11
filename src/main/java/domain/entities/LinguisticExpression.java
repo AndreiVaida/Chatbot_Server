@@ -34,7 +34,7 @@ public class LinguisticExpression {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "LINGUISTIC_EXPRESSION_WORDS",
             joinColumns = {@JoinColumn(name = "LINGUISTIC_EXPRESSION_ID")},
