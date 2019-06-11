@@ -1,6 +1,7 @@
 package configuration;
 
 import com.google.common.collect.ImmutableList;
+import facades.api.UserFacade;
 import filters.JWTAuthenticationFilter;
 import filters.JWTAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +23,13 @@ import services.impl.UserDetailsServiceImpl;
 @EnableWebSecurity
 @ComponentScan(basePackages = {"services", "filters"})
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
-    private final UserService userService;
+    private final UserFacade userFacade;
     private final UserDetailsServiceImpl userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public WebSecurityConfiguration(UserService userService, UserDetailsServiceImpl userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.userService = userService;
+    public WebSecurityConfiguration(UserFacade userFacade, UserDetailsServiceImpl userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.userFacade = userFacade;
         this.userDetailsService = userDetailsService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
@@ -40,7 +41,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET).permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager(), userService))
+                .addFilter(new JWTAuthenticationFilter(authenticationManager(), userFacade))
                 .addFilter(new JWTAuthorizationFilter(authenticationManager()))
                 // this disables session creation on Spring Security
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -62,12 +63,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         configuration.setAllowCredentials(true);
         // setAllowedHeaders is important! Without it, OPTIONS preflight request
         // will fail with 403 Invalid CORS request
-        configuration.setAllowedHeaders(ImmutableList.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowedHeaders(ImmutableList.of("Authorization", "Cache-Control", "Content-Type", "X-Requested-With", "Origin", "Accept"));
 
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-//        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+//        final UrlBasedCorsConfigurationSource messageSource = new UrlBasedCorsConfigurationSource();
+//        messageSource.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
         return source;
     }
 }

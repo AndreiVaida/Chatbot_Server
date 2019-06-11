@@ -1,31 +1,38 @@
 package services.impl;
 
 import domain.entities.User;
-import dtos.RequestUserRegisterDto;
-import dtos.UserDto;
-import mappers.UserMapper;
+import domain.information.Information;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import repositories.PersonalInformationRepository;
 import repositories.UserRepository;
 import services.api.UserService;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static app.Main.CHATBOT_ID;
 
+
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final PersonalInformationRepository personalInformationRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PersonalInformationRepository personalInformationRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.personalInformationRepository = personalInformationRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
@@ -37,42 +44,84 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void addUser(final User user) {
-        final String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
-        userRepository.save(user);
-    }
-
-    @Override
-    @Transactional
-    public void addUser(final RequestUserRegisterDto requestUserRegisterDto) {
-        if (userRepository.existsByEmail(requestUserRegisterDto.getEmail())) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new EntityExistsException("There already exists an account with this e-mail.");
         }
 
-        final User user = UserMapper.requestUserRegisterDtoToUser(requestUserRegisterDto);
         final String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+
+        personalInformationRepository.save(user.getPersonalInformation());
         userRepository.save(user);
     }
 
     @Override
     @Transactional
-    public UserDto getUserById(Long id) {
+    public User getUserById(Long id) {
         if (id == null || id == 0) {
             id = CHATBOT_ID;
         }
-        final User user = userRepository.findById(id)
+        return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
-        return UserMapper.userToUserDto(user);
     }
 
     @Override
     @Transactional
-    public UserDto findUserByEmail(final String email) {
+    public User findUserByEmail(final String email) {
         final User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new EntityNotFoundException("User not found.");
         }
-        return UserMapper.userToUserDto(user);
+        return user;
     }
+
+    @Override
+    public void updateUserInformation(final Information information, final User user) {
+        // iterate getters of the information object
+        try {
+            final BeanInfo beanInformation = Introspector.getBeanInfo(information.getClass(), Object.class);
+            final PropertyDescriptor[] propertyDescriptors = beanInformation.getPropertyDescriptors(); // get all properties of the Information
+            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                final Method getterOfInformation = propertyDescriptor.getReadMethod();  // ex: getName()
+                final Object info = getterOfInformation.invoke(information);            // ex: get the name (a string)
+
+                if (info != null && !propertyDescriptor.getName().equals("fieldNamesInImportanceOrder")) {
+                    final Method getterOfUser = user.getClass().getMethod("get" + information.getClass().getSimpleName());      // ex: getPersonalInformation()
+                    final Method setterOfInformation = propertyDescriptor.getWriteMethod();         // ex: setName()
+                    Information userInformation = (Information) getterOfUser.invoke(user);          // ex: personalInformation property of user
+                    if (userInformation == null) {
+                        userInformation = information.getClass().newInstance();
+                        final Method setterOfUser = user.getClass().getMethod("set" + information.getClass().getSimpleName(), information.getClass());  // ex: setPersonalInformation()
+                        setterOfUser.invoke(user, userInformation);
+                    }
+                    setterOfInformation.invoke(userInformation, info);                              // ex: personalInformation.setName("Andy")
+                }
+            }
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | IntrospectionException | InstantiationException e) {
+            e.printStackTrace();
+        }
+    }
+
+//    @Override
+//    public void updateUserInformation(final List<Information> informationList, final User user) {
+//        for (Information information : informationList) {
+//            // iterate getters of the information object
+//            for (Method getterOfInformation : information.getClass().getMethods()) {
+//                if (getterOfInformation.getName().startsWith("get") && getterOfInformation.getParameterTypes().length == 0) {
+//                    try {
+//                        final Object info = getterOfInformation.invoke(information);
+//                        if (info != null) {
+//                            final Method getterOfUser = user.getClass().getMethod("get" + information.getClass().getSimpleName());
+//                            final Method setterOfInformation = information.getClass().getMethod(getterOfInformation.getName().replace("get", "set"));
+//                            final Information userInformation = (Information) getterOfUser.invoke(user); // ex: user.getPersonalInformation()
+//                            setterOfInformation.invoke(userInformation, info);
+//                        }
+//
+//                    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }
+//    }
 }

@@ -1,8 +1,7 @@
 package services.api;
 
 import domain.entities.User;
-import dtos.RequestUserRegisterDto;
-import dtos.UserDto;
+import domain.information.Information;
 
 import java.util.List;
 
@@ -11,9 +10,9 @@ public interface UserService {
 
     void addUser(final User user);
 
-    void addUser(final RequestUserRegisterDto requestUserRegisterDto);
+    User getUserById(final Long id);
 
-    UserDto getUserById(final Long id);
+    User findUserByEmail(final String email);
 
-    UserDto findUserByEmail(final String email);
+    void updateUserInformation(final Information information, final User user);
 }

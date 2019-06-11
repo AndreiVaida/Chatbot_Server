@@ -1,7 +1,9 @@
 package mappers;
 
+import domain.entities.SimpleDate;
 import domain.entities.User;
 import dtos.RequestUserRegisterDto;
+import dtos.SimpleDateDto;
 import dtos.UserDto;
 import org.json.simple.JSONObject;
 
@@ -13,9 +15,9 @@ public class UserMapper {
         final User user = new User();
         user.setEmail(requestUserRegisterDto.getEmail());
         user.setPassword(requestUserRegisterDto.getPassword());
-        user.setFirstName(requestUserRegisterDto.getFirstName());
-        user.setSurname(requestUserRegisterDto.getSurname());
-        user.setBirthDay(requestUserRegisterDto.getBirthDay());
+        user.getPersonalInformation().setFirstName(requestUserRegisterDto.getFirstName());
+        user.getPersonalInformation().setSurname(requestUserRegisterDto.getSurname());
+        user.getPersonalInformation().setBirthDay(simpleDateDtoToSimpleDate(requestUserRegisterDto.getBirthDay()));
         return user;
     }
 
@@ -23,10 +25,26 @@ public class UserMapper {
         final UserDto userDto = new UserDto();
         userDto.setId(user.getId());
         userDto.setEmail(user.getEmail());
-        userDto.setFirstName(user.getFirstName());
-        userDto.setSurname(user.getSurname());
-        userDto.setBirthDay(user.getBirthDay());
+        if (user.getPersonalInformation() != null) {
+            userDto.setFirstName(user.getPersonalInformation().getFirstName());
+            userDto.setSurname(user.getPersonalInformation().getSurname());
+            userDto.setBirthDay(simpleDateToSimpleDateDto(user.getPersonalInformation().getBirthDay()));
+        }
         return userDto;
+    }
+
+    private static SimpleDate simpleDateDtoToSimpleDate(final SimpleDateDto simpleDateDto) {
+        if (simpleDateDto == null) {
+            return null;
+        }
+        return new SimpleDate(simpleDateDto.getYear(), simpleDateDto.getMonth(), simpleDateDto.getDay());
+    }
+
+    private static SimpleDateDto simpleDateToSimpleDateDto(final SimpleDate simpleDate) {
+        if (simpleDate == null) {
+            return null;
+        }
+        return new SimpleDateDto(simpleDate.getYear(), simpleDate.getMonth(), simpleDate.getDay());
     }
 
     public static JSONObject userDtoToJson(final UserDto userDto) {

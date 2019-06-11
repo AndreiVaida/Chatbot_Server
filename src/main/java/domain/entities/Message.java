@@ -1,6 +1,7 @@
 package domain.entities;
 
-import domain.enums.MessageType;
+import com.sun.istack.internal.NotNull;
+import domain.enums.MessageSource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 // Lombok
 @NoArgsConstructor
@@ -30,30 +29,34 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FROM_USER")
     private User fromUser;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "TO_USER")
     private User toUser;
 
     @NotNull
     @Column
-    private String message;
-
-    @Column
-    private MessageType messageType;
+    private String text;
 
     @Column
     private LocalDateTime dateTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CONCEPT_MESSAGE")
-    private ConceptMessage conceptMessage;
+    @Column
+    private MessageSource messageSource;
 
     @Column
     private Boolean isUnknownMessage = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "EQUIVALENT_SENTENCE")
+    private Sentence equivalentSentence;
+
+    public Message(String text) {
+        this.text = text;
+    }
 
     @Override
     public String toString() {
@@ -61,28 +64,10 @@ public class Message {
                 "id=" + id +
                 ", fromUser=" + fromUser +
                 ", toUser=" + toUser +
-                ", message='" + message + '\'' +
-                ", messageType=" + messageType +
+                ", text='" + text + '\'' +
                 ", dateTime=" + dateTime +
-                ", conceptMessage=" + conceptMessage +
+                ", messageSource=" + messageSource +
+                ", isUnknownMessage=" + isUnknownMessage +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Message)) return false;
-        Message message1 = (Message) o;
-        return Objects.equals(getId(), message1.getId()) &&
-                Objects.equals(getFromUser(), message1.getFromUser()) &&
-                Objects.equals(getToUser(), message1.getToUser()) &&
-                Objects.equals(getMessage(), message1.getMessage()) &&
-                getMessageType() == message1.getMessageType() &&
-                Objects.equals(getDateTime(), message1.getDateTime());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId(), getFromUser(), getToUser(), getMessage(), getMessageType(), getDateTime());
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Set;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("SELECT m FROM Message m " +
@@ -15,19 +14,15 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "ORDER BY m.dateTime")
     List<Message> findAllByUsers(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
-    Set<Message> findAllByMessageLikeIgnoreCaseAndIdNotAndIsUnknownMessageNot(String message, Long messageIdToIgnore, Boolean isUnknownMessage);
-
-    @Query("SELECT m FROM Message m " +
-            "WHERE m.id <> :messageId AND m.fromUser.id <> :chatbotId " +
-            "AND ((m.fromUser.id = :userId1 AND m.toUser.id = :userId2) OR (m.fromUser.id = :userId2 AND m.toUser.id = :userId1)) " +
-            "ORDER BY m.dateTime DESC")
-    List<Message> getPreviousMessagesFromHumans(@Param("userId1") Long userId1, @Param("userId2") Long userId2,
-                                                @Param("messageId") Long messageId, @Param("chatbotId") Long chatbotId, Pageable pageRequest);
-
     @Query("SELECT m FROM Message m " +
             "WHERE m.id <> :messageId " +
             "AND ((m.fromUser.id = :userId1 AND m.toUser.id = :userId2) OR (m.fromUser.id = :userId2 AND m.toUser.id = :userId1)) " +
             "ORDER BY m.dateTime DESC, m.id DESC")
     List<Message> getPreviousMessages(@Param("userId1") Long userId1, @Param("userId2") Long userId2,
                                       @Param("messageId") Long messageId, Pageable pageRequest);
+
+//    @Query("SELECT m FROM Message m " +
+//            "WHERE m.fromUser.id = :fromUserId AND m.toUser.id = :toUserId " +
+//            "ORDER BY m.dateTime DESC, m.id DESC")
+    List<Message> getAllByFromUser_IdAndToUser_IdOrderByDateTimeDesc(Long fromUserId, Long toUserId, Pageable pageRequest);
 }

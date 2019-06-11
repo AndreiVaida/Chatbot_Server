@@ -1,0 +1,116 @@
+[
+  {
+    "texts": ["Care e numele tău ?", "Care e prenumele tău ?", "Cum te cheamă ?", "Cum te numești ?", "Cum ești poreclit ?", "Cum îți spune lumea ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "firstName"
+  },
+  {
+    "texts": ["Spune-mi numele tău", "Spune-mi prenumele tău", "Spune-mi cum te cheamă", "Spune-mi cum te numești", "Spune-mi cum ești poreclit", "Spune-mi cum îți spune lumea"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "firstName"
+  },
+  {
+    "texts": ["Care e numele tău de familie ?", "Spune-mi numele tău de familie"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "surname"
+  },
+  {
+    "texts": ["Când e ziua ta de naștere ?", "Spune-mi când e ziua ta de naștere", "Pe ce dată te-ai născut ?", "Când îți sărbătorești ziua de naștere ?", "Tu când ai venit pe lume ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "birthDay"
+  },
+  {
+    "texts": ["În ce an te-ai născut ?", "Spune-mi anul în care te-ai născut", "Spune-mi anul în care ai venit pe lume"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "birthDay.year"
+  },
+  {
+    "texts": ["În ce lună te-ai născut ?", "Spune-mi luna în care te-ai născut", "Spune-mi luna în care ai venit pe lume"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "birthDay.month"
+  },
+  {
+    "texts": ["În ce zi a lunii te-ai născut ?", "Spune-mi ziua din lună în care te-ai născut", "Spune-mi ziua din lună în care ai venit pe lume"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "birthDay.day"
+  },
+  {
+    "texts": ["Ești fată sau băiat ?", "Ești bărbat sau femeie ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "gender"
+  },
+  {
+    "texts": ["Pe ce planetă locuiești ?", "De pe ce planetă ești ?", "Tu pe ce planetă ești acum ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.planet"
+  },
+  {
+    "texts": ["Pe ce continent locuiești ?", "De pe ce continent ești ?", "Pe ce continent stai acum ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.continent"
+  },
+  {
+    "texts": ["În ce țară locuiești ?", "Din ce țară ești ?", "Cum se numește țara ta ?", "Cum se numește țara în care locuiești ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.country"
+  },
+  {
+    "texts": ["În ce județ locuiești ?", "Din ce județ ești ?", "Cum se numește județul tău ?", "Cum se numește județul în care locuiești ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.county"
+  },
+  {
+    "texts": ["În ce sat locuiești ?", "În ce oraș locuiești ?", "Din ce sat ești ?", "Din ce oraș ești ?", "Cum se numește satul tău ?", "Cum se numește orașul tău ?", "Cum se numește satul în care locuiești ?", "Cum se numește orașul în care locuiești ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.locality"
+  },
+  {
+    "texts": ["Tu locuiești la țară sau la oraș ?", "Unde locuiești ? La țară sau la oraș ?", "Locuiești în mediul rural sau în urban ?", "Tu ești de la oraș sau de la țară ?", "Stai la țară sau la oraș ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.localityType"
+  },
+  {
+    "texts": ["În ce cartier locuiești ?", "Din ce cartier ești ?", "În ce zonă a orașului stai ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.neighborhood"
+  },
+  {
+    "texts": ["Pe ce stradă stai ?", "Pe ce stradă locuiești ?", "Cum se numește strada pe care locuiești ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.street"
+  },
+  {
+    "texts": ["La ce număr locuiești ?", "La ce număr stai ?", "Care e numărul casei tale ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.streetNumber"
+  },
+  {
+    "texts": ["La ce etaj stai ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.floor"
+  },
+  {
+    "texts": ["La ce apartament stai ?", "Care e numărul apartamentului ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "PERSONAL_INFORMATION",
+    "informationFieldNamePath": "homeAddress.apartmentNumber"
+  }
+]

@@ -10,7 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 // Lombok
 @NoArgsConstructor
@@ -18,13 +18,16 @@ import javax.validation.constraints.NotNull;
 @Data
 // Hibernate
 @Entity
-@Table(name = "CONVERSATION_SUBJECT")
-public class ConversationSubject {
+@Table(name = "ADDRESS")
+public class CsvConversationTimestamp {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotNull
-    @Column(name = "EMAIL", unique = true)
-    private String name;
+    @Column(name = "TIMESTAMP")
+    private LocalDateTime timestamp;
+
+    public CsvConversationTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
 }
