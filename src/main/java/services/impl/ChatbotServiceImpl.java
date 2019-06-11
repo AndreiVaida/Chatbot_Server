@@ -571,7 +571,7 @@ public class ChatbotServiceImpl implements ChatbotService {
 
         final List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldNamePath(DIRECTIVE, informationClass, informationFieldNamePath);
         if (sentences.isEmpty()) {
-            return generateDefaultSentence();
+            return pickRandomSentence();
         }
         if (informationFieldNamePath.endsWith("locality") && user.getPersonalInformation().getHomeAddress().getLocalityType() != null) {
             String localityType = "sat";

@@ -5,6 +5,7 @@ import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.entities.SimpleDate;
 import domain.entities.User;
+import domain.entities.Word;
 import domain.enums.Gender;
 import domain.enums.ItemClass;
 import domain.enums.LocalityType;
@@ -21,6 +22,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -355,6 +357,23 @@ public class InformationServiceImpl implements InformationService {
             }
 
             case DATE: {
+                if (informationWords[0].toLowerCase().equals("azi") || informationWords[0].toLowerCase().startsWith("ast")) {
+                    final LocalDate today = LocalDate.now();
+                    return new SimpleDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
+                }
+                if (informationWords[0].toLowerCase().equals("ieri")) {
+                    final LocalDate yesterday = LocalDate.now().minusDays(1);
+                    return new SimpleDate(yesterday.getYear(), yesterday.getMonthValue(), yesterday.getDayOfMonth());
+                }
+                if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("maine")) {
+                    final LocalDate tomorrow = LocalDate.now().plusDays(1);
+                    return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
+                }
+                if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("raspoimaine")) {
+                    final LocalDate tomorrow = LocalDate.now().plusDays(2);
+                    return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
+                }
+
                 Integer day = null;
                 Integer month = null;
                 Integer year = null;

@@ -45,11 +45,11 @@ public class SimpleDate {
             string += day;
         }
         if (month != null) {
-            if (!string.isEmpty()) string += " ";
+            if (!string.isEmpty()) string += ".";
             string += month;
         }
         if (year != null) {
-            if (!string.isEmpty()) string += " ";
+            if (!string.isEmpty()) string += ".";
             string += year;
         }
         return string;
