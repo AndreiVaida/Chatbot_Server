@@ -320,7 +320,7 @@ public class ChatbotServiceImpl implements ChatbotService {
             if (i > 0 && Character.isLetterOrDigit(word.getText().charAt(0))) {
                 text.append(" ");
             }
-            text.append(word.getText());
+            text.append(word.getText().toLowerCase());
         }
 
         return text.toString();
@@ -406,7 +406,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         // find those sentences that containsExpression the items from the given text
         final List<String> words = Arrays.asList(splitInWords(text));
         final int[] bestMatchedCount = {0};
-        final List<Sentence> matchedSentences = sentenceRepository.findAll().parallelStream()
+        final List<Sentence> matchedSentences = sentenceRepository.findAll().stream()
                 .filter(sentence -> {
                     // 1. check in sentence's own items
                     final List<String> sentenceWords = sentence.getWords().stream().map(Word::getText).collect(Collectors.toList());
@@ -543,7 +543,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         if (nrOfSentences == 0) {
             return generateDefaultSentence();
         }
-        return sentenceRepository.findAll().parallelStream().min((sentence1, sentence2) -> {
+        return sentenceRepository.findAll().stream().min((sentence1, sentence2) -> {
             final Integer nrOfResponses_sentence1 = sentence1.getResponses().size();
             final Integer nrOfResponses_sentence2 = sentence2.getResponses().size();
             return nrOfResponses_sentence1.compareTo(nrOfResponses_sentence2);

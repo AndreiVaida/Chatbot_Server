@@ -28,7 +28,7 @@ public class AdminFacadeImpl implements AdminFacade {
 
     @Override
     public List<SentenceDto> getAllSentences() {
-        return adminService.getAllSentences().parallelStream().map(SentenceMapper::sentenceToSentenceDto).collect(Collectors.toList());
+        return adminService.getAllSentences().stream().map(SentenceMapper::sentenceToSentenceDto).collect(Collectors.toList());
     }
 
     @Override

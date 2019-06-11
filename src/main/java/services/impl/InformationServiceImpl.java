@@ -357,42 +357,64 @@ public class InformationServiceImpl implements InformationService {
             }
 
             case DATE: {
-                if (informationWords[0].toLowerCase().equals("azi") || informationWords[0].toLowerCase().startsWith("ast")) {
-                    final LocalDate today = LocalDate.now();
-                    return new SimpleDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
-                }
-                if (informationWords[0].toLowerCase().equals("ieri")) {
-                    final LocalDate yesterday = LocalDate.now().minusDays(1);
-                    return new SimpleDate(yesterday.getYear(), yesterday.getMonthValue(), yesterday.getDayOfMonth());
-                }
-                if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("maine")) {
-                    final LocalDate tomorrow = LocalDate.now().plusDays(1);
-                    return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
-                }
-                if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("raspoimaine")) {
-                    final LocalDate tomorrow = LocalDate.now().plusDays(2);
-                    return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
-                }
+                try {
+                    // ieri / azi / mâine / poimâine
+                    if (informationWords[0].toLowerCase().equals("azi") || informationWords[0].toLowerCase().startsWith("ast")) {
+                        final LocalDate today = LocalDate.now();
+                        return new SimpleDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
+                    }
+                    if (informationWords[0].toLowerCase().equals("ieri")) {
+                        final LocalDate yesterday = LocalDate.now().minusDays(1);
+                        return new SimpleDate(yesterday.getYear(), yesterday.getMonthValue(), yesterday.getDayOfMonth());
+                    }
+                    if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("maine")) {
+                        final LocalDate tomorrow = LocalDate.now().plusDays(1);
+                        return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
+                    }
+                    if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("poimâine")) {
+                        final LocalDate tomorrow = LocalDate.now().plusDays(2);
+                        return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
+                    }
+                    // acum X ani/luni/zile
+                    if (informationWords[1].toLowerCase().equals("ani")) {
+                        final int yearsToSubtract = Integer.valueOf(informationWords[0]);
+                        final LocalDate pastTime = LocalDate.now().minusYears(yearsToSubtract);
+                        return new SimpleDate(pastTime.getYear(), null, null);
+                    }
+                    if (informationWords[1].toLowerCase().equals("luni")) {
+                        final int monthsToSubtract = Integer.valueOf(informationWords[0]);
+                        final LocalDate pastTime = LocalDate.now().minusMonths(monthsToSubtract);
+                        return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), null);
+                    }
+                    if (informationWords[1].toLowerCase().equals("zile")) {
+                        final int daysToSubtract = Integer.valueOf(informationWords[0]);
+                        final LocalDate pastTime = LocalDate.now().minusDays(daysToSubtract);
+                        return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), pastTime.getDayOfMonth());
+                    }
 
-                Integer day = null;
-                Integer month = null;
-                Integer year = null;
-                if (informationWords.length == 1) { // just month
-                    month = stringToMonth(informationWords[0]);
+                    Integer day = null;
+                    Integer month = null;
+                    Integer year = null;
+                    if (informationWords.length == 1) { // just month
+                        month = stringToMonth(informationWords[0]);
+                    }
+                    if (informationWords.length == 2) { // day + month
+                        day = Integer.valueOf(informationWords[0]);
+                        month = stringToMonth(informationWords[1]);
+                    }
+                    if (informationWords.length >= 3) { // day + month + year
+                        day = Integer.valueOf(informationWords[0]);
+                        month = stringToMonth(informationWords[1]);
+                        year = Integer.valueOf(informationWords[2]);
+                    }
+                    if (day == null && month == null && year == null) {
+                        return null;
+                    }
+                    return new SimpleDate(year, month, day);
                 }
-                if (informationWords.length == 2) { // day + month
-                    day = Integer.valueOf(informationWords[0]);
-                    month = stringToMonth(informationWords[1]);
-                }
-                if (informationWords.length >= 3) { // day + month + year
-                    day = Integer.valueOf(informationWords[0]);
-                    month = stringToMonth(informationWords[1]);
-                    year = Integer.valueOf(informationWords[2]);
-                }
-                if (day == null && month == null && year == null) {
+                catch (NumberFormatException ignored) {
                     return null;
                 }
-                return new SimpleDate(year, month, day);
             }
 
             case GENDER: {

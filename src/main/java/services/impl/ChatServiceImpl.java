@@ -188,6 +188,8 @@ public class ChatServiceImpl implements ChatService {
                 return chatbotService.pickSentenceWithFewReplies();
             case GET_INFORMATION_FROM_USER:
                 return chatbotService.pickSentenceRequestingInformation(toUser);
+            case RANDOM:
+                return chatbotService.pickRandomSentence();
             default:
                 return chatbotService.pickSentenceRequestingInformation(toUser);
         }
