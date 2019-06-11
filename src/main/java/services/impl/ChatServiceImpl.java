@@ -1,6 +1,7 @@
 package services.impl;
 
 import domain.entities.Message;
+import domain.entities.ResponseMessageAndInformation;
 import domain.entities.Sentence;
 import domain.entities.User;
 import domain.enums.ChatbotRequestType;
@@ -84,7 +85,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public Message addMessageAndGetResponse(final String text, final Long fromUserId, Long toUserId) {
+    public ResponseMessageAndInformation addMessageAndGetResponse(final String text, final Long fromUserId, Long toUserId) {
         MessageSource messageSource = MessageSource.USER_USER_CONVERSATION;
         if (toUserId == null || toUserId == 0) {
             toUserId = CHATBOT_ID;
@@ -99,22 +100,34 @@ public class ChatServiceImpl implements ChatService {
 
         // extract the information from the message and update the user details
         Class<Information> informationClass = null;
-        String informationFieldName = null;
+        String informationFieldNamePath = null;
         if (previousMessage != null) {
             informationClass = previousMessage.getEquivalentSentence().getInformationClass();
-            informationFieldName = previousMessage.getEquivalentSentence().getInformationFieldNamePath();
+            informationFieldNamePath = previousMessage.getEquivalentSentence().getInformationFieldNamePath();
         }
+        List<Object> updatedInformationValues = null;
         try {
-            final Information information = informationService.identifyInformation(informationClass, informationFieldName, message);
-            if (information != null) {
-                userService.updateUserInformation(information, fromUser);
+            updatedInformationValues = informationService.identifyAndSetInformation(informationClass, informationFieldNamePath, message, fromUser);
+            if (updatedInformationValues != null) {
+                userService.updateUser(fromUser);
+
             }
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }
 
         // generate a response
-        return generateResponse(message);
+        final Message response = generateResponse(message);
+        StringBuilder informationResponse = new StringBuilder();
+        if (updatedInformationValues != null) {
+            informationResponse.append(updatedInformationValues.get(0).toString());
+            for (int i = 1; i < updatedInformationValues.size(); i++) {
+                final Object updatedInformationValue = updatedInformationValues.get(i);
+                informationResponse.append(", ").append(updatedInformationValue.toString());
+            }
+            informationResponse.append(" s-a detectat pentru ").append(informationFieldNamePath);
+        }
+        return new ResponseMessageAndInformation(response, informationResponse.toString());
     }
 
     private Message addMessageAndSetItAsResponse(final String text, final User fromUser, final User toUser, final MessageSource messageSource, final Message previousMessage) {

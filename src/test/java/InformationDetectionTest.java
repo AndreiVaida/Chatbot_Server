@@ -1,8 +1,8 @@
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
+import domain.entities.User;
 import domain.enums.Gender;
-import domain.enums.ItemClass;
 import domain.enums.LocalityType;
 import domain.enums.SpeechType;
 import domain.information.FreeTimeInformation;
@@ -46,10 +46,12 @@ public class InformationDetectionTest {
     @Autowired
     private ExpressionItemRepository expressionItemRepository;
     private InformationService informationService;
+    private User user;
 
     @Before
     public void initialize() {
         informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
+        user = new User();
     }
 
     @Test
@@ -70,10 +72,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: firstName ("Eu sunt NAME")
-        Information information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Eu sunt Andy"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        PersonalInformation personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Eu sunt Andy"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy", user.getPersonalInformation().getFirstName());
 
         // add linguistic expression
         linguisticExpression = new LinguisticExpression();
@@ -90,16 +91,14 @@ public class InformationDetectionTest {
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.2: firstName - normal answer 2 ("Eu sunt NAME.")
-        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Eu sunt Andy."));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Eu sunt Andy."), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy", user.getPersonalInformation().getFirstName());
 
         // Test 1.3: firstName - normal answer 3 ("Eu sunt NAME NAME.")
-        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Eu sunt Andy cel mare."));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy cel mare", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Eu sunt Andy cel mare."), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy cel mare", user.getPersonalInformation().getFirstName());
 
         // TEST 2: "NAME e numele meu"
         // add linguistic expression
@@ -117,16 +116,14 @@ public class InformationDetectionTest {
         Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: firstName ("NAME e numele meu")
-        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Andy e numele meu"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Andy e numele meu"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy", user.getPersonalInformation().getFirstName());
 
         // Test 2.2: firstName ("NAME e numele meu.")
-        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Andy e numele meu."));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Andy e numele meu."), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy", user.getPersonalInformation().getFirstName());
 
         // TEST 3: "NAME"
         // add linguistic expression
@@ -153,29 +150,25 @@ public class InformationDetectionTest {
         Assert.assertEquals(5, informationService.getAllLinguisticExpressions().size());
 
         // Test 3.1: firstName ("NAME")
-        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Andy"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Andy"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy", user.getPersonalInformation().getFirstName());
 
         // Test 3.1: firstName ("NAME.")
-        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Andy."));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Andy."), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy", user.getPersonalInformation().getFirstName());
 
         // TEST 4: "Cred că eu sunt NAME."
         // Test 3.1: firstName ("Cred că eu sunt NAME.")
-        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Cred că eu sunt Andy."));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Cred că eu sunt Andy."), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy", user.getPersonalInformation().getFirstName());
 
         // Test 3.1: firstName ("NAME.")
-        information = informationService.identifyInformation(PersonalInformation.class, "firstName", new Message("Andy."));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Andy", personalInformation.getFirstName());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "firstName", new Message("Andy."), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Andy", user.getPersonalInformation().getFirstName());
     }
 
     @Test
@@ -206,25 +199,22 @@ public class InformationDetectionTest {
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: birthDay ("În MONTH")
-        Information information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("În octombrie"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        PersonalInformation personalInformation = (PersonalInformation) information;
-        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "birthDay", new Message("În octombrie"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals((Integer)10, user.getPersonalInformation().getBirthDay().getMonth());
 
         // Test 1.2: birthDay ("Pe DAY MONTH")
-        information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals((Integer) 24, personalInformation.getBirthDay().getDay());
-        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals((Integer) 24, user.getPersonalInformation().getBirthDay().getDay());
+        Assert.assertEquals((Integer)10, user.getPersonalInformation().getBirthDay().getMonth());
 
         // Test 1.3: birthDay ("Pe DAY MONTH YEAR")
-        information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie 1997"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals((Integer)24, personalInformation.getBirthDay().getDay());
-        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
-        Assert.assertEquals((Integer)1997, personalInformation.getBirthDay().getYear());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "birthDay", new Message("Pe 24 octombrie 1997"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals((Integer)24, user.getPersonalInformation().getBirthDay().getDay());
+        Assert.assertEquals((Integer)10, user.getPersonalInformation().getBirthDay().getMonth());
+        Assert.assertEquals((Integer)1997, user.getPersonalInformation().getBirthDay().getYear());
 
         // TEST 2: "DATE"
         // add linguistic expression
@@ -239,11 +229,10 @@ public class InformationDetectionTest {
         Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: birthDay ("DATE")
-        information = informationService.identifyInformation(PersonalInformation.class, "birthDay", new Message("24 octombrie"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals((Integer)24, personalInformation.getBirthDay().getDay());
-        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "birthDay", new Message("24 octombrie"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals((Integer)24, user.getPersonalInformation().getBirthDay().getDay());
+        Assert.assertEquals((Integer)10, user.getPersonalInformation().getBirthDay().getMonth());
 
         /* DIRECTIVE: "În ce an te-ai născut ?" */
         // TEST 3: "În YEAR"
@@ -279,22 +268,19 @@ public class InformationDetectionTest {
         informationService.addLinguisticExpression(linguisticExpression);
 
         // Test 3.1: birthDay ("În YEAR")
-        information = informationService.identifyInformation(PersonalInformation.class, "birthDay.year", new Message("în 1997"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals((Integer)1997, personalInformation.getBirthDay().getYear());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "birthDay.year", new Message("în 1997"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals((Integer)1997, user.getPersonalInformation().getBirthDay().getYear());
 
         // Test 3.2: birthDay ("În MONTH")
-        information = informationService.identifyInformation(PersonalInformation.class, "birthDay.month", new Message("în octombrie"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals((Integer)10, personalInformation.getBirthDay().getMonth());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "birthDay.month", new Message("în octombrie"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals((Integer)10, user.getPersonalInformation().getBirthDay().getMonth());
 
         // Test 3.3: birthDay ("În DAY")
-        information = informationService.identifyInformation(PersonalInformation.class, "birthDay.day", new Message("în 24"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals((Integer)24, personalInformation.getBirthDay().getDay());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "birthDay.day", new Message("în 24"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals((Integer)24, user.getPersonalInformation().getBirthDay().getDay());
     }
 
     @Test
@@ -314,16 +300,14 @@ public class InformationDetectionTest {
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: homeAddress.locality ("În NAME")
-        Information information = informationService.identifyInformation(PersonalInformation.class, "homeAddress.locality", new Message("În Cluj"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        PersonalInformation personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Cluj", personalInformation.getHomeAddress().getLocality());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "homeAddress.locality", new Message("În Cluj"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Cluj", user.getPersonalInformation().getHomeAddress().getLocality());
 
         // Test 1.2: homeAddress.locality ("În NAME-NAME")
-        information = informationService.identifyInformation(PersonalInformation.class, "homeAddress.locality", new Message("În Cluj-Napoca"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals("Cluj-Napoca", personalInformation.getHomeAddress().getLocality());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "homeAddress.locality", new Message("În Cluj-Napoca"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals("Cluj-Napoca", user.getPersonalInformation().getHomeAddress().getLocality());
 
         /* DIRECTIVE: "Locuiești la țară sau la oraș ?" */
         // TEST 1: "Locuiesc la țară"
@@ -339,10 +323,9 @@ public class InformationDetectionTest {
         informationService.addLinguisticExpression(linguisticExpression);
 
         // Test 1.1: homeAddress.localityType ("la NAME")
-        information = informationService.identifyInformation(PersonalInformation.class, "homeAddress.localityType", new Message("Locuiesc la țară"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        personalInformation = (PersonalInformation) information;
-        Assert.assertEquals(LocalityType.RURAL, personalInformation.getHomeAddress().getLocalityType());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "homeAddress.localityType", new Message("Locuiesc la țară"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals(LocalityType.RURAL, user.getPersonalInformation().getHomeAddress().getLocalityType());
     }
 
     @Test
@@ -361,10 +344,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: motherPersonalInformation.firstName ("NAME")
-        Information information = informationService.identifyInformation(RelationshipsInformation.class, "motherPersonalInformation.firstName", new Message("Maria"));
-        Assert.assertEquals(RelationshipsInformation.class, information.getClass());
-        RelationshipsInformation relationshipsInformation = (RelationshipsInformation) information;
-        Assert.assertEquals("Maria", relationshipsInformation.getMotherPersonalInformation().getFirstName());
+        informationService.identifyAndSetInformation(RelationshipsInformation.class, "motherPersonalInformation.firstName", new Message("Maria"), user);
+        Assert.assertNotNull(user.getRelationshipsInformation());
+        Assert.assertEquals("Maria", user.getRelationshipsInformation().getMotherPersonalInformation().getFirstName());
 
         // TEST 2: "NAME e numele ei."
         // add linguistic expression
@@ -380,10 +362,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: motherPersonalInformation.firstName ("NAME e numele ei.")
-        information = informationService.identifyInformation(RelationshipsInformation.class, "motherPersonalInformation.firstName", new Message("Maria e numele ei."));
-        Assert.assertEquals(RelationshipsInformation.class, information.getClass());
-        relationshipsInformation = (RelationshipsInformation) information;
-        Assert.assertEquals("Maria", relationshipsInformation.getMotherPersonalInformation().getFirstName());
+        informationService.identifyAndSetInformation(RelationshipsInformation.class, "motherPersonalInformation.firstName", new Message("Maria e numele ei."), user);
+        Assert.assertNotNull(user.getRelationshipsInformation());
+        Assert.assertEquals("Maria", user.getRelationshipsInformation().getMotherPersonalInformation().getFirstName());
     }
 
     @Test
@@ -403,10 +384,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: firstName ("sunt GENDER")
-        Information information = informationService.identifyInformation(PersonalInformation.class, "gender", new Message("sunt băiat"));
-        Assert.assertEquals(PersonalInformation.class, information.getClass());
-        PersonalInformation personalInformation = (PersonalInformation) information;
-        Assert.assertEquals(Gender.MALE, personalInformation.getGender());
+        informationService.identifyAndSetInformation(PersonalInformation.class, "gender", new Message("sunt băiat"), user);
+        Assert.assertNotNull(user.getPersonalInformation());
+        Assert.assertEquals(Gender.MALE, user.getPersonalInformation().getGender());
     }
 
     @Test
@@ -425,12 +405,11 @@ public class InformationDetectionTest {
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: favouriteCourse ("NAME")
-        Information information = informationService.identifyInformation(SchoolInformation.class, "isAtSchool", new Message("Da"));
-        Assert.assertEquals(SchoolInformation.class, information.getClass());
-        SchoolInformation schoolInformation = (SchoolInformation) information;
-        Assert.assertEquals(true, schoolInformation.getIsAtSchool());
+        informationService.identifyAndSetInformation(SchoolInformation.class, "isAtSchool", new Message("Da"), user);
+        Assert.assertNotNull(user.getSchoolInformation());
+        Assert.assertEquals(true, user.getSchoolInformation().getIsAtSchool());
         // the course should appear in coursesGrades map
-        Assert.assertEquals(true, schoolInformation.getIsAtSchool());
+        Assert.assertEquals(true, user.getSchoolInformation().getIsAtSchool());
 
         /* DIRECTIVE: "Ce notă iei de obicei la limba română ?" */
         // TEST 2: "De obicei am NUMBER."
@@ -449,10 +428,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: coursesGrades ("De obicei iau 8")
-        information = informationService.identifyInformation(SchoolInformation.class, "coursesGrades#limba română", new Message("De obicei iau 8"));
-        Assert.assertEquals(SchoolInformation.class, information.getClass());
-        schoolInformation = (SchoolInformation) information;
-        Assert.assertEquals((Integer) 8, schoolInformation.getCoursesGrades().get("limba română"));
+        informationService.identifyAndSetInformation(SchoolInformation.class, "coursesGrades#limba română", new Message("De obicei iau 8"), user);
+        Assert.assertNotNull(user.getSchoolInformation());
+        Assert.assertEquals((Integer) 8, user.getSchoolInformation().getCoursesGrades().get("limba română"));
 
         /* DIRECTIVE: "Ce materie ai la școală ?" */
         // TEST 3: "NAME"
@@ -468,10 +446,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: coursesGrades ("De obicei iau 8")
-        information = informationService.identifyInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"));
-        Assert.assertEquals(SchoolInformation.class, information.getClass());
-        schoolInformation = (SchoolInformation) information;
-        Assert.assertNotNull(schoolInformation.getCoursesGrades().get("matematică"));
+        informationService.identifyAndSetInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"), user);
+        Assert.assertNotNull(user.getSchoolInformation());
+        Assert.assertNotNull(user.getSchoolInformation().getCoursesGrades().get("matematică"));
     }
 
     @Test
@@ -490,12 +467,11 @@ public class InformationDetectionTest {
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: favouriteCourse ("NAME")
-        Information information = informationService.identifyInformation(SchoolInformation.class, "favouriteCourse", new Message("limba română"));
-        Assert.assertEquals(SchoolInformation.class, information.getClass());
-        SchoolInformation schoolInformation = (SchoolInformation) information;
-        Assert.assertEquals("limba română", schoolInformation.getFavouriteCourse());
+        informationService.identifyAndSetInformation(SchoolInformation.class, "favouriteCourse", new Message("limba română"), user);
+        Assert.assertNotNull(user.getSchoolInformation());
+        Assert.assertEquals("limba română", user.getSchoolInformation().getFavouriteCourse());
         // the course should appear in coursesGrades map
-        Assert.assertNotNull(schoolInformation.getCoursesGrades().get("limba română"));
+        Assert.assertNotNull(user.getSchoolInformation().getCoursesGrades().get("limba română"));
 
         /* DIRECTIVE: "Ce notă iei de obicei la limba română ?" */
         // TEST 2: "De obicei am NUMBER."
@@ -514,10 +490,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: coursesGrades ("De obicei iau 8")
-        information = informationService.identifyInformation(SchoolInformation.class, "coursesGrades#limba română", new Message("De obicei iau 8"));
-        Assert.assertEquals(SchoolInformation.class, information.getClass());
-        schoolInformation = (SchoolInformation) information;
-        Assert.assertEquals((Integer) 8, schoolInformation.getCoursesGrades().get("limba română"));
+        informationService.identifyAndSetInformation(SchoolInformation.class, "coursesGrades#limba română", new Message("De obicei iau 8"), user);
+        Assert.assertNotNull(user.getSchoolInformation());
+        Assert.assertEquals((Integer) 8, user.getSchoolInformation().getCoursesGrades().get("limba română"));
 
         /* DIRECTIVE: "Ce materie ai la școală ?" */
         // TEST 3: "NAME"
@@ -533,10 +508,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(3, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: coursesGrades ("De obicei iau 8")
-        information = informationService.identifyInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"));
-        Assert.assertEquals(SchoolInformation.class, information.getClass());
-        schoolInformation = (SchoolInformation) information;
-        Assert.assertNotNull(schoolInformation.getCoursesGrades().get("matematică"));
+        informationService.identifyAndSetInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"), user);
+        Assert.assertNotNull(user.getSchoolInformation());
+        Assert.assertNotNull(user.getSchoolInformation().getCoursesGrades().get("matematică"));
     }
 
     @Test
@@ -555,10 +529,9 @@ public class InformationDetectionTest {
         Assert.assertEquals(1, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: brothersAndSistersPersonalInformation.firstName ("Andrei")
-        Information information = informationService.identifyInformation(RelationshipsInformation.class, "brothersAndSistersPersonalInformation#?.firstName", new Message("Andrei"));
-        Assert.assertEquals(RelationshipsInformation.class, information.getClass());
-        RelationshipsInformation relationshipsInformation = (RelationshipsInformation) information;
-        Assert.assertEquals("Andrei", relationshipsInformation.getBrothersAndSistersPersonalInformation().get("Andrei").getFirstName());
+        informationService.identifyAndSetInformation(RelationshipsInformation.class, "brothersAndSistersPersonalInformation#?.firstName", new Message("Andrei"), user);
+        Assert.assertNotNull(user.getRelationshipsInformation());
+        Assert.assertEquals("Andrei", user.getRelationshipsInformation().getBrothersAndSistersPersonalInformation().get("Andrei").getFirstName());
     }
 
     @Test
@@ -590,20 +563,19 @@ public class InformationDetectionTest {
         Assert.assertEquals(2, informationService.getAllLinguisticExpressions().size());
 
         // Test 1.1: hobbies ("Îmi place să joc NAME")
-        Information information = informationService.identifyInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal"));
-        Assert.assertEquals(FreeTimeInformation.class, information.getClass());
-        FreeTimeInformation freeTimeInformation = (FreeTimeInformation) information;
-        Assert.assertEquals(1, freeTimeInformation.getHobbies().size());
-        Assert.assertTrue(freeTimeInformation.getHobbies().contains("fotbal"));
+        informationService.identifyAndSetInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal"), user);
+        Assert.assertNotNull(user.getFreeTimeInformation());
+        Assert.assertEquals(1, user.getFreeTimeInformation().getHobbies().size());
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("fotbal"));
 
         // Test 1.2: hobbies ("Îmi place să joc NAME, NAME și NAME")
-        information = informationService.identifyInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal, baschet și volei."));
-        Assert.assertEquals(FreeTimeInformation.class, information.getClass());
-        freeTimeInformation = (FreeTimeInformation) information;
-        Assert.assertEquals(3, freeTimeInformation.getHobbies().size());
-        Assert.assertTrue(freeTimeInformation.getHobbies().contains("fotbal"));
-        Assert.assertTrue(freeTimeInformation.getHobbies().contains("baschet"));
-        Assert.assertTrue(freeTimeInformation.getHobbies().contains("volei"));
+        informationService.identifyAndSetInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal, tenis, baschet și volei."), user);
+        Assert.assertNotNull(user.getFreeTimeInformation());
+        Assert.assertEquals(4, user.getFreeTimeInformation().getHobbies().size());
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("fotbal"));
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("tenis"));
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("baschet"));
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("volei"));
 
         // TEST 2: "Îmi place să joc NAME, să NAME, îmi place să NAME și îmi ador să NAME"
         // add linguistic expression
@@ -643,13 +615,13 @@ public class InformationDetectionTest {
         Assert.assertEquals(5, informationService.getAllLinguisticExpressions().size());
 
         // Test 2.1: hobbies ("Îmi place să joc NAME, să NAME, îmi place să NAME și îmi ador să NAME")
-        information = informationService.identifyInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal, să pescuiesc, îmi place să citesc și ador să fac poze."));
-        Assert.assertEquals(FreeTimeInformation.class, information.getClass());
-        freeTimeInformation = (FreeTimeInformation) information;
-        Assert.assertEquals(4, freeTimeInformation.getHobbies().size());
-        Assert.assertTrue(freeTimeInformation.getHobbies().contains("fotbal"));
-        Assert.assertTrue(freeTimeInformation.getHobbies().contains("pescuiesc"));
-        Assert.assertTrue(freeTimeInformation.getHobbies().contains("citesc"));
-        Assert.assertTrue(freeTimeInformation.getHobbies().contains("fac poze"));
+        user.setFreeTimeInformation(null);
+        informationService.identifyAndSetInformation(FreeTimeInformation.class, "hobbies#?", new Message("Îmi place să joc fotbal, să pescuiesc, îmi place să citesc și ador să fac poze."), user);
+        Assert.assertNotNull(user.getFreeTimeInformation());
+        Assert.assertEquals(4, user.getFreeTimeInformation().getHobbies().size());
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("fotbal"));
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("pescuiesc"));
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("citesc"));
+        Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("fac poze"));
     }
 }

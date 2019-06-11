@@ -3,6 +3,7 @@ package controllers;
 import domain.enums.ChatbotRequestType;
 import dtos.MessageDto;
 import dtos.RequestSendMessageDto;
+import dtos.ResponseMessageAndInformationDto;
 import facades.api.ChatFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,8 +36,8 @@ public class ChatController extends AbstractController {
     }
 
     @PostMapping
-    public ResponseEntity<MessageDto> sendMessage(@RequestBody @Validated final RequestSendMessageDto requestSendMessageDto) {
-        final MessageDto response = chatFacade.addMessage(requestSendMessageDto);
+    public ResponseEntity<ResponseMessageAndInformationDto> sendMessage(@RequestBody @Validated final RequestSendMessageDto requestSendMessageDto) {
+        final ResponseMessageAndInformationDto response = chatFacade.addMessage(requestSendMessageDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

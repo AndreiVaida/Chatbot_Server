@@ -37,4 +37,21 @@ public class SimpleDate {
         this.month = month;
         this.day = day;
     }
+
+    @Override
+    public String toString() {
+        String string = "";
+        if (day != null) {
+            string += day;
+        }
+        if (month != null) {
+            if (!string.isEmpty()) string += " ";
+            string += month;
+        }
+        if (year != null) {
+            if (!string.isEmpty()) string += " ";
+            string += year;
+        }
+        return string;
+    }
 }

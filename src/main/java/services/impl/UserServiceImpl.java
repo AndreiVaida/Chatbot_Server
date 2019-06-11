@@ -76,36 +76,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUserInformation(final Information information, final User user) {
-        // iterate getters of the information object
-        try {
-            final BeanInfo beanInformation = Introspector.getBeanInfo(information.getClass(), Object.class);
-            final PropertyDescriptor[] propertyDescriptors = beanInformation.getPropertyDescriptors(); // get all properties of the Information
-            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                final Method getterOfInformation = propertyDescriptor.getReadMethod();  // ex: getName()
-                final Object info = getterOfInformation.invoke(information);            // ex: get the name (a string)
-
-                if (info != null && !propertyDescriptor.getName().equals("fieldNamesInImportanceOrder")) {
-                    final Method getterOfUser = user.getClass().getMethod("get" + information.getClass().getSimpleName());      // ex: getPersonalInformation()
-                    final Method setterOfInformation = propertyDescriptor.getWriteMethod();         // ex: setName()
-                    Information userInformation = (Information) getterOfUser.invoke(user);          // ex: personalInformation property of user
-                    if (userInformation == null) {
-                        userInformation = information.getClass().newInstance();
-                        final Method setterOfUser = user.getClass().getMethod("set" + information.getClass().getSimpleName(), information.getClass());  // ex: setPersonalInformation()
-                        setterOfUser.invoke(user, userInformation);
-                    }
-                    setterOfInformation.invoke(userInformation, info);                              // ex: personalInformation.setName("Andy")
-                    userRepository.save(user);
-                    return;
-                }
-            }
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | IntrospectionException | InstantiationException e) {
-            e.printStackTrace();
-        }
+    public void updateUser(final User user) {
+        userRepository.save(user);
     }
 
 //    @Override
-//    public void updateUserInformation(final List<Information> informationList, final User user) {
+//    public void updateUser(final List<Information> informationList, final User user) {
 //        for (Information information : informationList) {
 //            // iterate getters of the information object
 //            for (Method getterOfInformation : information.getClass().getMethods()) {

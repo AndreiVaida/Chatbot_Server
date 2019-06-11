@@ -1,8 +1,10 @@
 package facades.impl;
 
+import domain.entities.ResponseMessageAndInformation;
 import domain.enums.ChatbotRequestType;
 import dtos.MessageDto;
 import dtos.RequestSendMessageDto;
+import dtos.ResponseMessageAndInformationDto;
 import facades.api.ChatFacade;
 import mappers.MessageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +24,10 @@ public class ChatFacadeImpl implements ChatFacade {
     }
 
     @Override
-    public MessageDto addMessage(final RequestSendMessageDto requestSendMessageDto) {
-        return MessageMapper.messageToMessageDto(
-                chatService.addMessageAndGetResponse(requestSendMessageDto.getMessage(), requestSendMessageDto.getFromUserId(), requestSendMessageDto.getToUserId()));
+    public ResponseMessageAndInformationDto addMessage(final RequestSendMessageDto requestSendMessageDto) {
+        final ResponseMessageAndInformation responseMessageAndInformation = chatService.addMessageAndGetResponse(requestSendMessageDto.getMessage(), requestSendMessageDto.getFromUserId(), requestSendMessageDto.getToUserId());
+        final MessageDto messageDto = MessageMapper.messageToMessageDto(responseMessageAndInformation.getMessage());
+        return new ResponseMessageAndInformationDto(messageDto, responseMessageAndInformation.getInformation());
     }
 
     @Override

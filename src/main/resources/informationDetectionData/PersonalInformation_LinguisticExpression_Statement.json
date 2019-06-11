@@ -92,7 +92,7 @@
   {
     "expressionItems": [[{"text": "pe", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "pe", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
-      [{"text": null, "itemClass": "DATE"}]],
+      [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
     "informationClassDto": "PERSONAL_INFORMATION",
     "informationFieldNamePath": "homeAddress.continent"
@@ -105,7 +105,7 @@
       [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}, {"text": "se", "itemClass": "NOT_AN_INFORMATION"}],
-      [{"text": null, "itemClass": "DATE"}]],
+      [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
     "informationClassDto": "PERSONAL_INFORMATION",
     "informationFieldNamePath": "homeAddress.country"
@@ -118,7 +118,7 @@
       [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}, {"text": "se", "itemClass": "NOT_AN_INFORMATION"}],
-      [{"text": null, "itemClass": "DATE"}]],
+      [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
     "informationClassDto": "PERSONAL_INFORMATION",
     "informationFieldNamePath": "homeAddress.county"
@@ -176,6 +176,10 @@
       [{"text": "din", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "strada", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "strada", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "strada", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": "locuiesc", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "strada", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": "locuiesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}, {"text": "se", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",

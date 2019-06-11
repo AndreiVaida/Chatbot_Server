@@ -1,13 +1,11 @@
 package services.api;
 
 import domain.entities.Message;
+import domain.entities.ResponseMessageAndInformation;
 import domain.enums.ChatbotRequestType;
 import domain.enums.MessageSource;
-import dtos.MessageDto;
 
 import java.util.List;
-
-import static domain.enums.ChatbotRequestType.GET_INFORMATION_FROM_USER;
 
 public interface ChatService {
     ChatbotRequestType getChatbotRequestType();
@@ -33,9 +31,9 @@ public interface ChatService {
      * This method update synonyms and responses.
      * @param fromUserId - human user (non null and non 0)
      * @param toUserId   - human user or chatbot (for chatbot let this field null or 0)
-     * @return an appropriate response or a random one if the chatbot does't know to respond
+     * @return an appropriate response or a random one if the chatbot does't know to respond AND, if we extracted an information, include a message that says that
      */
-    Message addMessageAndGetResponse(final String text, final Long fromUserId, Long toUserId);
+    ResponseMessageAndInformation addMessageAndGetResponse(final String text, final Long fromUserId, Long toUserId);
 
     /**
      * @param userId1 - human user (non null and non 0)

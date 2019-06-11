@@ -4,6 +4,7 @@ import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.entities.SimpleDate;
+import domain.entities.User;
 import domain.enums.Gender;
 import domain.enums.ItemClass;
 import domain.enums.LocalityType;
@@ -20,6 +21,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,7 +68,7 @@ public class InformationServiceImpl implements InformationService {
     }
 
     @Override
-    public Information identifyInformation(Class informationClass, String informationFieldNamePath, final Message answer) throws IllegalAccessException, InstantiationException {
+    public List<Object> identifyAndSetInformation(Class informationClass, String informationFieldNamePath, final Message answer, final User user) {
         if (informationClass == null) {
             informationClass = identifyInformationClass(answer);
             informationFieldNamePath = answer.getEquivalentSentence().getInformationFieldNamePath();
@@ -78,7 +80,7 @@ public class InformationServiceImpl implements InformationService {
         final List<LinguisticExpression> expressions = getLinguisticExpressionsByClassAndFieldAndSpeechType(informationClass, removeMapKeysFromPath(informationFieldNamePath), STATEMENT);
         ItemClass itemClass = null;
 
-        Information information = null;
+        final List<Object> identifiedInformation = new ArrayList<>();
 
         // split the message by comma to delimit ideas
         final String[] subsentences = splitInSubentences(answer.getText());
@@ -176,12 +178,17 @@ public class InformationServiceImpl implements InformationService {
                             continue;
                         }
 
-                        if (information == null) {
-                            information = (Information) informationClass.newInstance();
+                        final Method getterOfUser = user.getClass().getMethod("get" + informationClass.getSimpleName());
+                        Information userInformation = (Information) getterOfUser.invoke(user);
+                        if (userInformation == null) {
+                            userInformation = (Information) informationClass.newInstance();
+                            final Method setterOfUser = user.getClass().getMethod("set" + informationClass.getSimpleName(), informationClass);
+                            setterOfUser.invoke(user, userInformation);
                         }
                         // check if the effective information is a field of a field of the information
                         final String[] fieldNameHierarchy = informationFieldNamePath.split("\\.");
-                        setTheInformation(information, fieldNameHierarchy, informationAsItsType);
+                        setTheInformation(userInformation, fieldNameHierarchy, informationAsItsType);
+                        identifiedInformation.add(informationAsItsType);
                         break; // we found the information, skip the next linguistic expressions and go to next subsentence
 
                     } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
@@ -190,7 +197,10 @@ public class InformationServiceImpl implements InformationService {
                 }
             }
         }
-        return information;
+        if (identifiedInformation.isEmpty()) {
+            return null;
+        }
+        return identifiedInformation;
     }
 
     private String[] splitInSubentences(final String text) {
@@ -213,6 +223,7 @@ public class InformationServiceImpl implements InformationService {
     /**
      * Sets the informationAsItsType in the last child of the hierarchy. Recursive function.
      * If any of the fields (children) are null, create a new object for it.
+     * If the value already exists, replace it. If the value needs to be saved in a collection, add it keeping the collection free of duplicates.
      *
      * @param parent               - original parent, it will be a child if the hierarchy impose (length > 1)
      * @param fieldNameHierarchy   - the parent is at index 0, the child is index 1 etc.
@@ -222,7 +233,7 @@ public class InformationServiceImpl implements InformationService {
      *                             Example for RelationshipInformation: "[{kidsPersonalInformation#Matei},{firstName}]", "[{brothersAndSistersPersonalInformation#?}]"
      * @param informationAsItsType - the effective information which should be set for last child in hierarchy
      */
-    private void setTheInformation(final Object parent, final String[] fieldNameHierarchy, final Object informationAsItsType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    static private void setTheInformation(final Object parent, final String[] fieldNameHierarchy, final Object informationAsItsType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         final String[] field = fieldNameHierarchy[0].split("#"); // get an array of 1 or 2 elements: fieldName and map key (if the field is a map)
         final String fieldName = field[0];
         String fieldKey = null;
@@ -255,7 +266,7 @@ public class InformationServiceImpl implements InformationService {
                             map.put(informationAsItsType, 0);
                         } else { // number of members from a map from RelationshipInformation
                             final PersonalInformation personalInformation = new PersonalInformation();
-                            personalInformationRepository.save(personalInformation);
+                            // personalInformationRepository.save(personalInformation);
                             map.put(informationAsItsType, personalInformation);
                         }
                     } else {
@@ -264,7 +275,9 @@ public class InformationServiceImpl implements InformationService {
                 }
                 if (getterOfChild.getReturnType().equals(List.class)) {
                     final List list = (List) getterOfChild.invoke(parent);
-                    list.add(informationAsItsType);
+                    if (!list.contains(informationAsItsType)) {
+                        list.add(informationAsItsType);
+                    }
                 }
             }
         } else {
@@ -296,7 +309,7 @@ public class InformationServiceImpl implements InformationService {
                 Object value = map.get(fieldKey);
                 if (value == null) {
                     value = new PersonalInformation(); // TODO: use more than PersonalInformation
-                    personalInformationRepository.save((PersonalInformation) value);
+                    // personalInformationRepository.save((PersonalInformation) value);
                     if (fieldKey.equals("?")) {
                         fieldKey = (String) informationAsItsType;
                     }

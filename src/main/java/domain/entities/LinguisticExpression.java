@@ -36,9 +36,9 @@ public class LinguisticExpression {
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
-            name = "LINGUISTIC_EXPRESSION_WORDS",
+            name = "LINGUISTIC_EXPRESSION_ITEMS",
             joinColumns = {@JoinColumn(name = "LINGUISTIC_EXPRESSION_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "WORD_ID")}
+            inverseJoinColumns = {@JoinColumn(name = "ITEM_ID")}
     )
     @OrderColumn
     private List<ExpressionItem> items = new ArrayList<>(); // the non-NOT_AN_INFORMATION ExpressionItem.itemClass is the information to identify in the message (it should be only 1 item like this)
