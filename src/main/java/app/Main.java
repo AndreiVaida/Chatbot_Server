@@ -52,21 +52,10 @@ public class Main {
             addUserForLearningInDb();
             addAndreiInDb();
             // add Sentences, LinguisticExpressions and messages
-//            uploadSentencesFile();
-//            uploadLinguisticExpressionFile();
-//            uploadMessagesFiles();
+            //uploadSentencesFile();
+            //uploadLinguisticExpressionFile();
+            //uploadMessagesFiles();
         }
-
-//        new Thread(() -> {
-//            try {
-//                Thread.sleep(5000);
-//                final List<MessageDto> messageDtos = facebookChatRepository.readChatFromJsonFile("message_1.json");
-//                fastLearningService.addMessagesFromFile(messageDtos);
-//                System.out.println("Learning finished successfully");
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }).start();
     }
 
     public static void main(String[] args) {

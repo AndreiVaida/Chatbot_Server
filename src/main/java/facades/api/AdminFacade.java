@@ -34,4 +34,6 @@ public interface AdminFacade {
     ChatbotRequestType getChatbotRequestType();
 
     void setChatbotRequestType(final ChatbotRequestType chatbotRequestType);
+
+    AddedDataStatus addConversationsFromWebsite();
 }

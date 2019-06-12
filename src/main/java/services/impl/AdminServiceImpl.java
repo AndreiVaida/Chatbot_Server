@@ -21,6 +21,11 @@ import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import repositories.CsvConversationTimestampRepository;
@@ -31,15 +36,19 @@ import services.api.AdminService;
 import services.api.ChatService;
 
 import javax.transaction.Transactional;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static services.impl.ChatbotServiceImpl.splitInWords;
 
@@ -50,6 +59,7 @@ public class AdminServiceImpl implements AdminService {
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final ChatService chatService;
     private final CsvConversationTimestampRepository csvConversationTimestampRepository;
+    private final String fileWithConversations = "src/main/resources/conversations/ConversationsTriburile1.txt";
 
     public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, CsvConversationTimestampRepository csvConversationTimestampRepository) {
         this.sentenceRepository = sentenceRepository;
@@ -72,8 +82,7 @@ public class AdminServiceImpl implements AdminService {
             if (existingWords == null || existingWords.isEmpty()) {
                 wordRepository.save(word);
                 wordRepository.flush();
-            }
-            else {
+            } else {
                 sentence.getWords().set(i, existingWords.get(0));
             }
         }
@@ -292,6 +301,69 @@ public class AdminServiceImpl implements AdminService {
         chatService.setChatbotRequestType(chatbotRequestType);
     }
 
+    @Override
+    public AddedDataStatus loadFileConversationsFromWebsite() {
+        final List<String> replies = new ArrayList<>();
+        try {
+            final File file = new File("src/main/resources/conversations/ConversationsTriburile1.txt");
+            final BufferedReader reader = new BufferedReader(new FileReader(file));
+
+            String reply;
+            while ((reply = reader.readLine()) != null) {
+                if (reply.trim().isEmpty()) {
+                    continue;
+                }
+                replies.add(reply);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return addMessages(replies);
+    }
+
+    @Override
+    public AddedDataStatus downloadConversationsFromWebsite() {
+        final List<String> replies = new ArrayList<>();
+
+        for (int page = 1; page <= 229; page++) {
+            try {
+                final Document doc = Jsoup.connect("https://forum.triburile.ro/index.php?threads/fara-da-sau-nu.11609/page-" + page).get();
+                final Elements blockquotes = doc.select("blockquote");
+                for (Element blockquote : blockquotes) {
+                    final String prettyPrintedBodyFragment = Jsoup.clean(blockquote.html(), "", Whitelist.none().addTags("br", "p"), new Document.OutputSettings().prettyPrint(true));
+                    final String plainText = Jsoup.clean(prettyPrintedBodyFragment, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+                    replies.addAll(Arrays.stream(plainText.replaceAll("\\?\\s+", "?\n").split("\n"))
+                            .map(reply -> reply.replaceAll("&nbsp", "").replaceAll(";", "").replaceAll("Click pentru a extinde\\.+", "")
+                                    .replaceAll("^.*a spus: ↑    ", "").replaceAll("\"", "").replaceAll("`", "-"))
+                            .filter(reply -> !reply.trim().isEmpty() && reply.length() < 255 && reply.matches(".*[a-zA-Z0-9]+.*"))
+                            .collect(Collectors.toList()));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return writeToFile(replies);
+    }
+
+    private AddedDataStatus writeToFile(final List<String> replies) {
+        final int nrOfReplies = replies.size();
+        int nrOfAddedReplies = 0;
+        try {
+            final BufferedWriter writer = new BufferedWriter(new FileWriter(fileWithConversations));
+            for (String reply : replies) {
+                writer.write(reply);
+                writer.newLine();
+                nrOfAddedReplies++;
+            }
+            writer.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new AddedDataStatus(nrOfReplies, nrOfAddedReplies);
+    }
+
     private List<WordDto> convertWordJsonArrayToWordDtoList(final JSONArray wordsJson) {
         final List<WordDto> wordDtos = new ArrayList<>();
         for (Object wordObject : wordsJson) {
@@ -311,7 +383,7 @@ public class AdminServiceImpl implements AdminService {
         List<String> conversation = new ArrayList<>();
         for (int i = 1; i < lines.length; i++) {
             final String line = lines[i];
-            if (line.replaceAll("\\s+","").isEmpty()) {
+            if (line.replaceAll("\\s+", "").isEmpty()) {
                 continue;
             }
             if (line.startsWith("\"") && line.length() > 1) {
@@ -328,8 +400,7 @@ public class AdminServiceImpl implements AdminService {
                     // end of conversation
                     final String message = line.substring(0, line.length() - 1);
                     conversation.add(message);
-                }
-                else {
+                } else {
                     conversation.add(line);
                 }
             }

@@ -85,12 +85,23 @@ public class AdminController extends AbstractController {
     }
 
     /**
+     * The csv file from Google Forms.
+     * @param csvString the content of the csv file as string. Its structure is: "TimeStamp","Message"
+     */
+    @PostMapping("/messageCsv")
+    public ResponseEntity<AddedDataStatus> addMessagesFromCsvString(@RequestBody String csvString) {
+        final AddedDataStatus addedDataStatus = adminFacade.addMessagesFromCsvString(csvString);
+        return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
+    }
+
+    // FILE UPLOAD
+    /**
      * @param file = a file with Conversations (CSV), QuestionsAndAnswers (CSV), LinguisticExpressions (JSON) or Sentences (JSON)
      * @param fileContentType: "questionsAndAnswers", "sentences", "linguisticExpressions"
      * @return the number of added data (only new data is added)
      */
     @PostMapping("/fileWithData/{fileContentType}")
-    public ResponseEntity<AddedDataStatus> addMessagesFromFile(@RequestParam("file") MultipartFile file, @PathVariable String fileContentType) throws IOException {
+    public ResponseEntity<AddedDataStatus> addDataFromFile(@RequestParam("file") MultipartFile file, @PathVariable String fileContentType) throws IOException {
         switch (fileContentType) {
             case "conversations": {
                 final AddedDataStatus addedDataStatus = adminFacade.addMessagesFromFile(file);
@@ -115,13 +126,10 @@ public class AdminController extends AbstractController {
         }
     }
 
-    /**
-     * The csv file from Google Forms.
-     * @param csvString the content of the csv file as string. Its structure is: "TimeStamp","Message"
-     */
-    @PostMapping("/messageCsv")
-    public ResponseEntity<AddedDataStatus> addMessagesFromCsvString(@RequestBody String csvString) {
-        final AddedDataStatus addedDataStatus = adminFacade.addMessagesFromCsvString(csvString);
+    // Get conversations from internet forums (Triburile)
+    @GetMapping("/website")
+    public ResponseEntity<AddedDataStatus> addConversationsFromWebsite() {
+        final AddedDataStatus addedDataStatus = adminFacade.addConversationsFromWebsite();
         return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
     }
 }

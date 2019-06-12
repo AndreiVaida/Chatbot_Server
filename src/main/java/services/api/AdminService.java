@@ -47,4 +47,8 @@ public interface AdminService {
     ChatbotRequestType getChatbotRequestType();
 
     void setChatbotRequestType(final ChatbotRequestType chatbotRequestType);
+
+    AddedDataStatus downloadConversationsFromWebsite();
+
+    AddedDataStatus loadFileConversationsFromWebsite();
 }

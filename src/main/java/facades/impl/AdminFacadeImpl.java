@@ -87,4 +87,9 @@ public class AdminFacadeImpl implements AdminFacade {
     public void setChatbotRequestType(final ChatbotRequestType chatbotRequestType) {
         adminService.setChatbotRequestType(chatbotRequestType);
     }
+
+    @Override
+    public AddedDataStatus addConversationsFromWebsite() {
+        return adminService.loadFileConversationsFromWebsite();
+    }
 }
