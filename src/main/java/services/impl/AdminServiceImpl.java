@@ -3,7 +3,9 @@ package services.impl;
 import app.Main;
 import domain.entities.CsvConversationTimestamp;
 import domain.entities.LinguisticExpression;
+import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.entities.User;
 import domain.entities.Word;
 import domain.enums.ChatbotRequestType;
 import domain.enums.ItemClass;
@@ -34,6 +36,7 @@ import repositories.SentenceRepository;
 import repositories.WordRepository;
 import services.api.AdminService;
 import services.api.ChatService;
+import services.api.UserService;
 
 import javax.transaction.Transactional;
 import java.io.BufferedReader;
@@ -58,14 +61,16 @@ public class AdminServiceImpl implements AdminService {
     private final WordRepository wordRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final ChatService chatService;
+    private final UserService userService;
     private final CsvConversationTimestampRepository csvConversationTimestampRepository;
     private final String fileWithConversations = "src/main/resources/conversations/ConversationsTriburile1.txt";
 
-    public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, CsvConversationTimestampRepository csvConversationTimestampRepository) {
+    public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, UserService userService, CsvConversationTimestampRepository csvConversationTimestampRepository) {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         this.chatService = chatService;
+        this.userService = userService;
         this.csvConversationTimestampRepository = csvConversationTimestampRepository;
     }
 
@@ -78,12 +83,12 @@ public class AdminServiceImpl implements AdminService {
     public Sentence saveSentence(final Sentence sentence) {
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
-            final List<Word> existingWords = wordRepository.getByTextIgnoreCase(word.getText());
-            if (existingWords == null || existingWords.isEmpty()) {
+            final Word existingWord = wordRepository.getFirstByTextIgnoreCase(word.getText());
+            if (existingWord == null) {
                 wordRepository.save(word);
                 wordRepository.flush();
             } else {
-                sentence.getWords().set(i, existingWords.get(0));
+                sentence.getWords().set(i, existingWord);
             }
         }
         return sentenceRepository.save(sentence);
@@ -103,24 +108,24 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException {
+    public AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException {
         int numberOfMessages = 0;
         int numberOfAddedMessages = 0;
-        final JSONParser jsonParser = new JSONParser(fileWithMessags.getInputStream());
-        try {
-            final JSONArray jsonMessages = (JSONArray) jsonParser.parse();
-            for (Object messageObject : jsonMessages) {
-                final JSONObject messageJson = (JSONObject) messageObject;
-                final Long fromUserId = (Long) messageJson.get("fromUserId");
-                final Long toUserId = (Long) messageJson.get("toUserId");
-                final String text = (String) messageJson.get("text");
-                chatService.addMessageAndLearn(text, fromUserId, toUserId, MessageSource.USER_USER_CONVERSATION);
-                numberOfMessages++;
-                numberOfAddedMessages++;
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+//        final JSONParser jsonParser = new JSONParser(fileWithMessages.getInputStream());
+//        try {
+//            final JSONArray jsonMessages = (JSONArray) jsonParser.parse();
+//            for (Object messageObject : jsonMessages) {
+//                final JSONObject messageJson = (JSONObject) messageObject;
+//                final Long fromUserId = (Long) messageJson.get("fromUserId");
+//                final Long toUserId = (Long) messageJson.get("toUserId");
+//                final String text = (String) messageJson.get("text");
+//                chatService.addMessageAndLearn(text, fromUserId, toUserId, MessageSource.USER_USER_CONVERSATION);
+//                numberOfMessages++;
+//                numberOfAddedMessages++;
+//            }
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
 
         return new AddedDataStatus(numberOfMessages, numberOfAddedMessages);
     }
@@ -130,32 +135,31 @@ public class AdminServiceImpl implements AdminService {
     public AddedDataStatus addMessageDtos(final List<MessageDto> messageDtos) {
         int numberOfMessages = 0;
         int numberOfAddedMessages = 0;
-        for (MessageDto messageDto : messageDtos) {
-            chatService.addMessageAndLearn(messageDto.getMessage(), messageDto.getFromUserId(), messageDto.getToUserId(), MessageSource.USER_USER_CONVERSATION);
-            numberOfMessages++;
-            numberOfAddedMessages++;
-        }
+//        for (MessageDto messageDto : messageDtos) {
+//            chatService.addMessageAndLearn(messageDto.getMessage(), messageDto.getFromUserId(), messageDto.getToUserId(), MessageSource.USER_USER_CONVERSATION);
+//            numberOfMessages++;
+//            numberOfAddedMessages++;
+//        }
         return new AddedDataStatus(numberOfMessages, numberOfAddedMessages);
     }
 
     @Override
-    @Transactional
     public AddedDataStatus addMessages(List<String> messages) {
-        Long user1Id = Main.USER_FOR_LEARNING_1_ID;
-        Long user2Id = Main.USER_FOR_LEARNING_2_ID;
+        User learningUser1 = userService.getUserById(Main.USER_FOR_LEARNING_1_ID); // todo
+        User learningUser2 = userService.getUserById(Main.USER_FOR_LEARNING_2_ID);
+        Message previousMessage = null;
 
-        int numberOfMessages = 0;
+        final int numberOfMessages = messages.size();
         int numberOfAddedMessages = 0;
         for (String message : messages) {
-            numberOfMessages++;
             if (message.isEmpty()) {
                 continue;
             }
-            chatService.addMessageAndLearn(message, user1Id, user2Id, MessageSource.USER_USER_CONVERSATION);
+            previousMessage = chatService.addMessageAndLearn(message, learningUser1, learningUser2, previousMessage, MessageSource.USER_USER_CONVERSATION);
             numberOfAddedMessages++;
-            final Long auxId = user1Id;
-            user1Id = user2Id;
-            user2Id = auxId;
+            final User auxUser = learningUser1;
+            learningUser1 = learningUser2;
+            learningUser2 = auxUser;
         }
         return new AddedDataStatus(numberOfMessages, numberOfAddedMessages);
     }
@@ -218,8 +222,7 @@ public class AdminServiceImpl implements AdminService {
         // check if all the words exists and, if a words exists in DB, update the word from the given sentence with the word from DB
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
-            final List<Word> existingWords = wordRepository.getByTextWithoutDiacriticsIgnoreCase(word.getTextWithoutDiacritics());
-            final Word existingWord = getByTextIgnoreCase(existingWords, word);
+            final Word existingWord = wordRepository.getFirstByTextIgnoreCase(word.getText());
             if (existingWord == null) {
                 return false;
             }
@@ -334,7 +337,8 @@ public class AdminServiceImpl implements AdminService {
                     final String plainText = Jsoup.clean(prettyPrintedBodyFragment, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
                     replies.addAll(Arrays.stream(plainText.replaceAll("\\?\\s+", "?\n").split("\n"))
                             .map(reply -> reply.replaceAll("&nbsp", "").replaceAll(";", "").replaceAll("Click pentru a extinde\\.+", "")
-                                    .replaceAll("^.*a spus: ↑    ", "").replaceAll("\"", "").replaceAll("`", "-"))
+                                    .replaceAll("^.*a spus: ↑    ", "").replaceAll("\"", "").replaceAll("`", "-")
+                                    .replaceAll(":&gt", ""))
                             .filter(reply -> !reply.trim().isEmpty() && reply.length() < 255 && reply.matches(".*[a-zA-Z0-9]+.*"))
                             .collect(Collectors.toList()));
                 }

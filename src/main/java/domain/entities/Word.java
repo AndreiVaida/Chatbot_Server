@@ -33,7 +33,7 @@ public class Word {
     private String text;
 
     @Column
-    private String textWithoutDiacritics;
+    private String textWithDiacritics;
 
     @ElementCollection
     @CollectionTable(name="WORD_SYNONYMS",
@@ -41,13 +41,13 @@ public class Word {
     private Map<Word, Integer> synonyms = new HashMap<>(); // <synonym, frequency>
 
     public Word(String text) {
-        this.text = text;
-        this.textWithoutDiacritics = replaceDiacritics(text);
+        this.text = replaceDiacritics(text);
+        this.textWithDiacritics = text;
     }
 
     public void setText(String text) {
-        this.text = text;
-        this.textWithoutDiacritics = replaceDiacritics(text);
+        this.text = replaceDiacritics(text);
+        this.textWithDiacritics = text;
     }
 
     /**
@@ -77,8 +77,8 @@ public class Word {
         if (o == null || getClass() != o.getClass()) return false;
         Word word = (Word) o;
         return Objects.equals(id, word.id) ||
-                Objects.equals(text.toLowerCase(), word.text.toLowerCase()); // ||
-//                Objects.equals(replaceDiacritics(text.toLowerCase()), replaceDiacritics(word.text.toLowerCase()));
+                Objects.equals(text.toLowerCase(), word.text.toLowerCase()); //||
+                //Objects.equals(textWithoutDiacritics.toLowerCase(), word.textWithoutDiacritics.toLowerCase());
     }
 
     /**
@@ -102,6 +102,6 @@ public class Word {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, text);
+        return Objects.hash(id, text.toLowerCase());
     }
 }

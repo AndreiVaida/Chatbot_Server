@@ -70,6 +70,7 @@ public class InformationServiceImpl implements InformationService {
     }
 
     @Override
+    @Transactional
     public List<Object> identifyAndSetInformation(Class informationClass, String informationFieldNamePath, final Message answer, final User user) {
         if (informationClass == null) {
             informationClass = identifyInformationClass(answer);
@@ -380,19 +381,19 @@ public class InformationServiceImpl implements InformationService {
                     }
                     // acum X ani/luni/zile
                     if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("ani"); })
-                            || (informationWords.length >= 2 && (informationWords[1].toLowerCase().equals("ani") || informationWords[2].toLowerCase().equals("ani")))) {
+                            || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("ani")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("ani"))) {
                         final int yearsToSubtract = Integer.valueOf(informationWords[0]);
                         final LocalDate pastTime = LocalDate.now().minusYears(yearsToSubtract);
                         return new SimpleDate(pastTime.getYear(), null, null);
                     }
                     if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("luni"); })
-                            || (informationWords.length >= 2 && (informationWords[1].toLowerCase().equals("luni") || informationWords[1].toLowerCase().equals("luni")))) {
+                            || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("luni")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("luni"))) {
                         final int monthsToSubtract = Integer.valueOf(informationWords[0]);
                         final LocalDate pastTime = LocalDate.now().minusMonths(monthsToSubtract);
                         return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), null);
                     }
                     if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("zile"); })
-                            || (informationWords.length >= 2 && (informationWords[1].toLowerCase().equals("zile") || informationWords[1].toLowerCase().equals("luni")))) {
+                            || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("zile")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("luni"))) {
                         final int daysToSubtract = Integer.valueOf(informationWords[0]);
                         final LocalDate pastTime = LocalDate.now().minusDays(daysToSubtract);
                         return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), pastTime.getDayOfMonth());

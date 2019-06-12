@@ -16,6 +16,9 @@ import domain.information.Information;
 import domain.information.PersonalInformation;
 import domain.information.RelationshipsInformation;
 import domain.information.SchoolInformation;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 import repositories.LinguisticExpressionRepository;
 import repositories.SentenceRepository;
@@ -30,14 +33,11 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static domain.enums.LocalityType.RURAL;
@@ -64,13 +64,8 @@ public class ChatbotServiceImpl implements ChatbotService {
     static String[] splitInWords(final String string) {
         final String[] words = string.split(wordsSplitRegex);
         final List<String> completeWordList = new ArrayList<>();
-        for (int i = 0; i < words.length; i++) {
-            String word = words[i];
-            // v1: removing punctuation
-//            word = word.replaceAll("[.,;?!]+", "");
-//            words[i] = word;
-
-            // v2: keep punctuation as a word
+        for (String word : words) {
+            // keep punctuation as a word
             StringBuilder wordInConstruction = new StringBuilder();
             for (int j = 0; j < word.length(); j++) {
                 char character = word.charAt(j);
@@ -117,99 +112,77 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
-    public Sentence getSentence(final String text) {
+    @Transactional
+    public Sentence getExistingSentenceOrCreateANewOne(final String text) {
         final String[] words = splitInWords(text);
 
         // create a new sentence from the given text
         final List<Word> sentenceWords = new ArrayList<>();
-        for (String word : words) {
+        for (String textWord : words) {
             // check if the word already exists in DB - if not: create a new one
-            final List<Word> existingWords = wordRepository.getByTextWithoutDiacriticsIgnoreCase(Word.replaceDiacritics(word));
-            if (!existingWords.isEmpty()) {
-                sentenceWords.add(existingWords.get(0));
-            } else {
-                final Word newWord = new Word();
-                newWord.setText(word);
-                wordRepository.save(newWord);
+            final Word existingWord = wordRepository.getFirstByTextIgnoreCase(Word.replaceDiacritics(textWord));
+            if (existingWord == null) {
+                // the word is totally new
+                final Word newWord = new Word(textWord);
                 sentenceWords.add(newWord);
+                wordRepository.save(newWord);
+            } else {
+                // the word may exists
+                final Word word = new Word(textWord);
+                final boolean wordAlreadyExists = existingWord.equals(word);
+                if (wordAlreadyExists){
+                    sentenceWords.add(existingWord);
+                } else {
+                    final Word newWord = new Word(textWord);
+                    sentenceWords.add(newWord);
+                    wordRepository.save(newWord);
+                }
             }
         }
+
         final Sentence newSentence = new Sentence();
         newSentence.setWords(sentenceWords);
         newSentence.setSpeechType(identifySentenceType(newSentence));
 
-        // compare the new sentence with the existing one
-        final Sentence existingSentence = identifySentence(text);
+        // get similar sentences from DB
+        int maxNrOfExtraWords, maxNrOfUnmatchedWords;
+        double weight = 0.5;
+        if (sentenceWords.size() == 1) {
+            maxNrOfExtraWords = 2;
+            maxNrOfUnmatchedWords = 0;
+        } else if (sentenceWords.size() == 2) {
+            maxNrOfExtraWords = 2;
+            maxNrOfUnmatchedWords = 1;
+        } else if (sentenceWords.size() == 3) {
+            maxNrOfExtraWords = 2;
+            maxNrOfUnmatchedWords = 2;
+        } else {
+            maxNrOfExtraWords = sentenceWords.size() * 2;
+            maxNrOfUnmatchedWords = (int) (sentenceWords.size() * 0.6);
+        }
+        final List<Sentence> existingSentences = findSimilarSentencesByWords(sentenceWords, maxNrOfExtraWords, maxNrOfUnmatchedWords, weight);
 
-        if (existingSentence == null) {
-            // no equivalent sentence found in DB
+        // choose the most appropriate sentence
+        if (existingSentences.isEmpty()) {
             sentenceRepository.save(newSentence);
             return newSentence;
         }
 
-        final int wordCountDifference = Math.abs(newSentence.getWords().size() - existingSentence.getWords().size());
-        if (wordCountDifference > 0
-                && wordCountDifference > Math.min(newSentence.getWords().size(), existingSentence.getWords().size()) / 2
-                && Math.max(newSentence.getWords().size(), existingSentence.getWords().size()) >= 3) { // exceptional case: S1.length == 1 && S2.length == 2
-            // no equivalent sentence found in DB
-            sentenceRepository.save(newSentence);
-            return newSentence;
-        }
-
-        // the found sentence is mainly the same (maybe)
-        boolean allWordsAreInTheSamePositions = true;
-        int nrOfMatchedWords = 0;
-        for (int i = 0; i < newSentence.getWords().size(); i++) {
-            final String newSentenceWord = Word.replaceDiacritics(newSentence.getWords().get(i).getText());
-            // check if the new word is equal with the existing word (on same position in sentences) or equal with a synonym of the existing word
-            if (i < existingSentence.getWords().size()) {
-                final String existingSentenceWord = Word.replaceDiacritics(existingSentence.getWords().get(i).getText());
-                if (newSentenceWord.toLowerCase().equals(existingSentenceWord.toLowerCase())) {
-                    nrOfMatchedWords++;
-                    continue; // ok - matched the word
-                }
-//                if (existingSentence.getWords().get(i).getSynonyms().keySet().stream()
-//                        .anyMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase()))) {
-//                    nrOfMatchedWords++;
-//                    continue; // ok - matched a synonym
-//                }
+        for (Sentence sentence : existingSentences) {
+            if (newSentence.getWords().equals(sentence.getWords())) {
+                // exact same sentence, it already exists in DB
+                return sentence;
             }
-            if (existingSentence.getWords().stream().anyMatch(word -> word.equals(new Word(newSentenceWord)))) {
-                allWordsAreInTheSamePositions = false;
-                nrOfMatchedWords++;
-                continue; // ok - the word is somewhere else in the sentence
-            }
-//            if (existingSentence.getWords().stream().anyMatch(existingWord -> existingWord.getSynonyms().keySet().stream()
-//                    .anyMatch(synonym -> synonym.getText().toLowerCase().equals(newSentenceWord.toLowerCase())))) {
-//                allWordsAreInTheSamePositions = false;
-//                nrOfMatchedWords++;
-//                continue; // ok - the word has a synonym somewhere else in the sentence
-//            }
         }
 
-        if (allWordsAreInTheSamePositions && wordCountDifference == 0 && nrOfMatchedWords == newSentence.getWords().size()) {
-            return existingSentence; // exact same sentence (probably allWordsAreInTheSamePositions==true is sufficient)
+        // set the new sentence as synonym for existing ones
+        sentenceRepository.save(newSentence);
+        for (Sentence sentence : existingSentences) {
+            sentence.addSynonym(newSentence);
+            sentenceRepository.save(sentence);
+            newSentence.addSynonym(sentence);
         }
-
-        /*
-        length 1 => synonym can have 0 extra words
-        length 2 => synonym can have 1 extra words
-        length 3 => synonym can have 1 extra words
-        length 4 => synonym can have 2 extra words
-        length 5 => synonym can have 2 extra words
-        length 6 => synonym can have 3 extra words
-        ...
-        */
-        final int minSentencesSize = Math.min(existingSentence.getWords().size(), newSentence.getWords().size());
-        boolean canBeSynonymSentence = (minSentencesSize / 2 >= wordCountDifference) && (minSentencesSize / 2 <= nrOfMatchedWords);
-        if (!allWordsAreInTheSamePositions && canBeSynonymSentence) {
-            // the sentences are different, but synonyms
-            newSentence.addSynonym(existingSentence);
-            sentenceRepository.save(newSentence);
-            existingSentence.addSynonym(newSentence);
-        }
-
-        sentenceRepository.save(existingSentence);
+        sentenceRepository.save(newSentence);
         return newSentence;
     }
 
@@ -269,6 +242,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
+    @Transactional
     public void addResponseAndSynonym(final Sentence previousSentence, final Sentence sentence) {
         previousSentence.addResponse(sentence);
         sentenceRepository.save(previousSentence);
@@ -399,64 +373,65 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     /**
-     * @return best sentence identified (it should have at last 75% of items matched with the provided text) or <null> if no proper sentence is found
-     * We search in every sentence's items and in sentence's items synonyms.
+     * @param words                 - words to match
+     * @param maxNrOfExtraWords     how many words may have in addition the identified sentences (inclusive). Used in filter and sorting.
+     * @param maxNrOfUnmatchedWords how many words may not be matched int the sentences (inclusive). Used in filter and sorting.
+     * @param weight                ∈ [0,1] and means the priority of maxNrOfExtraWords and maxNrOfUnmatchedWords. Used only in sorting.
+     *                              0 = <nrOfExtraWords> should be as low as possible, don't care about <nrOfUnmatchedWords>
+     *                              1 = <nrOfUnmatchedWords> should be as low as possible, don't care about <nrOfExtraWords>
+     * @return similar sentences identified (it should have at last 75% of items matched with the provided words) or an empty list if no proper sentence is found
+     * Matching a sentence means:
+     * - the words from the given list must be in the sentence
+     * - if the word is not in the sentence, check if a synonym of the word is in the sentence
      */
-    private Sentence identifySentence(final String text) {
-        // find those sentences that containsExpression the items from the given text
-        final List<String> words = Arrays.asList(splitInWords(text));
-        final int[] bestMatchedCount = {0};
-        final List<Sentence> matchedSentences = sentenceRepository.findAll().stream()
+    private List<Sentence> findSimilarSentencesByWords(final List<Word> words, final int maxNrOfExtraWords, final int maxNrOfUnmatchedWords, final double weight) {
+        final Map<Long, MatchingResult> matchingResultMap = new HashMap<>(); // <Sentence.id, MatchingResult>
+
+        return sentenceRepository.findAll().stream()
                 .filter(sentence -> {
-                    // 1. check in sentence's own items
-                    final List<String> sentenceWords = sentence.getWords().stream().map(Word::getText).collect(Collectors.toList());
-                    final int nrOfMatchesSentenceWords = calculateNrOfMatches(sentenceWords, words);
-                    if (nrOfMatchesSentenceWords > Math.min(words.size(), sentence.getWords().size()) / 1.5
-                            || (nrOfMatchesSentenceWords >= 1 && nrOfMatchesSentenceWords <= 2 && Math.max(words.size(), sentence.getWords().size()) <= 3)) {
-                        return true;
+                    if (Math.abs(words.size() - sentence.getWords().size()) > maxNrOfExtraWords) {
+                        return false;
                     }
-                    // 2. check in items's synonyms
-                    final Set<String> matchedWordsSynonyms = new HashSet<>();
-                    final Set<String> lowerCaseWords = words.stream().map(String::toLowerCase).collect(Collectors.toSet());
-                    for (Word sentenceWord : sentence.getWords()) {
-                        final List<String> wordSynonyms = sentenceWord.getSynonyms().keySet().stream().map(Word::getText).map(String::toLowerCase).collect(Collectors.toList());
-                        for (String synonym : wordSynonyms) {
-                            if (lowerCaseWords.contains(synonym)) {
-                                matchedWordsSynonyms.add(synonym);
-                            }
-                        }
+                    final MatchingResult matchingResult = compareWords(words, sentence.getWords());
+                    final boolean isOK = matchingResult.getNrOfExtraWords() <= maxNrOfExtraWords && matchingResult.getNrOfUnmatchedWords() <= maxNrOfUnmatchedWords;
+                    if (isOK) {
+                        matchingResultMap.put(sentence.getId(), matchingResult);
                     }
-                    final int minWordsToMatch = words.size() / 2;
-                    final int maxWordsToMatch = words.size() + minWordsToMatch;
-                    return matchedWordsSynonyms.size() > minWordsToMatch && matchedWordsSynonyms.size() < maxWordsToMatch;
+                    return isOK;
                 })
                 .sorted((Sentence sentence1, Sentence sentence2) -> {
-                    final List<String> sentence1Words = sentence1.getWords().stream().map(Word::getText).collect(Collectors.toList());
-                    final List<String> sentence2Words = sentence2.getWords().stream().map(Word::getText).collect(Collectors.toList());
-                    final Integer nrOfMatchedWordsS1 = calculateNrOfMatches(sentence1Words, words);
-                    final Integer nrOfMatchedWordsS2 = calculateNrOfMatches(sentence2Words, words);
+                    final MatchingResult mrS1 = matchingResultMap.get(sentence1.getId());
+                    final MatchingResult mrS2 = matchingResultMap.get(sentence2.getId());
 
-                    if (nrOfMatchedWordsS1 > bestMatchedCount[0]) {
-                        bestMatchedCount[0] = nrOfMatchedWordsS1;
-                    }
-                    if (nrOfMatchedWordsS2 > bestMatchedCount[0]) {
-                        bestMatchedCount[0] = nrOfMatchedWordsS2;
-                    }
-
-                    final int extraWordsS1 = sentence1Words.size() - nrOfMatchedWordsS1;
-                    final int extraWordsS2 = sentence2Words.size() - nrOfMatchedWordsS2;
-                    // less is better (0 = perfect match)
-                    final Integer matchScoreS1 = Math.abs(nrOfMatchedWordsS1 - words.size()) - extraWordsS1 / 2;
-                    final Integer matchScoreS2 = Math.abs(nrOfMatchedWordsS2 - words.size()) - extraWordsS2 / 2;
-                    return matchScoreS2.compareTo(matchScoreS1);
+                    final double nrOfExtraWordsWeight = 1 - weight;
+                    final double nrOfUnmatchedWords = 1 - nrOfExtraWordsWeight;
+                    final Double differenceSentence1 = Math.abs(mrS1.getNrOfExtraWords() * nrOfExtraWordsWeight - mrS1.getNrOfUnmatchedWords() * nrOfUnmatchedWords);
+                    final Double differenceSentence2 = Math.abs(mrS2.getNrOfExtraWords() * nrOfExtraWordsWeight - mrS2.getNrOfUnmatchedWords() * nrOfUnmatchedWords);
+                    // less is better (0 difference = best match)
+                    return differenceSentence2.compareTo(differenceSentence1);
                 })
                 .collect(Collectors.toList());
+    }
 
-        // return the best sentence or <null> if we didn't find a good one
-        if (matchedSentences.isEmpty() || bestMatchedCount[0] < words.size() / 2) {
-            return null;
+    /**
+     * The function does not take into account the positions of the words.
+     * Consider that a word from <wordsToMatch> exists in <words> if the the list contains the word or a synonym of the word
+     */
+    private MatchingResult compareWords(final List<Word> wordsToMatch, final List<Word> words) {
+        int nrOfExtraWords = 0;
+        int nrOfUnmatchedWords = 0;
+
+        for (Word wordToMatch : wordsToMatch) {
+            if (!words.contains(wordToMatch) || wordToMatch.getSynonyms().keySet().stream().anyMatch(words::contains)) {
+                nrOfUnmatchedWords++;
+            }
         }
-        return matchedSentences.get(0);
+        for (Word word : words) {
+            if (!wordsToMatch.contains(word) || word.getSynonyms().keySet().stream().anyMatch(wordsToMatch::contains)) {
+                nrOfExtraWords++;
+            }
+        }
+        return new MatchingResult(nrOfExtraWords, nrOfUnmatchedWords);
     }
 
     /**
@@ -518,11 +493,11 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     private Sentence generateDefaultSentence() {
-        final List<Word> wordsWithoutDiacritics = wordRepository.getByTextWithoutDiacriticsIgnoreCase("salut");
-        boolean wordExists = !wordsWithoutDiacritics.isEmpty();
+        final Word wordWithoutDiacritics = wordRepository.getFirstByTextIgnoreCase("salut");
+        boolean wordExists = wordWithoutDiacritics != null;
         if (wordExists) {
             final List<Word> words = new ArrayList<>();
-            words.add(wordsWithoutDiacritics.get(0));
+            words.add(wordWithoutDiacritics);
             return sentenceRepository.findAllByWords(words).stream().min(Comparator.comparingInt(s -> s.getWords().size())).get();
         } else {
             final Word word = new Word();
@@ -544,8 +519,14 @@ public class ChatbotServiceImpl implements ChatbotService {
             return generateDefaultSentence();
         }
         return sentenceRepository.findAll().stream().min((sentence1, sentence2) -> {
-            final Integer nrOfResponses_sentence1 = sentence1.getResponses().size();
-            final Integer nrOfResponses_sentence2 = sentence2.getResponses().size();
+            Integer nrOfResponses_sentence1 = sentence1.getResponses().size();
+            Integer nrOfResponses_sentence2 = sentence2.getResponses().size();
+            if (sentence1.getSynonyms().keySet().stream().anyMatch(synonym -> !synonym.getResponses().isEmpty())) {
+                nrOfResponses_sentence1++;
+            }
+            if (sentence2.getSynonyms().keySet().stream().anyMatch(synonym -> !synonym.getResponses().isEmpty())) {
+                nrOfResponses_sentence2++;
+            }
             return nrOfResponses_sentence1.compareTo(nrOfResponses_sentence2);
         }).get();
     }
@@ -702,7 +683,7 @@ public class ChatbotServiceImpl implements ChatbotService {
                         final List<String> addressFieldNamesInImportanceOrder = address.getFieldNamesInImportanceOrder();
                         for (String addressFieldName : addressFieldNamesInImportanceOrder) {
                             final String addressFieldName_firstLetterCapitalize = addressFieldName.substring(0, 1).toUpperCase() + addressFieldName.substring(1);
-                            final Method getterOfAddress = address.getClass().getMethod("get"+ addressFieldName_firstLetterCapitalize);
+                            final Method getterOfAddress = address.getClass().getMethod("get" + addressFieldName_firstLetterCapitalize);
                             final Object addressField = getterOfAddress.invoke(address);
                             if (addressField == null) {
                                 return fieldName + "." + addressFieldName;
@@ -715,7 +696,7 @@ public class ChatbotServiceImpl implements ChatbotService {
                             final List<String> addressUrbanFieldNamesInImportanceOrder = address.getUrbanFieldNamesInImportanceOrder();
                             for (String addressFieldName : addressUrbanFieldNamesInImportanceOrder) {
                                 final String addressFieldName_firstLetterCapitalize = addressFieldName.substring(0, 1).toUpperCase() + addressFieldName.substring(1);
-                                final Method getterOfAddress2 = address.getClass().getMethod("get"+ addressFieldName_firstLetterCapitalize);
+                                final Method getterOfAddress2 = address.getClass().getMethod("get" + addressFieldName_firstLetterCapitalize);
                                 final Object addressField = getterOfAddress2.invoke(address);
                                 if (addressField == null) {
                                     return fieldName + "." + addressFieldName;
@@ -757,5 +738,13 @@ public class ChatbotServiceImpl implements ChatbotService {
             return null;
         }
         return null;
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Data
+    private class MatchingResult {
+        int nrOfExtraWords;
+        int nrOfUnmatchedWords;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import repositories.MessageRepository;
 import services.api.MessageService;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Transactional
     public Message addMessage(final String text, final User fromUser, final User toUser, final Sentence equivalentSentence, MessageSource messageSource) {
         final Message message = new Message();
         message.setFromUser(fromUser);

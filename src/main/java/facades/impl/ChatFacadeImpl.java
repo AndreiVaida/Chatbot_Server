@@ -25,7 +25,7 @@ public class ChatFacadeImpl implements ChatFacade {
 
     @Override
     public ResponseMessageAndInformationDto addMessage(final RequestSendMessageDto requestSendMessageDto) {
-        final ResponseMessageAndInformation responseMessageAndInformation = chatService.addMessageAndGetResponse(requestSendMessageDto.getMessage(), requestSendMessageDto.getFromUserId(), requestSendMessageDto.getToUserId());
+        final ResponseMessageAndInformation responseMessageAndInformation = chatService.addMessageAndIdentifyInformationAndGetResponse(requestSendMessageDto.getMessage(), requestSendMessageDto.getFromUserId(), requestSendMessageDto.getToUserId());
         final MessageDto messageDto = MessageMapper.messageToMessageDto(responseMessageAndInformation.getMessage());
         return new ResponseMessageAndInformationDto(messageDto, responseMessageAndInformation.getInformation());
     }

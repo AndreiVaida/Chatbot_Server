@@ -184,7 +184,7 @@ public class ChatService_TestInformationDetection {
         Assert.assertEquals(PersonalInformation.class, messageFromChatbot.getEquivalentSentence().getInformationClass());
         Assert.assertEquals("firstName", messageFromChatbot.getEquivalentSentence().getInformationFieldNamePath());
         // the user give his name
-        chatService.addMessageAndGetResponse("eu sunt Andrei", user.getId(), andy.getId());
+        chatService.addMessageAndIdentifyInformationAndGetResponse("eu sunt Andrei", user.getId(), andy.getId());
         Assert.assertEquals("Andrei", user.getPersonalInformation().getFirstName());
     }
 }

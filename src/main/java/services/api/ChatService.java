@@ -2,6 +2,7 @@ package services.api;
 
 import domain.entities.Message;
 import domain.entities.ResponseMessageAndInformation;
+import domain.entities.User;
 import domain.enums.ChatbotRequestType;
 import domain.enums.MessageSource;
 
@@ -21,11 +22,11 @@ public interface ChatService {
 
     /**
      * This method update synonyms and responses.
-     * @param fromUserId - human user (non null and non 0)
-     * @param toUserId   - human user or chatbot (for chatbot let this field null or 0)
+     * @param learningUser1 - imaginary user, must exist in DB
+     * @param learningUser2 - imaginary user, must exist in DB
      * @return added message
      */
-    Message addMessageAndLearn(final String text, final Long fromUserId, Long toUserId, final MessageSource messageSource);
+    Message addMessageAndLearn(final String text, final User learningUser1, User learningUser2, final Message previousMessage, final MessageSource messageSource);
 
     /**
      * This method update synonyms and responses.
@@ -33,7 +34,7 @@ public interface ChatService {
      * @param toUserId   - human user or chatbot (for chatbot let this field null or 0)
      * @return an appropriate response or a random one if the chatbot does't know to respond AND, if we extracted an information, include a message that says that
      */
-    ResponseMessageAndInformation addMessageAndGetResponse(final String text, final Long fromUserId, Long toUserId);
+    ResponseMessageAndInformation addMessageAndIdentifyInformationAndGetResponse(final String text, final Long fromUserId, Long toUserId);
 
     /**
      * @param userId1 - human user (non null and non 0)

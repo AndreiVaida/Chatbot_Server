@@ -20,6 +20,7 @@ import java.util.List;
 
 import static app.Main.CHATBOT_ID;
 import static domain.enums.ChatbotRequestType.GET_INFORMATION_FROM_USER;
+import static domain.enums.ChatbotRequestType.LEARN_TO_SPEAK;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -27,7 +28,7 @@ public class ChatServiceImpl implements ChatService {
     private final MessageService messageService;
     private final ChatbotService chatbotService;
     private final InformationService informationService;
-    private ChatbotRequestType chatbotRequestType = GET_INFORMATION_FROM_USER;
+    private ChatbotRequestType chatbotRequestType = LEARN_TO_SPEAK;
 
     @Autowired
     public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService, InformationService informationService) {
@@ -48,7 +49,6 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    @Transactional
     public Message addMessage(final String text, final Long fromUserId, Long toUserId, final MessageSource messageSource) {
         if (toUserId == null || toUserId == 0) {
             toUserId = CHATBOT_ID;
@@ -57,35 +57,22 @@ public class ChatServiceImpl implements ChatService {
         // save the message in DB
         final User fromUser = userService.getUserById(fromUserId);
         final User toUser = userService.getUserById(toUserId);
-        final Sentence sentence = chatbotService.getSentence(text);
+        final Sentence sentence = chatbotService.getExistingSentenceOrCreateANewOne(text);
         final Message message = messageService.addMessage(text, fromUser, toUser, sentence, messageSource);
-
 //        final Message previousMessage = messageService.getPreviousMessage(fromUser.getId(), toUser.getId(), message.getId());
 //        if (previousMessage != null) {
 //            chatbotService.addResponseAndSynonym(previousMessage.getEquivalentSentence(), sentence);
 //        }
-
         return message;
     }
 
     @Override
-    public Message addMessageAndLearn(final String text, final Long fromUserId, Long toUserId, final MessageSource messageSource) {
-        if (toUserId == null || toUserId == 0) {
-            toUserId = CHATBOT_ID;
-        }
-
-        // save the message in DB
-        final User fromUser = userService.getUserById(fromUserId);
-        final User toUser = userService.getUserById(toUserId);
-
-        // save the message in DB and add this message as a response for previous one
-        final Message previousMessage = messageService.getLastMessage(toUserId, fromUserId);
-        return addMessageAndSetItAsResponse(text, fromUser, toUser, messageSource, previousMessage);
+    public Message addMessageAndLearn(final String text, final User learningUser1, User learningUser2, final Message previousMessage, final MessageSource messageSource) {
+        return addMessageAndSetItAsResponse(text, learningUser1, learningUser2, messageSource, previousMessage);
     }
 
     @Override
-    @Transactional
-    public ResponseMessageAndInformation addMessageAndGetResponse(final String text, final Long fromUserId, Long toUserId) {
+    public ResponseMessageAndInformation addMessageAndIdentifyInformationAndGetResponse(final String text, final Long fromUserId, Long toUserId) {
         MessageSource messageSource = MessageSource.USER_USER_CONVERSATION;
         if (toUserId == null || toUserId == 0) {
             toUserId = CHATBOT_ID;
@@ -110,7 +97,6 @@ public class ChatServiceImpl implements ChatService {
             updatedInformationValues = informationService.identifyAndSetInformation(informationClass, informationFieldNamePath, message, fromUser);
             if (updatedInformationValues != null) {
                 userService.updateUser(fromUser);
-
             }
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
@@ -131,13 +117,12 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private Message addMessageAndSetItAsResponse(final String text, final User fromUser, final User toUser, final MessageSource messageSource, final Message previousMessage) {
-        final Sentence sentence = chatbotService.getSentence(text);
+        final Sentence sentence = chatbotService.getExistingSentenceOrCreateANewOne(text);
 
         // save the message in DB
         final Message message = messageService.addMessage(text, fromUser, toUser, sentence, messageSource);
 
         // add this message as a response for the previous message
-
         if (previousMessage != null) {
             chatbotService.addResponseAndSynonym(previousMessage.getEquivalentSentence(), sentence);
         }

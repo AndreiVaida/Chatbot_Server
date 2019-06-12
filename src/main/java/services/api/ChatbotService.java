@@ -9,18 +9,10 @@ import java.util.List;
 
 public interface ChatbotService {
     /**
-     * Create a new Sentence from given text.
-     * Check if an equivalent Sentence is already stored in DB. More than half of the items should match (perfectly or by synonyms).
-     * - If it matches perfectly (every word matched, at least with it's synonyms) then the existing sentence is considered equal with the new one.
-     * The new sentence is not saved in DB. Return the existing sentence.
-     * - If it matches imperfectly (some items haven't matched, not even their synonyms), then the new sentence is set as synonym for the existing sentence (and vice-versa).
-     * The new sentence is saved in DB. Return the new sentence.
-     * For every word matched by a synonym, we increase it's synonym frequency.
-     *
-     * @param text - the non-empty text of the new sentence
-     * @return the sentence assigned to given text
+     * @param text - the text for which is intended to get a sentence
+     * @return the corresponding sentence for text: an existing sentence if already exists in DB or a new one (will be also saved in DB)
      */
-    Sentence getSentence(final String text);
+    Sentence getExistingSentenceOrCreateANewOne(final String text);
 
     /**
      * Adds sentence as a response for previousSentence. If it is already a response, it's incremented its frequency.

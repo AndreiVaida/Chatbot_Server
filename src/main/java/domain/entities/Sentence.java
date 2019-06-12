@@ -108,6 +108,7 @@ public class Sentence {
         if (this == o) return true;
         if (!(o instanceof Sentence)) return false;
         Sentence sentence = (Sentence) o;
+        if (id.equals(sentence.id)) return true;
         return Objects.equals(getWords(), sentence.getWords()) &&
                 getSpeechType() == sentence.getSpeechType() &&
                 Objects.equals(getInformationClass(), sentence.getInformationClass()) &&
@@ -116,7 +117,7 @@ public class Sentence {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getWords(), getSpeechType(), getInformationClass(), getInformationFieldNamePath());
+        return Objects.hash(id, getWords(), getSpeechType(), getInformationClass(), getInformationFieldNamePath());
     }
 
     @Override
