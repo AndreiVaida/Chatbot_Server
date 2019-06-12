@@ -157,8 +157,8 @@ public class ChatbotServiceImpl implements ChatbotService {
             maxNrOfExtraWords = 2;
             maxNrOfUnmatchedWords = 2;
         } else {
-            maxNrOfExtraWords = sentenceWords.size() * 2;
-            maxNrOfUnmatchedWords = (int) (sentenceWords.size() * 0.6);
+            maxNrOfExtraWords = sentenceWords.size();
+            maxNrOfUnmatchedWords = (int) Math.round(sentenceWords.size() * 0.7);
         }
         final List<Sentence> existingSentences = findSimilarSentencesByWords(sentenceWords, maxNrOfExtraWords, maxNrOfUnmatchedWords, weight);
 
