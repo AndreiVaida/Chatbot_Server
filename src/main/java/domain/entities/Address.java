@@ -68,6 +68,7 @@ public class Address {
         fieldNamesInImportanceOrder.add("localityType");
         fieldNamesInImportanceOrder.add("locality");
         fieldNamesInImportanceOrder.add("street");
+        fieldNamesInImportanceOrder.add("streetNumber");
         return fieldNamesInImportanceOrder;
     }
 

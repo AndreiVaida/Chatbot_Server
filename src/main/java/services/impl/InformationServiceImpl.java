@@ -88,7 +88,9 @@ public class InformationServiceImpl implements InformationService {
         final String[] subsentences = splitInSubentences(answer.getText());
         for (String subsentence : subsentences) {
             final String[] answerWords = splitInWords(subsentence);
+            LinguisticExpression matchedLinguisticExpression;
             for (LinguisticExpression expression : expressions) {
+                matchedLinguisticExpression = expression;
                 // search the beginning of the expression in the answer
                 int iAnswer = 0;
                 int iInformationBegin = 0; // the index from the answer where the information starts
@@ -175,7 +177,7 @@ public class InformationServiceImpl implements InformationService {
                         informationWords[i - iInformationBegin] = answerWords[i];
                     }
                     try {
-                        final Object informationAsItsType = convertTextToInformation(informationWords, itemClass);
+                        final Object informationAsItsType = convertTextToInformation(informationWords, itemClass, matchedLinguisticExpression);
                         if (informationAsItsType == null) {
                             continue;
                         }
@@ -206,7 +208,7 @@ public class InformationServiceImpl implements InformationService {
     }
 
     private String[] splitInSubentences(final String text) {
-        return text.split("([.,]+)|și");
+        return text.split("([.,]+)| și ");
     }
 
     private String removeMapKeysFromPath(final String informationFieldNamePath) {
@@ -341,9 +343,10 @@ public class InformationServiceImpl implements InformationService {
      *                         if GENDER: return Gender
      *                         if LOCALITY_TYPE: return AddressType
      *                         else: return String
+     * @param linguisticExpression the one that identified the information
      * @return the information converted the corresponding Java class or <null> if it cannot be converted
      */
-    private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass) {
+    private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass, final LinguisticExpression linguisticExpression) {
         switch (itemClass) {
             case NUMBER: {
                 if (informationWords[0].toLowerCase().equals("parter")) return 0;
@@ -376,17 +379,20 @@ public class InformationServiceImpl implements InformationService {
                         return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
                     }
                     // acum X ani/luni/zile
-                    if (informationWords[1].toLowerCase().equals("ani")) {
+                    if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("ani"); })
+                            || (informationWords.length >= 2 && (informationWords[1].toLowerCase().equals("ani") || informationWords[2].toLowerCase().equals("ani")))) {
                         final int yearsToSubtract = Integer.valueOf(informationWords[0]);
                         final LocalDate pastTime = LocalDate.now().minusYears(yearsToSubtract);
                         return new SimpleDate(pastTime.getYear(), null, null);
                     }
-                    if (informationWords[1].toLowerCase().equals("luni")) {
+                    if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("luni"); })
+                            || (informationWords.length >= 2 && (informationWords[1].toLowerCase().equals("luni") || informationWords[1].toLowerCase().equals("luni")))) {
                         final int monthsToSubtract = Integer.valueOf(informationWords[0]);
                         final LocalDate pastTime = LocalDate.now().minusMonths(monthsToSubtract);
                         return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), null);
                     }
-                    if (informationWords[1].toLowerCase().equals("zile")) {
+                    if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("zile"); })
+                            || (informationWords.length >= 2 && (informationWords[1].toLowerCase().equals("zile") || informationWords[1].toLowerCase().equals("luni")))) {
                         final int daysToSubtract = Integer.valueOf(informationWords[0]);
                         final LocalDate pastTime = LocalDate.now().minusDays(daysToSubtract);
                         return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), pastTime.getDayOfMonth());
@@ -412,7 +418,8 @@ public class InformationServiceImpl implements InformationService {
                     }
                     return new SimpleDate(year, month, day);
                 }
-                catch (NumberFormatException ignored) {
+                catch (Exception e) {
+                    e.printStackTrace();
                     return null;
                 }
             }
