@@ -17,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import repositories.DexRepository;
 import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.MessageRepository;
@@ -47,7 +48,7 @@ import static domain.enums.SpeechType.DIRECTIVE;
 @DataJpaTest
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {TestConfiguration.class})
-public class ChatService_TestInformationDetection {
+public class ChatService_InformationDetectionTest {
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -62,6 +63,8 @@ public class ChatService_TestInformationDetection {
     private LinguisticExpressionRepository linguisticExpressionRepository;
     @Autowired
     private ExpressionItemRepository expressionItemRepository;
+    @Autowired
+    private DexRepository dexRepository;
     private UserService userService;
     private MessageService messageService;
     private ChatService chatService;
@@ -73,7 +76,7 @@ public class ChatService_TestInformationDetection {
     public void initialize() {
         userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
-        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, linguisticExpressionRepository);
+        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, dexRepository, linguisticExpressionRepository);
         informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationService);
         // add users

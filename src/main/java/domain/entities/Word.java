@@ -1,5 +1,6 @@
 package domain.entities;
 
+import domain.enums.AddressingMode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,9 @@ public class Word {
     @Column
     private String textWithDiacritics;
 
+    @Column
+    private AddressingMode addressingMode;
+
     @ElementCollection
     @CollectionTable(name="WORD_SYNONYMS",
             joinColumns=@JoinColumn(name="SYNONYM_ID"))
@@ -67,7 +71,7 @@ public class Word {
     public String toString() {
         return "Word{" +
                 "id=" + id +
-                ", text='" + text + '\'' +
+                ", text='" + textWithDiacritics + '\'' +
                 '}';
     }
 

@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import repositories.DexRepository;
 import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.MessageRepository;
@@ -38,7 +39,7 @@ import static domain.enums.MessageSource.USER_CHATBOT_CONVERSATION;
 @DataJpaTest
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {TestConfiguration.class})
-public class ChatService_TestLearning {
+public class ChatService_LearningTest {
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -53,6 +54,8 @@ public class ChatService_TestLearning {
     private LinguisticExpressionRepository linguisticExpressionRepository;
     @Autowired
     private ExpressionItemRepository expressionItemRepository;
+    @Autowired
+    private DexRepository dexRepository;
     private UserService userService;
     private MessageService messageService;
     //private ChatbotService chatbotService;
@@ -64,7 +67,7 @@ public class ChatService_TestLearning {
     public void initialize() {
         userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
-        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, linguisticExpressionRepository);
+        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, dexRepository, linguisticExpressionRepository);
         final InformationService informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationService);
         // add users
@@ -127,7 +130,7 @@ public class ChatService_TestLearning {
             response = chatService.addMessageAndIdentifyInformationAndGetResponse("bună", user.getId(), andy.getId()).getMessage();
         } while (!response.getText().toLowerCase().equals("bună"));
 
-        System.out.println("TEST PASSED: testLearnHello()");
+        System.out.println("TEST PASSED: testLearnHello_AND_getToKnow()");
     }
 
     @Test

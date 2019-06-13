@@ -70,6 +70,10 @@ public class User {
     @Column(name = "FAVOURITE_FOOD")
     private String favouriteFood; // TODO: GASTRONOMY INFORMATION
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "ADDRESSING_MODE_STATUS")
+    private AddressingModeStatus addressingModeStatus = new AddressingModeStatus();
+
     public User(Long id, String email, String password, String firstName, String surname, SimpleDate birthDay) {
         this.id = id;
         this.email = email;

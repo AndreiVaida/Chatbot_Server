@@ -3,11 +3,16 @@ package services.api;
 import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.User;
+import domain.enums.AddressingMode;
 import domain.information.Information;
 
+import java.time.LocalTime;
 import java.util.List;
 
 public interface ChatbotService {
+    LocalTime endOfMorning = LocalTime.of(11, 0, 0);
+    LocalTime startOfEvening = LocalTime.of(18, 0, 0);
+
     /**
      * @param text - the text for which is intended to get a sentence
      * @return the corresponding sentence for text: an existing sentence if already exists in DB or a new one (will be also saved in DB)
@@ -30,7 +35,7 @@ public interface ChatbotService {
      */
     Sentence generateResponse(final Message message);
 
-    String translateSentenceToText(final Sentence sentence);
+    String translateSentenceToText(final Sentence sentence, final AddressingMode addressingMode);
 
     /**
      * @return random sentence

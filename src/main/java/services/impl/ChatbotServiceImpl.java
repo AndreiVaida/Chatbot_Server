@@ -8,6 +8,7 @@ import domain.entities.Sentence;
 import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.entities.Word;
+import domain.enums.AddressingMode;
 import domain.enums.LocalityType;
 import domain.enums.SpeechType;
 import domain.information.FacultyInformation;
@@ -20,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
+import repositories.DexRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
@@ -32,6 +34,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,6 +43,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import static domain.enums.AddressingMode.FORMAL;
+import static domain.enums.AddressingMode.FORMAL_AND_INFORMAL;
 import static domain.enums.LocalityType.RURAL;
 import static domain.enums.LocalityType.URBAN;
 import static domain.enums.SpeechType.ACKNOWLEDGEMENT;
@@ -51,12 +56,14 @@ public class ChatbotServiceImpl implements ChatbotService {
     private static final String wordsSplitRegex = "[\\s]+"; // TODO: change regex with a custom function which consider also the signs as items (, . ...)
     private final SentenceRepository sentenceRepository;
     private final WordRepository wordRepository;
+    private final DexRepository dexRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final Random random;
 
-    public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
+    public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, DexRepository dexRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
+        this.dexRepository = dexRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         random = new Random();
     }
@@ -287,17 +294,153 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
-    public String translateSentenceToText(final Sentence sentence) {
+    public String translateSentenceToText(final Sentence sentence, final AddressingMode addressingMode) {
         final StringBuilder text = new StringBuilder();
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
             if (i > 0 && Character.isLetterOrDigit(word.getText().charAt(0))) {
                 text.append(" ");
             }
-            text.append(word.getText().toLowerCase());
+            // check addressing mode
+            if (addressingMode == null || addressingMode == FORMAL_AND_INFORMAL) {
+                text.append(word.getTextWithDiacritics().toLowerCase());
+                continue;
+            }
+            // check for greetings
+            final int greetingWordCount = wordIsPartOfGreeting(sentence, i); // 0, 1 or 2
+            if (greetingWordCount > 0) {
+                // the word is the first word of a greeting in sentence
+                final List<String> newGreeting = getGreetingByAddressingMode(addressingMode);
+                // skip the current greeting from the sentence
+                i += greetingWordCount;
+                // insert the new greeting in text
+                for (int j = 0; j < newGreeting.size(); j++) {
+                    text.append(newGreeting.get(j));
+                    if (j < newGreeting.size() - 1) {
+                        text.append(" ");
+                    }
+                }
+                continue;
+            }
+
+            // identify an appropriate word for addressing mode
+            String appropriateWord = getWordWithAddressingModeFromWordAndSynonyms(word, addressingMode);
+            if (appropriateWord == null) {
+                final boolean isImperative = sentence.getWords().get(sentence.getWords().size()-1).getText().contains("!");
+                appropriateWord = dexRepository.getWordWithAddressingModeFromDex(word, addressingMode, isImperative);
+            }
+            if (appropriateWord == null) {
+                appropriateWord = word.getTextWithDiacritics();
+            }
+            text.append(appropriateWord.toLowerCase());
         }
 
         return text.toString();
+    }
+
+    /**
+     * @param addressingMode should be FORMAL or INFORMAL
+     */
+    private List<String> getGreetingByAddressingMode(final AddressingMode addressingMode) {
+        switch (addressingMode) {
+            case FORMAL: {
+                final List<String> greeting = new ArrayList<>();
+                final Word wordBună = getOrAddWordInDb("bună", FORMAL_AND_INFORMAL);
+                greeting.add(wordBună.getTextWithDiacritics());
+
+                final LocalTime currentTime = LocalTime.now();
+                if (currentTime.isBefore(endOfMorning)) {
+                    final Word wordDimineața = getOrAddWordInDb("dimineața", null);
+                    greeting.add(wordDimineața.getTextWithDiacritics());
+                }
+                else if (currentTime.isAfter(startOfEvening)) {
+                    final Word wordSeara = getOrAddWordInDb("seara", null);
+                    greeting.add(wordSeara.getTextWithDiacritics());
+                }
+                else if (random.nextBoolean()) {
+                    final Word wordZiua = getOrAddWordInDb("ziua", null);
+                    greeting.add(wordZiua.getTextWithDiacritics());
+                }
+                return greeting;
+            }
+            default: {
+                final List<String> greeting = new ArrayList<>();
+                final LocalTime currentTime = LocalTime.now();
+                if (currentTime.isBefore(LocalTime.of(11, 0))) {
+                    if (random.nextBoolean()) {
+                        final Word wordNeața = getOrAddWordInDb("neața", null);
+                        greeting.add(wordNeața.getTextWithDiacritics());
+                    } else {
+                        final Word wordBună = getOrAddWordInDb("bună", null);
+                        greeting.add(wordBună.getTextWithDiacritics());
+                        final Word wordDimi = getOrAddWordInDb("dimi", null);
+                        greeting.add(wordDimi.getTextWithDiacritics());
+                    }
+                    return greeting;
+                }
+                final List<Word> greetings = new ArrayList<>();
+                greetings.add(getOrAddWordInDb("salut", null));
+                greetings.add(getOrAddWordInDb("bună", null));
+                greetings.add(getOrAddWordInDb("servus", null));
+                greetings.add(getOrAddWordInDb("salutare", null));
+                greetings.add(getOrAddWordInDb("hey", null));
+                final int index = random.nextInt(greetings.size());
+                greeting.add(greetings.get(index).getTextWithDiacritics());
+                return greeting;
+            }
+        }
+    }
+
+    /**
+     * WARNING: if the word already exists, we don't check if it has the same addressing mode
+     * */
+    private Word getOrAddWordInDb(final String text, final AddressingMode addressingMode) {
+        Word word = wordRepository.getFirstByTextIgnoreCase(Word.replaceDiacritics(text));
+        if (word == null) {
+            word = new Word(text);
+            word.setAddressingMode(addressingMode);
+            wordRepository.save(word);
+        }
+        return word;
+    }
+
+    private int wordIsPartOfGreeting(final Sentence sentence, int wordIndex) {
+        final String word = sentence.getWords().get(wordIndex).getText();
+        if (word.equals("salut") || word.equals("servus") || word.equals("salutare") || word.equals("hey")) {
+            return 1;
+        }
+        if (word.equals("buna") && wordIndex == sentence.getWords().size() - 1) {
+            return 1;
+        }
+        if (!word.equals("buna")) {
+            return 0;
+        }
+        final String nextWord = sentence.getWords().get(wordIndex+1).getText();
+        if (nextWord.equals("ziua") || nextWord.equals("dimineata") || nextWord.equals("seara") || nextWord.equals("dimi")) {
+            return 2;
+        }
+        return 0;
+    }
+
+    /**
+     * @param word - may not have an addressing mode
+     * @param addressingMode must not be null
+     * @return the word if it has the same addressing mode, else a synonym of the word with the same addressing mode, else <null>
+     * IMPORTANT: FORMAL == FORMAL_AND_INFORMAL && INFORMAL == FORMAL_AND_INFORMAL
+     */
+    private String getWordWithAddressingModeFromWordAndSynonyms(final Word word, final AddressingMode addressingMode) {
+        if (addressingMode.equals(word.getAddressingMode()) || FORMAL_AND_INFORMAL.equals(word.getAddressingMode())) {
+            return word.getTextWithDiacritics();
+        }
+        final List<Word> synonymsInAppearanceOrder = word.getSynonyms().keySet().stream()
+                .sorted((synonym1, synonym2) -> word.getSynonyms().get(synonym2).compareTo(word.getSynonyms().get(synonym1)))
+                .collect(Collectors.toList());
+        for (Word synonym : synonymsInAppearanceOrder) {
+            if (addressingMode.equals(synonym.getAddressingMode()) || FORMAL_AND_INFORMAL.equals(synonym.getAddressingMode())) {
+                return synonym.getTextWithDiacritics();
+            }
+        }
+        return null;
     }
 
     /**

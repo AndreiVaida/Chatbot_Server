@@ -1,5 +1,6 @@
 package services.impl;
 
+import domain.entities.AddressingModeStatus;
 import domain.entities.Message;
 import domain.entities.ResponseMessageAndInformation;
 import domain.entities.Sentence;
@@ -139,7 +140,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // save the response
-        final String responseText = chatbotService.translateSentenceToText(responseSentence);
+        final String responseText = chatbotService.translateSentenceToText(responseSentence, message.getToUser().getAddressingModeStatus().getPreferredAddressingMode());
         final Message responseMessage = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), responseSentence, MessageSource.USER_CHATBOT_CONVERSATION);
         responseMessage.setIsUnknownMessage(isUnknownMessage);
         return responseMessage;
@@ -161,7 +162,8 @@ public class ChatServiceImpl implements ChatService {
         final User toUser = userService.getUserById(userId);
 
         final Sentence sentence = getSentenceAccordingToUserAndRequestType(toUser, chatbotRequestType);
-        return messageService.addMessage(chatbotService.translateSentenceToText(sentence), fromUser, toUser, sentence, MessageSource.USER_CHATBOT_CONVERSATION);
+        return messageService.addMessage(chatbotService.translateSentenceToText(sentence, toUser.getAddressingModeStatus().getPreferredAddressingMode()),
+                fromUser, toUser, sentence, MessageSource.USER_CHATBOT_CONVERSATION);
     }
 
     private Sentence getSentenceAccordingToUserAndRequestType(final User toUser, ChatbotRequestType chatbotRequestType) {

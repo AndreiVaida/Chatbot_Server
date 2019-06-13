@@ -76,6 +76,10 @@ public class Sentence {
         this.id = id;
     }
 
+    public Sentence(List<Word> words) {
+        this.words = words;
+    }
+
     /**
      * Adds the given sentence as a synonym to this one.
      * If this sentence already has the given synonym, then is increased its frequency.
