@@ -6,6 +6,7 @@ import domain.entities.User;
 import domain.enums.ChatbotRequestType;
 import domain.enums.MessageSource;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ChatService {
@@ -39,8 +40,18 @@ public interface ChatService {
     /**
      * @param userId1 - human user (non null and non 0)
      * @param userId2 - human user or chatbot (for chatbot let this field null or 0)
+     * @return all messages
      */
     List<Message> getMessages(final Long userId1, Long userId2);
+
+    /**
+     * @param userId1 - human user (non null and non 0)
+     * @param userId2 - human user or chatbot (for chatbot let this field null or 0)
+     * @param maxDateTime max date of a message
+     * @param nrOfMessages number of messages to return before given date
+     * @return lat <nrOfMessages> messages before <maxDateTime> (including maxDateTime)
+     */
+    List<Message> getMessages(final Long userId1, Long userId2, final LocalDateTime maxDateTime, final Integer nrOfMessages);
 
     /**
      * @param chatbotRequestType may be null => by default is used the global variable CHATBOT_REQUEST_TYPE

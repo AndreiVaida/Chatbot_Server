@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import services.api.ChatService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,13 @@ public class ChatFacadeImpl implements ChatFacade {
     @Override
     public List<MessageDto> getMessages(final Long userId1, final Long userId2) {
         return chatService.getMessages(userId1, userId2).stream()
+                .map(MessageMapper::messageToMessageDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MessageDto> getMessages(Long userId1, Long userId2, LocalDateTime maxDateTime, Integer nrOfMessages) {
+        return chatService.getMessages(userId1, userId2, maxDateTime, nrOfMessages).stream()
                 .map(MessageMapper::messageToMessageDto)
                 .collect(Collectors.toList());
     }

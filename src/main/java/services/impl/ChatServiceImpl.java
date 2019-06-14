@@ -17,6 +17,7 @@ import services.api.MessageService;
 import services.api.UserService;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static app.Main.CHATBOT_ID;
@@ -161,6 +162,14 @@ public class ChatServiceImpl implements ChatService {
             userId2 = CHATBOT_ID;
         }
         return messageService.getMessagesByUsers(userId1, userId2);
+    }
+
+    @Override
+    public List<Message> getMessages(final Long userId1, Long userId2, final LocalDateTime maxDateTime, final Integer nrOfMessages) {
+        if (userId2 == null || userId2 == 0) {
+            userId2 = CHATBOT_ID;
+        }
+        return messageService.getMessagesByUsers(userId1, userId2, maxDateTime, nrOfMessages);
     }
 
     @Override

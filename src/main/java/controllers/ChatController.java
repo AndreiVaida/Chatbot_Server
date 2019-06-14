@@ -6,6 +6,7 @@ import dtos.RequestSendMessageDto;
 import dtos.ResponseMessageAndInformationDto;
 import facades.api.ChatFacade;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -29,9 +31,20 @@ public class ChatController extends AbstractController {
         this.chatFacade = chatFacade;
     }
 
-    @GetMapping
-    public ResponseEntity<List<MessageDto>> getMessages(@RequestParam final Long userId1, @RequestParam final Long userId2) {
+    @GetMapping("/all")
+    public ResponseEntity<List<MessageDto>> getAllMessages(@RequestParam final Long userId1, @RequestParam final Long userId2) {
         final List<MessageDto> messages = chatFacade.getMessages(userId1, userId2);
+        return new ResponseEntity<>(messages, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<MessageDto>> getMessages(@RequestParam final Long userId1, @RequestParam final Long userId2,
+                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime maxDateTime,
+                                                        @RequestParam(defaultValue = "20") final Integer nrOfMessages) {
+        if (maxDateTime == null) {
+            maxDateTime = LocalDateTime.now();
+        }
+        final List<MessageDto> messages = chatFacade.getMessages(userId1, userId2, maxDateTime, nrOfMessages);
         return new ResponseEntity<>(messages, HttpStatus.OK);
     }
 
