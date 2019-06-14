@@ -58,10 +58,13 @@ public class UserMapper {
     }
 
     private static JSONObject simpleDateDtoToJson(final SimpleDateDto simpleDateDto) {
-        final JSONObject userJson = new JSONObject();
-        userJson.put("year", simpleDateDto.getYear());
-        userJson.put("month", simpleDateDto.getMonth());
-        userJson.put("day", simpleDateDto.getDay());
-        return userJson;
+        final JSONObject dateJson = new JSONObject();
+        if (simpleDateDto == null) {
+            return  dateJson;
+        }
+        dateJson.put("year", simpleDateDto.getYear());
+        dateJson.put("month", simpleDateDto.getMonth());
+        dateJson.put("day", simpleDateDto.getDay());
+        return dateJson;
     }
 }
