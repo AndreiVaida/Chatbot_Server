@@ -34,6 +34,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public List<User> findAll() {
         return userRepository.findAll();
     }
@@ -65,7 +66,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User findUserByEmail(final String email) {
-        final User user = userRepository.findByEmail(email);
+        final User user = userRepository.getByEmail(email);
         if (user == null) {
             throw new EntityNotFoundException("User not found.");
         }

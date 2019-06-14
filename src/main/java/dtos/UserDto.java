@@ -13,4 +13,15 @@ public class UserDto {
     private String firstName;
     private String surname;
     private SimpleDateDto birthDay;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", surname='" + surname + '\'' +
+                ", birthDay=" + birthDay +
+                '}';
+    }
 }

@@ -38,7 +38,7 @@ public class PersonalInformation implements Information {
     @Column(name = "SURNAME")
     private String surname;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "BIRTH_DAY")
     private SimpleDate birthDay;
 

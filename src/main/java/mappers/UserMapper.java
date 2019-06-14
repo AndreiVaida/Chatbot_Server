@@ -40,7 +40,7 @@ public class UserMapper {
         return new SimpleDate(simpleDateDto.getYear(), simpleDateDto.getMonth(), simpleDateDto.getDay());
     }
 
-    public static SimpleDateDto simpleDateToSimpleDateDto(final SimpleDate simpleDate) {
+    static SimpleDateDto simpleDateToSimpleDateDto(final SimpleDate simpleDate) {
         if (simpleDate == null) {
             return null;
         }
@@ -53,7 +53,15 @@ public class UserMapper {
         userJson.put("email", userDto.getEmail());
         userJson.put("firstName", userDto.getFirstName());
         userJson.put("surname", userDto.getSurname());
-        userJson.put("birthDay", userDto.getBirthDay());
+        userJson.put("birthDay", simpleDateDtoToJson(userDto.getBirthDay()));
+        return userJson;
+    }
+
+    private static JSONObject simpleDateDtoToJson(final SimpleDateDto simpleDateDto) {
+        final JSONObject userJson = new JSONObject();
+        userJson.put("year", simpleDateDto.getYear());
+        userJson.put("month", simpleDateDto.getMonth());
+        userJson.put("day", simpleDateDto.getDay());
         return userJson;
     }
 }

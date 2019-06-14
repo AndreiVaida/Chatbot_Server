@@ -1,5 +1,6 @@
 package facades.impl;
 
+import domain.entities.User;
 import domain.information.FacultyInformation;
 import domain.information.FreeTimeInformation;
 import domain.information.Information;
