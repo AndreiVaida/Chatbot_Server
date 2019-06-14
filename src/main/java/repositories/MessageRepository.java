@@ -20,7 +20,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "AND m.dateTime <= :maxDateTime " +
             "ORDER BY m.dateTime")
     List<Message> findAllByUsers(@Param("userId1") Long userId1, @Param("userId2") Long userId2,
-                                 @Param("maxDateTime") LocalDateTime maxDateTime, Pageable pageable);
+                                 @Param("maxDateTime") LocalDateTime maxDateTime, Pageable pageRequest);
 
     @Query("SELECT m FROM Message m " +
             "WHERE m.id <> :messageId " +

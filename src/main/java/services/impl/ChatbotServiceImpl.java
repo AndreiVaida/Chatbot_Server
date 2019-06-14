@@ -5,6 +5,7 @@ import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.entities.SentenceDetectionParameters;
 import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.entities.Word;
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 import repositories.DexRepository;
 import repositories.LinguisticExpressionRepository;
+import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
 import services.api.ChatbotService;
@@ -57,13 +59,15 @@ public class ChatbotServiceImpl implements ChatbotService {
     private static final String wordsSplitRegex = "[\\s]+"; // TODO: change regex with a custom function which consider also the signs as items (, . ...)
     private final SentenceRepository sentenceRepository;
     private final WordRepository wordRepository;
+    private final SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
     private final DexRepository dexRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final Random random;
 
-    public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, DexRepository dexRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
+    public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, DexRepository dexRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
+        this.sentenceDetectionParametersRepository = sentenceDetectionParametersRepository;
         this.dexRepository = dexRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         random = new Random();
@@ -153,22 +157,14 @@ public class ChatbotServiceImpl implements ChatbotService {
         newSentence.setSpeechType(identifySentenceType(newSentence));
 
         // get similar sentences from DB
-        int maxNrOfExtraWords, maxNrOfUnmatchedWords;
-        double weight = 0.6;
-        if (sentenceWords.size() == 1) {
-            maxNrOfExtraWords = 2;
-            maxNrOfUnmatchedWords = 0;
-        } else if (sentenceWords.size() == 2) {
-            maxNrOfExtraWords = 2;
-            maxNrOfUnmatchedWords = 1;
-        } else if (sentenceWords.size() == 3) {
-            maxNrOfExtraWords = 2;
-            maxNrOfUnmatchedWords = 1;
-        } else {
-            maxNrOfExtraWords = (int) Math.round(sentenceWords.size() * 0.7);
-            maxNrOfUnmatchedWords = (int) Math.round(sentenceWords.size() * 0.5);
+        SentenceDetectionParameters sentenceDetectionParameters = sentenceDetectionParametersRepository.findBySentenceLength(sentenceWords.size());
+        if (sentenceDetectionParameters == null) {
+            sentenceDetectionParameters = sentenceDetectionParametersRepository.findTop1ByOrderBySentenceLengthDesc();
         }
-        final List<Sentence> existingSentences = findSimilarSentencesByWords(sentenceWords, maxNrOfExtraWords, maxNrOfUnmatchedWords, weight);
+        final List<Sentence> existingSentences = findSimilarSentencesByWords(sentenceWords,
+                sentenceDetectionParameters.getMaxNrOfExtraWords(),
+                sentenceDetectionParameters.getMaxNrOfUnmatchedWords(),
+                sentenceDetectionParameters.getWeight());
 
         // choose the most appropriate sentence
         if (existingSentences.isEmpty()) {
@@ -538,7 +534,7 @@ public class ChatbotServiceImpl implements ChatbotService {
      * - the words from the given list must be in the sentence
      * - if the word is not in the sentence, check if a synonym of the word is in the sentence
      */
-    private List<Sentence> findSimilarSentencesByWords(final List<Word> words, final int maxNrOfExtraWords, final int maxNrOfUnmatchedWords, final double weight) {
+    public List<Sentence> findSimilarSentencesByWords(final List<Word> words, final int maxNrOfExtraWords, final int maxNrOfUnmatchedWords, final double weight) {
         final Map<Long, MatchingResult> matchingResultMap = new HashMap<>(); // <Sentence.id, MatchingResult>
 
         return sentenceRepository.findAll().stream()

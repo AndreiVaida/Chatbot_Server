@@ -5,18 +5,19 @@ import domain.entities.CsvConversationTimestamp;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
 import domain.entities.Sentence;
+import domain.entities.SentenceDetectionParameters;
 import domain.entities.User;
 import domain.entities.Word;
 import domain.enums.ChatbotRequestType;
 import domain.enums.ItemClass;
 import domain.enums.MessageSource;
 import domain.enums.SpeechType;
-import dtos.AddedDataStatus;
-import dtos.ExpressionItemDto;
+import dtos.admin.AddedDataStatus;
+import dtos.admin.ExpressionItemDto;
 import dtos.informationDtos.InformationClassDto;
-import dtos.LinguisticExpressionDto;
+import dtos.admin.LinguisticExpressionDto;
 import dtos.MessageDto;
-import dtos.WordDto;
+import dtos.admin.WordDto;
 import mappers.InformationMapper;
 import mappers.SentenceMapper;
 import org.apache.tomcat.util.json.JSONParser;
@@ -28,14 +29,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import repositories.CsvConversationTimestampRepository;
 import repositories.LinguisticExpressionRepository;
+import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
 import services.api.AdminService;
 import services.api.ChatService;
+import services.api.ChatbotService;
 import services.api.UserService;
 
 import javax.transaction.Transactional;
@@ -61,17 +65,26 @@ public class AdminServiceImpl implements AdminService {
     private final WordRepository wordRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final ChatService chatService;
+    private final ChatbotService chatbotService;
     private final UserService userService;
+    private final SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
     private final CsvConversationTimestampRepository csvConversationTimestampRepository;
     private final String fileWithConversations = "src/main/resources/conversations/ConversationsTriburile1.txt";
 
-    public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, UserService userService, CsvConversationTimestampRepository csvConversationTimestampRepository) {
+    public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, ChatbotService chatbotService, UserService userService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, CsvConversationTimestampRepository csvConversationTimestampRepository) {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         this.chatService = chatService;
+        this.chatbotService = chatbotService;
         this.userService = userService;
+        this.sentenceDetectionParametersRepository = sentenceDetectionParametersRepository;
         this.csvConversationTimestampRepository = csvConversationTimestampRepository;
+    }
+
+    @Override
+    public long getNumberOfSentences() {
+        return sentenceRepository.count();
     }
 
     @Override
@@ -92,6 +105,22 @@ public class AdminServiceImpl implements AdminService {
             }
         }
         return sentenceRepository.save(sentence);
+    }
+
+    @Override
+    public List<SentenceDetectionParameters> getSentenceDetectionParameters() {
+        return sentenceDetectionParametersRepository.findAllByOrderBySentenceLength();
+    }
+
+    @Override
+    public void setSentenceDetectionParameters(final List<SentenceDetectionParameters> sentenceDetectionParameters) {
+        for (SentenceDetectionParameters newParameters : sentenceDetectionParameters) {
+            final SentenceDetectionParameters parameters = sentenceDetectionParametersRepository.findBySentenceLength(newParameters.getSentenceLength());
+            parameters.setMaxNrOfExtraWords(newParameters.getMaxNrOfExtraWords());
+            parameters.setMaxNrOfUnmatchedWords(newParameters.getMaxNrOfUnmatchedWords());
+            parameters.setWeight(newParameters.getWeight());
+            sentenceDetectionParametersRepository.save(parameters);
+        }
     }
 
     @Override
@@ -322,6 +351,49 @@ public class AdminServiceImpl implements AdminService {
             e.printStackTrace();
         }
         return addMessages(replies);
+    }
+
+    @Override
+    public List<Sentence> getSentences(final Integer pageNumber, final Integer itemsPerPage) {
+        return sentenceRepository.findAll(PageRequest.of(pageNumber, itemsPerPage)).getContent();
+    }
+
+    @Override
+    public List<Sentence> findSentencesByWords(final String wordsAsString) {
+        final List<Word> words = new ArrayList<>();
+        final String[] wordsArray = splitInWords(wordsAsString);
+        for (String text : wordsArray) {
+            final Word word = wordRepository.getFirstByTextIgnoreCase(Word.replaceDiacritics(text));
+            if (word != null) {
+                words.add(word);
+            }
+        }
+
+        if (words.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        SentenceDetectionParameters sentenceDetectionParameters = sentenceDetectionParametersRepository.findBySentenceLength(words.size());
+        if (sentenceDetectionParameters == null) {
+            sentenceDetectionParameters = sentenceDetectionParametersRepository.findTop1ByOrderBySentenceLengthDesc();
+            sentenceDetectionParameters.setMaxNrOfExtraWords((int) (sentenceDetectionParameters.getMaxNrOfExtraWords() * 1.5));
+        }
+        return chatbotService.findSimilarSentencesByWords(words,
+                sentenceDetectionParameters.getMaxNrOfExtraWords(),
+                sentenceDetectionParameters.getMaxNrOfUnmatchedWords(),
+                sentenceDetectionParameters.getWeight());
+    }
+
+    @Override
+    public List<Sentence> getSentencesById(final List<Long> sentencesId) {
+        final List<Sentence> sentences = new ArrayList<>();
+        for (Long id : sentencesId) {
+            final Sentence sentence = sentenceRepository.getOne(id);
+            if (sentence != null) {
+                sentences.add(sentence);
+            }
+        }
+        return sentences;
     }
 
     @Override

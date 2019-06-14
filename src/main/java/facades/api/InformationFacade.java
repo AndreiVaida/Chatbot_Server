@@ -1,6 +1,6 @@
 package facades.api;
 
-import dtos.LinguisticExpressionDto;
+import dtos.admin.LinguisticExpressionDto;
 
 import java.util.List;
 

@@ -1,10 +1,11 @@
 package controllers;
 
 import domain.enums.ChatbotRequestType;
-import dtos.AddedDataStatus;
-import dtos.LinguisticExpressionDto;
+import dtos.admin.AddedDataStatus;
+import dtos.admin.LinguisticExpressionDto;
 import dtos.MessageDto;
-import dtos.SentenceDto;
+import dtos.admin.SentenceDetectionParametersDto;
+import dtos.admin.SentenceDto;
 import facades.api.AdminFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,13 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import services.api.ChatService;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,16 +46,47 @@ public class AdminController extends AbstractController {
     }
 
     // SENTENCE
-    @GetMapping("/sentence")
-    public ResponseEntity<List<SentenceDto>> getAllSentences() {
-        final List<SentenceDto> sentencesDto = adminFacade.getAllSentences();
+    @GetMapping("/sentence/all")
+    public ResponseEntity<List<SentenceDto>> getAllSentences(@RequestParam(defaultValue = "0") final Integer pageNumber,
+                                                             @RequestParam(defaultValue = "100") final Integer itemsPerPage) {
+        final List<SentenceDto> sentencesDto = adminFacade.getSentences(pageNumber, itemsPerPage);
         return new ResponseEntity<>(sentencesDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/sentence")
+    public ResponseEntity<List<SentenceDto>> getSentencesById(@RequestParam final List<Long> sentencesId) {
+        final List<SentenceDto> sentencesDto = adminFacade.getSentencesById(sentencesId);
+        return new ResponseEntity<>(sentencesDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/sentence/find")
+    public ResponseEntity<List<SentenceDto>> findSentencesByWords(@RequestParam final String wordsAsString) {
+        final List<SentenceDto> sentencesDto = adminFacade.findSentencesByWords(wordsAsString);
+        return new ResponseEntity<>(sentencesDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/sentence/nr")
+    public ResponseEntity<Long> getNumberOfSentences() {
+        final Long nrOfSentences = adminFacade.getNumberOfSentences();
+        return new ResponseEntity<>(nrOfSentences, HttpStatus.OK);
     }
 
     @PostMapping("/sentence")
     public ResponseEntity<SentenceDto> saveSentence(@RequestBody SentenceDto sentenceDto) {
         sentenceDto = adminFacade.saveSentence(sentenceDto);
         return new ResponseEntity<>(sentenceDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/sentence/parameters")
+    public ResponseEntity<List<SentenceDetectionParametersDto>> getSentenceDetectionParameters() {
+        final List<SentenceDetectionParametersDto> sentenceDetectionParametersDto = adminFacade.getSentenceDetectionParameters();
+        return new ResponseEntity<>(sentenceDetectionParametersDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/sentence/parameters")
+    public ResponseEntity<?> setSentenceDetectionParameters(@RequestBody List<SentenceDetectionParametersDto> sentenceDetectionParametersDto) {
+        adminFacade.setSentenceDetectionParameters(sentenceDetectionParametersDto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     // LINGUISTIC EXPRESSION

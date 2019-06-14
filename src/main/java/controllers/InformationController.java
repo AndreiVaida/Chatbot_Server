@@ -1,6 +1,6 @@
 package controllers;
 
-import dtos.LinguisticExpressionDto;
+import dtos.admin.LinguisticExpressionDto;
 import facades.api.InformationFacade;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

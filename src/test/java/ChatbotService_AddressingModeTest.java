@@ -1,31 +1,19 @@
 import domain.entities.Sentence;
-import domain.entities.User;
 import domain.entities.Word;
-import domain.enums.AddressingMode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import repositories.DexRepository;
-import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
-import repositories.MessageRepository;
-import repositories.PersonalInformationRepository;
 import repositories.SentenceRepository;
-import repositories.UserRepository;
 import repositories.WordRepository;
-import services.api.ChatService;
 import services.api.ChatbotService;
-import services.api.MessageService;
-import services.api.UserService;
 import services.impl.ChatbotServiceImpl;
-import services.impl.MessageServiceImpl;
-import services.impl.UserServiceImpl;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -62,7 +50,7 @@ public class ChatbotService_AddressingModeTest {
 
     @Before
     public void initialize() {
-        chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, dexRepository, linguisticExpressionRepository);
+        chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
 
         // add "salut", "bună" and "ziua" and set synonyms: "salut" ~= "bună"
         wordSalut = new Word("salut");

@@ -1,6 +1,6 @@
 package facades.impl;
 
-import dtos.LinguisticExpressionDto;
+import dtos.admin.LinguisticExpressionDto;
 import facades.api.InformationFacade;
 import mappers.InformationMapper;
 import org.springframework.stereotype.Component;

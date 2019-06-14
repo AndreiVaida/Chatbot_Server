@@ -1,11 +1,13 @@
 package mappers;
 
 import domain.entities.Sentence;
+import domain.entities.SentenceDetectionParameters;
 import domain.entities.Word;
 import domain.enums.SpeechType;
+import dtos.admin.SentenceDetectionParametersDto;
 import dtos.informationDtos.InformationClassDto;
-import dtos.SentenceDto;
-import dtos.WordDto;
+import dtos.admin.SentenceDto;
+import dtos.admin.WordDto;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,5 +88,23 @@ public class SentenceMapper {
         }
         word.setSynonyms(synonyms);
         return word;
+    }
+
+    public static SentenceDetectionParametersDto sentenceDetectionParametersToSentenceDetectionParametersDto(final SentenceDetectionParameters entity) {
+        final SentenceDetectionParametersDto dto = new SentenceDetectionParametersDto();
+        dto.setSentenceLength(entity.getSentenceLength());
+        dto.setMaxNrOfExtraWords(entity.getMaxNrOfExtraWords());
+        dto.setMaxNrOfUnmatchedWords(entity.getMaxNrOfUnmatchedWords());
+        dto.setWeight(entity.getWeight());
+        return dto;
+    }
+
+    public static SentenceDetectionParameters sentenceDetectionParametersDtoToSentenceDetectionParameters(final SentenceDetectionParametersDto dto) {
+        final SentenceDetectionParameters entity = new SentenceDetectionParameters();
+        entity.setSentenceLength(dto.getSentenceLength());
+        entity.setMaxNrOfExtraWords(dto.getMaxNrOfExtraWords());
+        entity.setMaxNrOfUnmatchedWords(dto.getMaxNrOfUnmatchedWords());
+        entity.setWeight(dto.getWeight());
+        return entity;
     }
 }

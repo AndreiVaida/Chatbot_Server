@@ -1,5 +1,6 @@
 package app;
 
+import domain.entities.SentenceDetectionParameters;
 import domain.entities.SimpleDate;
 import domain.entities.User;
 import org.apache.commons.io.IOUtils;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import repositories.FacebookChatRepository;
+import repositories.SentenceDetectionParametersRepository;
 import services.api.AdminService;
 import services.api.FastLearningService;
 import services.api.UserService;
@@ -32,14 +34,16 @@ public class Main {
     public static Long USER_FOR_LEARNING_2_ID;
     private final UserService userService;
     private final AdminService adminService;
+    private final SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
     private final FastLearningService fastLearningService;
     private final FacebookChatRepository facebookChatRepository;
 
     @Autowired
-    public Main(UserService userService, FastLearningService fastLearningService, FacebookChatRepository facebookChatRepository, Environment environment, AdminService adminService) {
+    public Main(UserService userService, FastLearningService fastLearningService, FacebookChatRepository facebookChatRepository, Environment environment, AdminService adminService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository) {
         this.userService = userService;
         this.fastLearningService = fastLearningService;
         this.adminService = adminService;
+        this.sentenceDetectionParametersRepository = sentenceDetectionParametersRepository;
         this.facebookChatRepository = facebookChatRepository;
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
         USER_FOR_LEARNING_1_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning1.id")));
@@ -55,6 +59,33 @@ public class Main {
             //uploadSentencesFile();
             //uploadLinguisticExpressionFile();
             //uploadMessagesFiles();
+        }
+        if (sentenceDetectionParametersRepository.count() == 0) {
+            addDefaultSentenceDetectionParametersInDb();
+        }
+
+    }
+
+    private void addDefaultSentenceDetectionParametersInDb() {
+        final double weight = 0.6;
+
+        for (int sentenceLength = 1; sentenceLength <= 10; sentenceLength++) {
+            int maxNrOfExtraWords;
+            int maxNrOfUnmatchedWords;
+            if (sentenceLength == 1) {
+                maxNrOfExtraWords = 2;
+                maxNrOfUnmatchedWords = 0;
+            } else if (sentenceLength == 2) {
+                maxNrOfExtraWords = 2;
+                maxNrOfUnmatchedWords = 1;
+            } else if (sentenceLength == 3) {
+                maxNrOfExtraWords = 2;
+                maxNrOfUnmatchedWords = 1;
+            } else {
+                maxNrOfExtraWords = (int) Math.round(sentenceLength * 0.7);
+                maxNrOfUnmatchedWords = (int) Math.round(sentenceLength * 0.5);
+            }
+            sentenceDetectionParametersRepository.save(new SentenceDetectionParameters(sentenceLength, maxNrOfExtraWords, maxNrOfUnmatchedWords, weight));
         }
     }
 

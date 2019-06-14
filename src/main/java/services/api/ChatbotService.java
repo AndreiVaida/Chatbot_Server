@@ -3,6 +3,7 @@ package services.api;
 import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.User;
+import domain.entities.Word;
 import domain.enums.AddressingMode;
 import domain.information.Information;
 
@@ -19,6 +20,7 @@ public interface ChatbotService {
      */
     Sentence getExistingSentenceOrCreateANewOne(final String text);
 
+    List<Sentence> findSimilarSentencesByWords(final List<Word> words, final int maxNrOfExtraWords, final int maxNrOfUnmatchedWords, final double weight);
     /**
      * Adds sentence as a response for previousSentence. If it is already a response, it's incremented its frequency.
      */

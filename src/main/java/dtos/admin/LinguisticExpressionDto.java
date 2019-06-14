@@ -1,4 +1,4 @@
-package dtos;
+package dtos.admin;
 
 import domain.enums.SpeechType;
 import dtos.informationDtos.InformationClassDto;

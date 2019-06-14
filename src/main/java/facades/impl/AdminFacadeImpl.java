@@ -3,10 +3,11 @@ package facades.impl;
 import domain.entities.LinguisticExpression;
 import domain.entities.Sentence;
 import domain.enums.ChatbotRequestType;
-import dtos.AddedDataStatus;
-import dtos.LinguisticExpressionDto;
+import dtos.admin.AddedDataStatus;
+import dtos.admin.LinguisticExpressionDto;
 import dtos.MessageDto;
-import dtos.SentenceDto;
+import dtos.admin.SentenceDetectionParametersDto;
+import dtos.admin.SentenceDto;
 import facades.api.AdminFacade;
 import mappers.InformationMapper;
 import mappers.SentenceMapper;
@@ -27,14 +28,48 @@ public class AdminFacadeImpl implements AdminFacade {
     }
 
     @Override
+    public long getNumberOfSentences() {
+        return adminService.getNumberOfSentences();
+    }
+
+    @Override
     public List<SentenceDto> getAllSentences() {
         return adminService.getAllSentences().stream().map(SentenceMapper::sentenceToSentenceDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SentenceDto> getSentences(final Integer pageNumber, final Integer itemsPerPage) {
+        return adminService.getSentences(pageNumber, itemsPerPage).stream().map(SentenceMapper::sentenceToSentenceDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SentenceDto> findSentencesByWords(final String wordsAsString) {
+        return adminService.findSentencesByWords(wordsAsString).stream().map(SentenceMapper::sentenceToSentenceDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SentenceDto> getSentencesById(final List<Long> sentencesId) {
+        return adminService.getSentencesById(sentencesId).stream().map(SentenceMapper::sentenceToSentenceDto).collect(Collectors.toList());
     }
 
     @Override
     public SentenceDto saveSentence(final SentenceDto sentenceDto) {
         final Sentence sentence = SentenceMapper.sentenceDtoToSentence(sentenceDto);
         return SentenceMapper.sentenceToSentenceDto(adminService.saveSentence(sentence));
+    }
+
+    @Override
+    public List<SentenceDetectionParametersDto> getSentenceDetectionParameters() {
+        return adminService.getSentenceDetectionParameters().stream()
+                .map(SentenceMapper::sentenceDetectionParametersToSentenceDetectionParametersDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void setSentenceDetectionParameters(final List<SentenceDetectionParametersDto> sentenceDetectionParametersDto) {
+        adminService.setSentenceDetectionParameters(sentenceDetectionParametersDto.stream()
+                .map(SentenceMapper::sentenceDetectionParametersDtoToSentenceDetectionParameters)
+                .collect(Collectors.toList()));
     }
 
     @Override

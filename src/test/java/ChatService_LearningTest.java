@@ -67,7 +67,7 @@ public class ChatService_LearningTest {
     public void initialize() {
         userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
-        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, dexRepository, linguisticExpressionRepository);
+        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
         final InformationService informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationService);
         // add users
