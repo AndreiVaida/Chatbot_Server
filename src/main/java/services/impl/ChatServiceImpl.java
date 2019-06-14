@@ -105,6 +105,7 @@ public class ChatServiceImpl implements ChatService {
 
         // generate a response
         final Message response = generateResponse(message);
+
         StringBuilder informationResponse = new StringBuilder();
         if (updatedInformationValues != null) {
             informationResponse.append(updatedInformationValues.get(0).toString());
@@ -114,6 +115,7 @@ public class ChatServiceImpl implements ChatService {
             }
             informationResponse.append(" s-a detectat pentru ").append(informationFieldNamePath);
         }
+
         return new ResponseMessageAndInformation(response, informationResponse.toString());
     }
 
@@ -132,7 +134,13 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private Message generateResponse(final Message message) {
-        Sentence responseSentence = chatbotService.generateResponse(message);
+        Sentence responseSentence;
+        if (chatbotRequestType.equals(GET_INFORMATION_FROM_USER)) {
+            responseSentence = chatbotService.pickSentenceRequestingInformation(message.getFromUser());
+        } else {
+            responseSentence = chatbotService.generateResponse(message);
+        }
+
         boolean isUnknownMessage = false;
         if (responseSentence == null) {
             responseSentence = getSentenceAccordingToUserAndRequestType(message.getFromUser(), null);
@@ -140,7 +148,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // save the response
-        final String responseText = chatbotService.translateSentenceToText(responseSentence, message.getToUser().getAddressingModeStatus().getPreferredAddressingMode());
+        final String responseText = chatbotService.translateSentenceToText(responseSentence, message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode());
         final Message responseMessage = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), responseSentence, MessageSource.USER_CHATBOT_CONVERSATION);
         responseMessage.setIsUnknownMessage(isUnknownMessage);
         return responseMessage;

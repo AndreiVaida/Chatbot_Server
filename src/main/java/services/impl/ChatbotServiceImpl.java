@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static domain.enums.AddressingMode.FORMAL;
 import static domain.enums.AddressingMode.FORMAL_AND_INFORMAL;
+import static domain.enums.AddressingMode.INFORMAL;
 import static domain.enums.LocalityType.RURAL;
 import static domain.enums.LocalityType.URBAN;
 import static domain.enums.SpeechType.ACKNOWLEDGEMENT;
@@ -153,7 +154,7 @@ public class ChatbotServiceImpl implements ChatbotService {
 
         // get similar sentences from DB
         int maxNrOfExtraWords, maxNrOfUnmatchedWords;
-        double weight = 0.5;
+        double weight = 0.6;
         if (sentenceWords.size() == 1) {
             maxNrOfExtraWords = 2;
             maxNrOfUnmatchedWords = 0;
@@ -162,10 +163,10 @@ public class ChatbotServiceImpl implements ChatbotService {
             maxNrOfUnmatchedWords = 1;
         } else if (sentenceWords.size() == 3) {
             maxNrOfExtraWords = 2;
-            maxNrOfUnmatchedWords = 2;
+            maxNrOfUnmatchedWords = 1;
         } else {
-            maxNrOfExtraWords = sentenceWords.size();
-            maxNrOfUnmatchedWords = (int) Math.round(sentenceWords.size() * 0.7);
+            maxNrOfExtraWords = (int) Math.round(sentenceWords.size() * 0.7);
+            maxNrOfUnmatchedWords = (int) Math.round(sentenceWords.size() * 0.5);
         }
         final List<Sentence> existingSentences = findSimilarSentencesByWords(sentenceWords, maxNrOfExtraWords, maxNrOfUnmatchedWords, weight);
 
@@ -298,7 +299,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         final StringBuilder text = new StringBuilder();
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
-            if (i > 0 && Character.isLetterOrDigit(word.getText().charAt(0))) {
+            if (i > 0 && (Character.isLetterOrDigit(word.getText().charAt(0)) || word.getText().charAt(0) == '(')) {
                 text.append(" ");
             }
             // check addressing mode
@@ -320,6 +321,16 @@ public class ChatbotServiceImpl implements ChatbotService {
                         text.append(" ");
                     }
                 }
+                continue;
+            }
+
+            // tu / dumneavoastră
+            if (word.getText().toLowerCase().equals("tu") && FORMAL.equals(addressingMode)) {
+                text.append("dumneavoastră");
+                continue;
+            }
+            if (word.getText().toLowerCase().equals("dumneavoastra") && INFORMAL.equals(addressingMode)) {
+                text.append("tu");
                 continue;
             }
 

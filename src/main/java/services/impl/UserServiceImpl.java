@@ -12,10 +12,7 @@ import services.api.UserService;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -77,6 +74,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(final User user) {
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public Information getInformationByClass(final Long userId, final Class<Information> informationClass) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        final User user = getUserById(userId);
+
+        final Method getterOfUser = user.getClass().getMethod("get" + informationClass.getSimpleName());
+        return (Information) getterOfUser.invoke(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteInformationByInformationFieldNamePath(final Long userId, final String informationFieldNamePath) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
+        final User user = getUserById(userId);
+
+        final String[] informationPath = informationFieldNamePath.split("\\.");
+        final Method getterOfUser = user.getClass().getMethod("get" + informationPath[0]);
+        final Information information = (Information) getterOfUser.invoke(user);
+
+        final Field prop = information.getClass().getDeclaredField(informationPath[1]);
+        prop.setAccessible(true);
+        prop.set(information, null);
+
         userRepository.save(user);
     }
 

@@ -57,6 +57,8 @@ public class ChatbotService_AddressingModeTest {
     private Word wordCum;
     private Word wordEști;
     private Word wordSunteți;
+    private Word wordNormal;
+    private Word questionMark;
 
     @Before
     public void initialize() {
@@ -93,6 +95,11 @@ public class ChatbotService_AddressingModeTest {
         wordRepository.save(wordEști);
         wordSunteți = new Word("sunteți");
         wordRepository.save(wordSunteți);
+        // add "normal" and "?"
+        wordNormal = new Word("normal");
+        wordRepository.save(wordNormal);
+        questionMark = new Word("?");
+        wordRepository.save(questionMark);
     }
 
     @Test
@@ -180,6 +187,39 @@ public class ChatbotService_AddressingModeTest {
         // input: FORMAL, output: FORMAL
         text = chatbotService.translateSentenceToText(sentence, FORMAL);
         Assert.assertEquals("dumneavoastră cum sunteți", text);
+    }
+
+    @Test
+    public void testEștiNormal() {
+        // create INFORMAL input
+        List<Word> words = new ArrayList<>();
+        words.add(wordEști);
+        words.add(wordNormal);
+        words.add(questionMark);
+        Sentence sentence = new Sentence(words);
+
+        // input: INFORMAL, output: INFORMAL
+        String text = chatbotService.translateSentenceToText(sentence, INFORMAL);
+        Assert.assertEquals("ești normal?", text);
+
+        // input: INFORMAL, output: FORMAL
+        text = chatbotService.translateSentenceToText(sentence, FORMAL);
+        Assert.assertEquals("sunteți normal?", text);
+
+        // create FORMAL input
+        words = new ArrayList<>();
+        words.add(wordSunteți);
+        words.add(wordNormal);
+        words.add(questionMark);
+        sentence = new Sentence(words);
+
+        // input: FORMAL, output: INFORMAL
+        text = chatbotService.translateSentenceToText(sentence, INFORMAL);
+        Assert.assertEquals("ești normal?", text);
+
+        // input: FORMAL, output: FORMAL
+        text = chatbotService.translateSentenceToText(sentence, FORMAL);
+        Assert.assertEquals("sunteți normal?", text);
     }
 
 }

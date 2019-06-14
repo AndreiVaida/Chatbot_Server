@@ -13,7 +13,7 @@ import domain.enums.MessageSource;
 import domain.enums.SpeechType;
 import dtos.AddedDataStatus;
 import dtos.ExpressionItemDto;
-import dtos.InformationClassDto;
+import dtos.informationDtos.InformationClassDto;
 import dtos.LinguisticExpressionDto;
 import dtos.MessageDto;
 import dtos.WordDto;

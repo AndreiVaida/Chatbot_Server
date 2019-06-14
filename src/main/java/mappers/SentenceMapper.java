@@ -3,7 +3,7 @@ package mappers;
 import domain.entities.Sentence;
 import domain.entities.Word;
 import domain.enums.SpeechType;
-import dtos.InformationClassDto;
+import dtos.informationDtos.InformationClassDto;
 import dtos.SentenceDto;
 import dtos.WordDto;
 

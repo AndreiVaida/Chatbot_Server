@@ -9,17 +9,23 @@ import domain.information.PersonalInformation;
 import domain.information.RelationshipsInformation;
 import domain.information.SchoolInformation;
 import dtos.ExpressionItemDto;
-import dtos.InformationClassDto;
+import dtos.informationDtos.FacultyInformationDto;
+import dtos.informationDtos.FreeTimeInformationDto;
+import dtos.informationDtos.InformationClassDto;
 import dtos.LinguisticExpressionDto;
+import dtos.informationDtos.InformationDto;
+import dtos.informationDtos.PersonalInformationDto;
+import dtos.informationDtos.RelationshipInformationDto;
+import dtos.informationDtos.SchoolInformationDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dtos.InformationClassDto.FACULTY_INFORMATION;
-import static dtos.InformationClassDto.FREE_TIME_INFORMATION;
-import static dtos.InformationClassDto.PERSONAL_INFORMATION;
-import static dtos.InformationClassDto.RELATIONSHIPS_INFORMATION;
-import static dtos.InformationClassDto.SCHOOL_INFORMATION;
+import static dtos.informationDtos.InformationClassDto.FACULTY_INFORMATION;
+import static dtos.informationDtos.InformationClassDto.FREE_TIME_INFORMATION;
+import static dtos.informationDtos.InformationClassDto.PERSONAL_INFORMATION;
+import static dtos.informationDtos.InformationClassDto.RELATIONSHIPS_INFORMATION;
+import static dtos.informationDtos.InformationClassDto.SCHOOL_INFORMATION;
 
 public class InformationMapper {
     private InformationMapper(){}
@@ -94,5 +100,77 @@ public class InformationMapper {
         expressionItemDto.setText(expressionItem.getText());
         expressionItemDto.setItemClass(expressionItem.getItemClass());
         return expressionItemDto;
+    }
+
+    public static PersonalInformationDto personalInformationToPersonalInformationDto(final PersonalInformation entity) {
+        final PersonalInformationDto dto = new PersonalInformationDto();
+        dto.setFirstName(entity.getFirstName());
+        dto.setSurname(entity.getSurname());
+        dto.setBirthDay(UserMapper.simpleDateToSimpleDateDto(entity.getBirthDay()));
+        dto.setGender(entity.getGender());
+        dto.setHomeAddress(entity.getHomeAddress());
+        return dto;
+    }
+
+    public static RelationshipInformationDto relationshipInformationToRelationshipInformationDto(final RelationshipsInformation entity) {
+        final RelationshipInformationDto dto = new RelationshipInformationDto();
+        dto.setMotherPersonalInformation(personalInformationToPersonalInformationDto(entity.getMotherPersonalInformation()));
+        dto.setFatherPersonalInformation(personalInformationToPersonalInformationDto(entity.getFatherPersonalInformation()));
+        dto.setNumberOfBrothersAndSisters(entity.getNumberOfBrothersAndSisters());
+        dto.setBrothersAndSistersPersonalInformation(entity.getBrothersAndSistersPersonalInformation().values().stream()
+                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
+                        personalInformationToPersonalInformationDto(entity.getBrothersAndSistersPersonalInformation().get(information.getFirstName())))));
+        dto.setNumberOfGrandparents(entity.getNumberOfGrandparents());
+        dto.setGrandparentsPersonalInformation(entity.getGrandparentsPersonalInformation().values().stream()
+                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
+                        personalInformationToPersonalInformationDto(entity.getGrandparentsPersonalInformation().get(information.getFirstName())))));
+        dto.setWifeOrHusbandInformation(personalInformationToPersonalInformationDto(entity.getWifeOrHusbandInformation()));
+        dto.setNumberOfKids(entity.getNumberOfKids());
+        dto.setKidsPersonalInformation(entity.getKidsPersonalInformation().values().stream()
+                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
+                        personalInformationToPersonalInformationDto(entity.getKidsPersonalInformation().get(information.getFirstName())))));
+        return dto;
+    }
+
+    public static SchoolInformationDto schoolInformationToSchoolInformationDto(final SchoolInformation entity) {
+        final SchoolInformationDto dto = new SchoolInformationDto();
+        dto.setIsAtSchool(entity.getIsAtSchool());
+        dto.setSchoolName(entity.getSchoolName());
+        dto.setSchoolProfile(entity.getSchoolProfile());
+        dto.setSchoolClass(entity.getSchoolClass());
+        dto.setFavouriteCourse(entity.getFavouriteCourse());
+        dto.setFavouriteProfessor(entity.getFavouriteProfessor());
+        dto.setBestFriend(entity.getBestFriend());
+        dto.setCoursesGrades(entity.getCoursesGrades());
+        return dto;
+    }
+
+    public static FacultyInformationDto facultyInformationToFacultyInformationDto(final FacultyInformation entity) {
+        final FacultyInformationDto dto = new FacultyInformationDto();
+        dto.setIsAtFaculty(entity.getIsAtFaculty());
+        dto.setFacultyName(entity.getFacultyName());
+        dto.setFacultySpecialization(entity.getFacultySpecialization());
+        dto.setFacultyYear(entity.getFacultyYear());
+        dto.setFacultyGroup(entity.getFacultyGroup());
+        dto.setFavouriteCourse(entity.getFavouriteCourse());
+        dto.setFavouriteProfessor(entity.getFavouriteProfessor());
+        dto.setBestFriend(entity.getBestFriend());
+        dto.setCoursesGrades(entity.getCoursesGrades());
+        return dto;
+    }
+
+    public static FreeTimeInformationDto freeTimeInformationToFreeTimeInformationDto(final FreeTimeInformation entity) {
+        final FreeTimeInformationDto dto = new FreeTimeInformationDto();
+        dto.setHobbies(entity.getHobbies());
+        dto.setLikeReading(entity.getLikeReading());
+        dto.setFavouriteBook(entity.getFavouriteBook());
+        dto.setCurrentReadingBook(entity.getCurrentReadingBook());
+        dto.setLikeVideoGames(entity.getLikeVideoGames());
+        dto.setFavouriteVideoGame(entity.getFavouriteVideoGame());
+        dto.setCurrentPlayedGame(entity.getCurrentPlayedGame());
+        dto.setLikeBoardGames(entity.getLikeBoardGames());
+        dto.setFavouriteBoardGame(entity.getFavouriteBoardGame());
+        dto.setCurrentReadingBook(entity.getCurrentBoardGame());
+        return dto;
     }
 }

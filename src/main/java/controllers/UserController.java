@@ -2,17 +2,22 @@ package controllers;
 
 import dtos.RequestUserRegisterDto;
 import dtos.UserDto;
+import dtos.informationDtos.InformationClassDto;
+import dtos.informationDtos.InformationDto;
 import facades.api.UserFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.lang.reflect.InvocationTargetException;
 
 @RestController
 @RequestMapping("/users")
@@ -34,5 +39,29 @@ public class UserController extends AbstractController {
     public ResponseEntity<UserDto> getUserById(@PathVariable final Long userId) {
         final UserDto userDto = userFacade.getUserById(userId);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/{userId}/{informationClass}")
+    public ResponseEntity<?> getInformationByClass(final @PathVariable Long userId, @PathVariable final InformationClassDto informationClass) {
+        try {
+            final InformationDto informationDto = userFacade.getInformationByClass(userId, informationClass);
+            return new ResponseEntity<>(informationDto, HttpStatus.OK);
+
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/{userId}/{informationFieldNamePath}")
+    public ResponseEntity<?> deleteInformationByInformationFieldNamePath(final @PathVariable Long userId, @PathVariable final String informationFieldNamePath) {
+        try {
+            userFacade.deleteInformationByInformationFieldNamePath(userId, informationFieldNamePath);
+            return new ResponseEntity<>(HttpStatus.OK);
+
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (NoSuchFieldException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }

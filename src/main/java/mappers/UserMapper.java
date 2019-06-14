@@ -40,7 +40,7 @@ public class UserMapper {
         return new SimpleDate(simpleDateDto.getYear(), simpleDateDto.getMonth(), simpleDateDto.getDay());
     }
 
-    private static SimpleDateDto simpleDateToSimpleDateDto(final SimpleDate simpleDate) {
+    public static SimpleDateDto simpleDateToSimpleDateDto(final SimpleDate simpleDate) {
         if (simpleDate == null) {
             return null;
         }

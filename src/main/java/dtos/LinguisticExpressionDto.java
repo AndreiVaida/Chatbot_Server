@@ -1,6 +1,7 @@
 package dtos;
 
 import domain.enums.SpeechType;
+import dtos.informationDtos.InformationClassDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
