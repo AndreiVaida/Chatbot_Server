@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public interface AdminService {
+    // Sentence
     long getNumberOfSentences();
 
     List<Sentence> getAllSentences();
@@ -25,14 +26,32 @@ public interface AdminService {
 
     Sentence saveSentence(final Sentence sentence);
 
+    /**
+     * Sets the sentence with <synonymId> as a synonym for the sentence with <sentenceId> with the frequency <newFrequency>
+     * @param sentenceId must exists in DB
+     * @param synonymId must exists in DB, is not necessary to be a synonym of the given sentence
+     * @param newFrequency should be >= 0
+     */
+    Sentence updateSentenceSynonymFrequency(final Long sentenceId, final Long synonymId, final Integer newFrequency);
+
+    /**
+     * Sets the sentence with <responseId> as a response for the sentence with <sentenceId> with the frequency <newFrequency>
+     * @param sentenceId must exists in DB
+     * @param responseId must exists in DB, is not necessary to be a response of the given sentence
+     * @param newFrequency should be >= 0
+     */
+    Sentence updateSentenceResponseFrequency(final Long sentenceId, final Long responseId, final Integer newFrequency);
+
     List<SentenceDetectionParameters> getSentenceDetectionParameters();
 
     void setSentenceDetectionParameters(final List<SentenceDetectionParameters> sentenceDetectionParameters);
 
+    // LinguisticExpression
     List<LinguisticExpression> getAllLinguisticExpressions();
 
     LinguisticExpression saveLinguisticExpression(final LinguisticExpression linguisticExpression);
 
+    // File/data upload
     AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException;
 
     AddedDataStatus addMessageDtos(final List<MessageDto> messageDtos);

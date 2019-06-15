@@ -558,7 +558,7 @@ public class ChatbotServiceImpl implements ChatbotService {
                     final Double differenceSentence1 = Math.abs(mrS1.getNrOfExtraWords() * nrOfExtraWordsWeight - mrS1.getNrOfUnmatchedWords() * nrOfUnmatchedWords);
                     final Double differenceSentence2 = Math.abs(mrS2.getNrOfExtraWords() * nrOfExtraWordsWeight - mrS2.getNrOfUnmatchedWords() * nrOfUnmatchedWords);
                     // less is better (0 difference = best match)
-                    return differenceSentence2.compareTo(differenceSentence1);
+                    return differenceSentence1.compareTo(differenceSentence2);
                 })
                 .collect(Collectors.toList());
     }

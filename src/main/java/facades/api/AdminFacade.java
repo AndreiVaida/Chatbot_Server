@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface AdminFacade {
+    // Sentence
     long getNumberOfSentences();
 
     List<SentenceDto> getAllSentences();
@@ -24,14 +25,20 @@ public interface AdminFacade {
 
     SentenceDto saveSentence(final SentenceDto sentenceDto);
 
+    SentenceDto updateSentenceSynonymFrequency(final Long sentenceId, final Long synonymId, final Integer newFrequency);
+
+    SentenceDto updateSentenceResponseFrequency(final Long sentenceId, final Long responseId, final Integer newFrequency);
+
     List<SentenceDetectionParametersDto> getSentenceDetectionParameters();
 
     void setSentenceDetectionParameters(final List<SentenceDetectionParametersDto> sentenceDetectionParametersDto);
 
+    // LinguisticExpression
     List<LinguisticExpressionDto> getAllLinguisticExpressions();
 
     LinguisticExpressionDto saveLinguisticExpression(final LinguisticExpressionDto linguisticExpressionDto);
 
+    // File/data upload
     AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException;
 
     AddedDataStatus addMessageDtos(final List<MessageDto> messageDtos);

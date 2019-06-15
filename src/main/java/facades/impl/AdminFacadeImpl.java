@@ -59,6 +59,16 @@ public class AdminFacadeImpl implements AdminFacade {
     }
 
     @Override
+    public SentenceDto updateSentenceSynonymFrequency(final Long sentenceId, final Long synonymId, final Integer newFrequency) {
+        return SentenceMapper.sentenceToSentenceDto(adminService.updateSentenceSynonymFrequency(sentenceId, synonymId, newFrequency));
+    }
+
+    @Override
+    public SentenceDto updateSentenceResponseFrequency(final Long sentenceId, final Long responseId, final Integer newFrequency) {
+        return SentenceMapper.sentenceToSentenceDto(adminService.updateSentenceResponseFrequency(sentenceId, responseId, newFrequency));
+    }
+
+    @Override
     public List<SentenceDetectionParametersDto> getSentenceDetectionParameters() {
         return adminService.getSentenceDetectionParameters().stream()
                 .map(SentenceMapper::sentenceDetectionParametersToSentenceDetectionParametersDto)

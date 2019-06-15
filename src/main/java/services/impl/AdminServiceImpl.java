@@ -12,12 +12,12 @@ import domain.enums.ChatbotRequestType;
 import domain.enums.ItemClass;
 import domain.enums.MessageSource;
 import domain.enums.SpeechType;
+import dtos.MessageDto;
 import dtos.admin.AddedDataStatus;
 import dtos.admin.ExpressionItemDto;
-import dtos.informationDtos.InformationClassDto;
 import dtos.admin.LinguisticExpressionDto;
-import dtos.MessageDto;
 import dtos.admin.WordDto;
+import dtos.informationDtos.InformationClassDto;
 import mappers.InformationMapper;
 import mappers.SentenceMapper;
 import org.apache.tomcat.util.json.JSONParser;
@@ -42,6 +42,7 @@ import services.api.ChatService;
 import services.api.ChatbotService;
 import services.api.UserService;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -105,6 +106,30 @@ public class AdminServiceImpl implements AdminService {
             }
         }
         return sentenceRepository.save(sentence);
+    }
+
+    @Override
+    public Sentence updateSentenceSynonymFrequency(final Long sentenceId, final Long synonymId, final Integer newFrequency) {
+        final Sentence sentence = sentenceRepository.findById(sentenceId)
+                .orElseThrow(() -> new EntityNotFoundException("Sentence not found: " + sentenceId));
+        final Sentence synonym = sentenceRepository.findById(synonymId)
+                .orElseThrow(() -> new EntityNotFoundException("Sentence not found: " + synonymId));
+
+        sentence.getSynonyms().put(synonym, newFrequency);
+        sentenceRepository.save(sentence);
+        return sentence;
+    }
+
+    @Override
+    public Sentence updateSentenceResponseFrequency(final Long sentenceId, final Long responseId, final Integer newFrequency) {
+        final Sentence sentence = sentenceRepository.findById(sentenceId)
+                .orElseThrow(() -> new EntityNotFoundException("Sentence not found: " + sentenceId));
+        final Sentence response = sentenceRepository.findById(responseId)
+                .orElseThrow(() -> new EntityNotFoundException("Sentence not found: " + responseId));
+
+        sentence.getResponses().put(response, newFrequency);
+        sentenceRepository.save(sentence);
+        return sentence;
     }
 
     @Override

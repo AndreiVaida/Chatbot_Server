@@ -77,6 +77,18 @@ public class AdminController extends AbstractController {
         return new ResponseEntity<>(sentenceDto, HttpStatus.OK);
     }
 
+    @PostMapping("/sentence/synonym/{sentenceId}")
+    public ResponseEntity<SentenceDto> updateSentenceSynonymFrequency(@PathVariable final Long sentenceId, @RequestParam final Long synonymId,@RequestParam final Integer newFrequency) {
+        final SentenceDto sentenceDto = adminFacade.updateSentenceSynonymFrequency(sentenceId, synonymId, newFrequency);
+        return new ResponseEntity<>(sentenceDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/sentence/response/{sentenceId}")
+    public ResponseEntity<SentenceDto> updateSentenceResponseFrequency(@PathVariable final Long sentenceId, @RequestParam final Long responseId,@RequestParam final Integer newFrequency) {
+        final SentenceDto sentenceDto = adminFacade.updateSentenceResponseFrequency(sentenceId, responseId, newFrequency);
+        return new ResponseEntity<>(sentenceDto, HttpStatus.OK);
+    }
+
     @GetMapping("/sentence/parameters")
     public ResponseEntity<List<SentenceDetectionParametersDto>> getSentenceDetectionParameters() {
         final List<SentenceDetectionParametersDto> sentenceDetectionParametersDto = adminFacade.getSentenceDetectionParameters();

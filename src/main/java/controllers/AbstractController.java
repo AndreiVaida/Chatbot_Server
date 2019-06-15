@@ -13,13 +13,13 @@ public class AbstractController {
 
     @ExceptionHandler
     public ResponseEntity<?> handleException(final Exception e) {
-        e.printStackTrace();
         if (e instanceof EntityNotFoundException) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e, HttpStatus.NOT_FOUND);
         }
         if (e instanceof EntityExistsException) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(e, HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        e.printStackTrace();
+        return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
