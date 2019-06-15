@@ -2,6 +2,7 @@ package mappers;
 
 import domain.entities.SimpleDate;
 import domain.entities.User;
+import domain.information.PersonalInformation;
 import dtos.RequestUserRegisterDto;
 import dtos.SimpleDateDto;
 import dtos.UserDto;
@@ -15,9 +16,9 @@ public class UserMapper {
         final User user = new User();
         user.setEmail(requestUserRegisterDto.getEmail());
         user.setPassword(requestUserRegisterDto.getPassword());
+        final PersonalInformation personalInformation = new PersonalInformation();
+        user.setPersonalInformation(personalInformation);
         user.getPersonalInformation().setFirstName(requestUserRegisterDto.getFirstName());
-        user.getPersonalInformation().setSurname(requestUserRegisterDto.getSurname());
-        user.getPersonalInformation().setBirthDay(simpleDateDtoToSimpleDate(requestUserRegisterDto.getBirthDay()));
         return user;
     }
 

@@ -22,9 +22,4 @@ public class RequestUserRegisterDto {
 
     @Size(min = 2, max = 255)
     private String firstName;
-
-    @Size(min = 2, max = 255)
-    private String surname;
-
-    private SimpleDateDto birthDay;
 }
