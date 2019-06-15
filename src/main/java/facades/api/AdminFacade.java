@@ -38,6 +38,8 @@ public interface AdminFacade {
 
     LinguisticExpressionDto saveLinguisticExpression(final LinguisticExpressionDto linguisticExpressionDto);
 
+    void deleteLinguisticExpression(final Long linguisticExpressionId);
+
     // File/data upload
     AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException;
 

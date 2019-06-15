@@ -94,6 +94,11 @@ public class AdminFacadeImpl implements AdminFacade {
     }
 
     @Override
+    public void deleteLinguisticExpression(final Long linguisticExpressionId) {
+        adminService.deleteLinguisticExpression(linguisticExpressionId);
+    }
+
+    @Override
     public AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException {
         return adminService.addMessagesFromFile(fileWithMessages);
     }

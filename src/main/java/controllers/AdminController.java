@@ -10,6 +10,7 @@ import facades.api.AdminFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -112,6 +113,12 @@ public class AdminController extends AbstractController {
     public ResponseEntity<LinguisticExpressionDto> saveLinguisticExpression(@RequestBody LinguisticExpressionDto linguisticExpressionDto) {
         linguisticExpressionDto = adminFacade.saveLinguisticExpression(linguisticExpressionDto);
         return new ResponseEntity<>(linguisticExpressionDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/linguisticExpression/{linguisticExpressionId}")
+    public ResponseEntity<?> deleteLinguisticExpression(@PathVariable final Long linguisticExpressionId) {
+        adminFacade.deleteLinguisticExpression(linguisticExpressionId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     // MESSAGE

@@ -51,7 +51,10 @@ public interface AdminService {
 
     LinguisticExpression saveLinguisticExpression(final LinguisticExpression linguisticExpression);
 
+    void deleteLinguisticExpression(final Long linguisticExpressionId);
+
     // File/data upload
+
     AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException;
 
     AddedDataStatus addMessageDtos(final List<MessageDto> messageDtos);

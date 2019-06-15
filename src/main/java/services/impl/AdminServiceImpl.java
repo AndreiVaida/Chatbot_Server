@@ -161,6 +161,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    public void deleteLinguisticExpression(final Long linguisticExpressionId) {
+        linguisticExpressionRepository.deleteById(linguisticExpressionId);
+    }
+
+    @Override
     @Transactional
     public AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException {
         int numberOfMessages = 0;
