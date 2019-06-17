@@ -41,8 +41,7 @@ public class Sentence {
     @JoinTable(
             name = "SENTENCES_WORDS",
             joinColumns = {@JoinColumn(name = "SENTENCE_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "WORD_ID")}
-    )
+            inverseJoinColumns = {@JoinColumn(name = "WORD_ID")})
     @OrderColumn
     private List<Word> words = new ArrayList<>();
 

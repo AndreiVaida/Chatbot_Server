@@ -1,3 +1,4 @@
+import app.Main;
 import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.SimpleDate;
@@ -16,17 +17,18 @@ import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.MessageRepository;
 import repositories.PersonalInformationRepository;
+import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.UserRepository;
 import repositories.WordRepository;
 import services.api.ChatService;
 import services.api.ChatbotService;
-import services.api.InformationService;
+import services.api.InformationDetectionService;
 import services.api.MessageService;
 import services.api.UserService;
 import services.impl.ChatServiceImpl;
 import services.impl.ChatbotServiceImpl;
-import services.impl.InformationServiceImpl;
+import services.impl.InformationDetectionServiceImpl;
 import services.impl.MessageServiceImpl;
 import services.impl.UserServiceImpl;
 
@@ -55,6 +57,8 @@ public class ChatService_LearningTest {
     @Autowired
     private ExpressionItemRepository expressionItemRepository;
     @Autowired
+    private SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
+    @Autowired
     private DexRepository dexRepository;
     private UserService userService;
     private MessageService messageService;
@@ -68,14 +72,16 @@ public class ChatService_LearningTest {
         userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
         final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
-        final InformationService informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
-        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationService);
+        final InformationDetectionService informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
+        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationDetectionService);
         // add users
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);
         CHATBOT_ID = andy.getId();
         user = new User(null, "andrei_vd2006@yahoo.com", "parola", "Andrei", "Vaida", new SimpleDate(1997, 10, 24));
         userService.addUser(user);
+        // SentenceDetectionParameters
+        Main.addDefaultSentenceDetectionParametersInDb(sentenceDetectionParametersRepository);
     }
 
     @Test
@@ -160,9 +166,9 @@ public class ChatService_LearningTest {
         // add „Eu sunt Andy.” as reply for „Mă numesc Andrei”
         message = chatService.addMessage("mă numesc andrei", andy.getId(), user.getId(), USER_CHATBOT_CONVERSATION);
         sentence = message.getEquivalentSentence();
-        Assert.assertTrue(sentence.getWords().get(0).getText().toLowerCase().equals("mă")
-                && sentence.getWords().get(1).getText().toLowerCase().equals("numesc")
-                && sentence.getWords().get(2).getText().toLowerCase().equals("andrei"));
+        Assert.assertTrue(sentence.getWords().get(0).getTextWithDiacritics().toLowerCase().equals("mă")
+                && sentence.getWords().get(1).getTextWithDiacritics().toLowerCase().equals("numesc")
+                && sentence.getWords().get(2).getTextWithDiacritics().toLowerCase().equals("andrei"));
         response = chatService.addMessageAndIdentifyInformationAndGetResponse("Eu sunt Andy.", user.getId(), andy.getId()).getMessage();
         Assert.assertTrue(response.getIsUnknownMessage());
         sentence = sentenceRepository.getOne(sentence.getId());

@@ -1,3 +1,4 @@
+import app.Main;
 import domain.entities.Sentence;
 import domain.entities.Word;
 import org.junit.Assert;
@@ -10,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import repositories.DexRepository;
 import repositories.LinguisticExpressionRepository;
+import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
 import services.api.ChatbotService;
@@ -33,6 +35,8 @@ public class ChatbotService_AddressingModeTest {
     private SentenceRepository sentenceRepository;
     @Autowired
     private LinguisticExpressionRepository linguisticExpressionRepository;
+    @Autowired
+    private SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
     @Autowired
     private DexRepository dexRepository;
     private ChatbotService chatbotService;
@@ -88,6 +92,8 @@ public class ChatbotService_AddressingModeTest {
         wordRepository.save(wordNormal);
         questionMark = new Word("?");
         wordRepository.save(questionMark);
+
+        Main.addDefaultSentenceDetectionParametersInDb(sentenceDetectionParametersRepository);
     }
 
     @Test

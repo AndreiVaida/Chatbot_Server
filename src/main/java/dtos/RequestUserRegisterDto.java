@@ -17,9 +17,10 @@ public class RequestUserRegisterDto {
     private String email;
 
     @NotEmpty
-    @Size(min = 3, max = 255)
+    @Size(min = 2, max = 255)
     private String password;
 
     @Size(min = 2, max = 255)
+    @NotEmpty
     private String firstName;
 }

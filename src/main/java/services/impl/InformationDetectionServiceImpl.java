@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.PersonalInformationRepository;
-import services.api.InformationService;
+import services.api.InformationDetectionService;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
@@ -33,12 +33,12 @@ import static domain.enums.SpeechType.STATEMENT;
 import static services.impl.ChatbotServiceImpl.splitInWords;
 
 @Service
-public class InformationServiceImpl implements InformationService {
+public class InformationDetectionServiceImpl implements InformationDetectionService {
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final ExpressionItemRepository expressionItemRepository;
     private final PersonalInformationRepository personalInformationRepository;
 
-    public InformationServiceImpl(LinguisticExpressionRepository linguisticExpressionRepository, ExpressionItemRepository expressionItemRepository, PersonalInformationRepository personalInformationRepository) {
+    public InformationDetectionServiceImpl(LinguisticExpressionRepository linguisticExpressionRepository, ExpressionItemRepository expressionItemRepository, PersonalInformationRepository personalInformationRepository) {
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         this.expressionItemRepository = expressionItemRepository;
         this.personalInformationRepository = personalInformationRepository;

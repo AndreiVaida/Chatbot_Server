@@ -4,7 +4,7 @@ import dtos.admin.LinguisticExpressionDto;
 
 import java.util.List;
 
-public interface InformationFacade {
+public interface InformationDetectionFacade {
     void addLinguisticExpression(final LinguisticExpressionDto linguisticExpressionDto);
 
     List<LinguisticExpressionDto> getAllLinguisticExpressions();

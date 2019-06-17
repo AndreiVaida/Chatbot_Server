@@ -8,7 +8,7 @@ import domain.information.Information;
 import java.util.Arrays;
 import java.util.List;
 
-public interface InformationService {
+public interface InformationDetectionService {
     LinguisticExpression addLinguisticExpression(final LinguisticExpression linguisticExpression);
 
     List<LinguisticExpression> getAllLinguisticExpressions();

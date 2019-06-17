@@ -1,3 +1,4 @@
+import app.Main;
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
@@ -22,17 +23,18 @@ import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.MessageRepository;
 import repositories.PersonalInformationRepository;
+import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.UserRepository;
 import repositories.WordRepository;
 import services.api.ChatService;
 import services.api.ChatbotService;
-import services.api.InformationService;
+import services.api.InformationDetectionService;
 import services.api.MessageService;
 import services.api.UserService;
 import services.impl.ChatServiceImpl;
 import services.impl.ChatbotServiceImpl;
-import services.impl.InformationServiceImpl;
+import services.impl.InformationDetectionServiceImpl;
 import services.impl.MessageServiceImpl;
 import services.impl.UserServiceImpl;
 
@@ -64,11 +66,13 @@ public class ChatService_InformationDetectionTest {
     @Autowired
     private ExpressionItemRepository expressionItemRepository;
     @Autowired
+    private SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
+    @Autowired
     private DexRepository dexRepository;
     private UserService userService;
     private MessageService messageService;
     private ChatService chatService;
-    private InformationService informationService;
+    private InformationDetectionService informationDetectionService;
     private User andy;
     private User user;
 
@@ -77,8 +81,8 @@ public class ChatService_InformationDetectionTest {
         userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
         final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
-        informationService = new InformationServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
-        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationService);
+        informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
+        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationDetectionService);
         // add users
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);
@@ -89,6 +93,7 @@ public class ChatService_InformationDetectionTest {
         // add data
         addLinguisticExpressions_STATEMENT();
         addSentences_DIRECTIVE();
+        Main.addDefaultSentenceDetectionParametersInDb(sentenceDetectionParametersRepository);
     }
 
     private void addLinguisticExpressions_STATEMENT() {
@@ -103,7 +108,7 @@ public class ChatService_InformationDetectionTest {
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
-        informationService.addLinguisticExpression(linguisticExpression);
+        informationDetectionService.addLinguisticExpression(linguisticExpression);
         // PersonalInformation.firstName
         linguisticExpression = new LinguisticExpression();
         expressionItems = new ArrayList<>();
@@ -115,7 +120,7 @@ public class ChatService_InformationDetectionTest {
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
-        informationService.addLinguisticExpression(linguisticExpression);
+        informationDetectionService.addLinguisticExpression(linguisticExpression);
         // PersonalInformation.firstName
         linguisticExpression = new LinguisticExpression();
         expressionItems = new ArrayList<>();
@@ -124,7 +129,7 @@ public class ChatService_InformationDetectionTest {
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("firstName");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
-        informationService.addLinguisticExpression(linguisticExpression);
+        informationDetectionService.addLinguisticExpression(linguisticExpression);
 
         // PersonalInformation.birthDay
         linguisticExpression = new LinguisticExpression();
@@ -135,7 +140,7 @@ public class ChatService_InformationDetectionTest {
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
-        informationService.addLinguisticExpression(linguisticExpression);
+        informationDetectionService.addLinguisticExpression(linguisticExpression);
         // PersonalInformation.birthDay
         linguisticExpression = new LinguisticExpression();
         expressionItems = new ArrayList<>();
@@ -144,7 +149,7 @@ public class ChatService_InformationDetectionTest {
         linguisticExpression.setInformationClass(PersonalInformation.class);
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
-        informationService.addLinguisticExpression(linguisticExpression);
+        informationDetectionService.addLinguisticExpression(linguisticExpression);
     }
 
     private void addSentences_DIRECTIVE() {

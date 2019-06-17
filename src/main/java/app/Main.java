@@ -61,12 +61,12 @@ public class Main {
             //uploadMessagesFiles();
         }
         if (sentenceDetectionParametersRepository.count() == 0) {
-            addDefaultSentenceDetectionParametersInDb();
+            addDefaultSentenceDetectionParametersInDb(sentenceDetectionParametersRepository);
         }
 
     }
 
-    private void addDefaultSentenceDetectionParametersInDb() {
+    public static void addDefaultSentenceDetectionParametersInDb(SentenceDetectionParametersRepository sentenceDetectionParametersRepository) {
         final double weight = 0.6;
 
         for (int sentenceLength = 1; sentenceLength <= 10; sentenceLength++) {

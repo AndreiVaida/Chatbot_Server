@@ -1,6 +1,5 @@
 package services.impl;
 
-import domain.entities.AddressingModeStatus;
 import domain.entities.Message;
 import domain.entities.ResponseMessageAndInformation;
 import domain.entities.Sentence;
@@ -12,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import services.api.ChatService;
 import services.api.ChatbotService;
-import services.api.InformationService;
+import services.api.InformationDetectionService;
 import services.api.MessageService;
 import services.api.UserService;
 
@@ -29,15 +28,15 @@ public class ChatServiceImpl implements ChatService {
     private final UserService userService;
     private final MessageService messageService;
     private final ChatbotService chatbotService;
-    private final InformationService informationService;
+    private final InformationDetectionService informationDetectionService;
     private ChatbotRequestType chatbotRequestType = LEARN_TO_SPEAK;
 
     @Autowired
-    public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService, InformationService informationService) {
+    public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService, InformationDetectionService informationDetectionService) {
         this.messageService = messageService;
         this.userService = userService;
         this.chatbotService = chatbotService;
-        this.informationService = informationService;
+        this.informationDetectionService = informationDetectionService;
     }
 
     @Override
@@ -96,7 +95,7 @@ public class ChatServiceImpl implements ChatService {
         }
         List<Object> updatedInformationValues = null;
         try {
-            updatedInformationValues = informationService.identifyAndSetInformation(informationClass, informationFieldNamePath, message, fromUser);
+            updatedInformationValues = informationDetectionService.identifyAndSetInformation(informationClass, informationFieldNamePath, message, fromUser);
             if (updatedInformationValues != null) {
                 userService.updateUser(fromUser);
             }
