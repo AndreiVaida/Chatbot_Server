@@ -13,6 +13,10 @@ import services.api.UserService;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -106,13 +110,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteInformationByInformationClass(final Long userId, final Class<Information> informationClass) throws NoSuchFieldException, IllegalAccessException {
+    public void deleteInformationByInformationClass(final Long userId, final Class<Information> informationClass) throws NoSuchFieldException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, IntrospectionException {
         final User user = getUserById(userId);
 
-        final String fieldName = informationClass.getSimpleName().substring(0, 1).toLowerCase() + informationClass.getSimpleName().substring(1);
-        final Field information = user.getClass().getDeclaredField(fieldName);
-        information.setAccessible(true);
-        information.set(information, null);
+        // get Information of user
+        final Method getterOfUser = user.getClass().getMethod("get" + informationClass.getSimpleName());
+        final Information information = (Information) getterOfUser.invoke(user);
+
+        // iterate Information fields and set them null
+        final BeanInfo beanInformation = Introspector.getBeanInfo(information.getClass(), Object.class);
+        final PropertyDescriptor[] propertyDescriptors = beanInformation.getPropertyDescriptors();
+        for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+            if (propertyDescriptor.getName().equals("id") || propertyDescriptor.getName().equals("email") || propertyDescriptor.getName().equals("firstName")
+                    || propertyDescriptor.getName().equals("password") || propertyDescriptor.getName().endsWith("ImportanceOrder")) {
+                continue;
+            }
+            final String informationFieldName = propertyDescriptor.getName();
+            final Field informationField = information.getClass().getDeclaredField(informationFieldName);
+            informationField.setAccessible(true);
+            informationField.set(information, null);
+        }
 
         userRepository.save(user);
     }

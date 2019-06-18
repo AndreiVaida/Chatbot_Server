@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 
 @RestController
@@ -58,7 +59,7 @@ public class UserController extends AbstractController {
             userFacade.deleteInformationByInformationClass(userId, informationClass);
             return new ResponseEntity<>(HttpStatus.OK);
 
-        } catch (IllegalAccessException | NoSuchFieldException e) {
+        } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | IntrospectionException | InvocationTargetException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

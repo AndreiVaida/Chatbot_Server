@@ -17,6 +17,7 @@ import mappers.UserMapper;
 import org.springframework.stereotype.Service;
 import services.api.UserService;
 
+import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,7 +74,7 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
-    public void deleteInformationByInformationClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchFieldException, IllegalAccessException {
+    public void deleteInformationByInformationClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, IntrospectionException, InvocationTargetException {
         final Class<Information> informationClass = InformationMapper.informationClassDtoToClassOfInformation(informationClassDto);
         userService.deleteInformationByInformationClass(userId, informationClass);
     }

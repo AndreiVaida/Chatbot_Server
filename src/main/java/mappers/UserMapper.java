@@ -72,6 +72,10 @@ public class UserMapper {
     }
 
     static AddressDto addressToAddressDto(final Address address) {
+        if (address == null) {
+            return null;
+        }
+
         final AddressDto addressDto = new AddressDto();
         addressDto.setPlanet(address.getPlanet());
         addressDto.setContinent(address.getContinent());

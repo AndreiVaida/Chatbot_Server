@@ -5,6 +5,7 @@ import dtos.UserDto;
 import dtos.informationDtos.InformationClassDto;
 import dtos.informationDtos.InformationDto;
 
+import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -21,5 +22,5 @@ public interface UserFacade {
 
     void deleteInformationByInformationFieldNamePath(final Long userId, final String informationFieldNamePath) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, NoSuchFieldException;
 
-    void deleteInformationByInformationClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchFieldException, IllegalAccessException;
+    void deleteInformationByInformationClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, IntrospectionException, InvocationTargetException;
 }
