@@ -20,4 +20,6 @@ public interface UserFacade {
     InformationDto getInformationByClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException;
 
     void deleteInformationByInformationFieldNamePath(final Long userId, final String informationFieldNamePath) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, NoSuchFieldException;
+
+    void deleteInformationByInformationClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchFieldException, IllegalAccessException;
 }

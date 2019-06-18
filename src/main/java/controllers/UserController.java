@@ -52,15 +52,13 @@ public class UserController extends AbstractController {
         }
     }
 
-    @DeleteMapping("/{userId}/{informationFieldNamePath}")
-    public ResponseEntity<?> deleteInformationByInformationFieldNamePath(final @PathVariable Long userId, @PathVariable final String informationFieldNamePath) {
+    @DeleteMapping("/{userId}/{informationClass}")
+    public ResponseEntity<?> deleteInformationByInformationFieldNamePath(final @PathVariable Long userId, @PathVariable final InformationClassDto informationClass) {
         try {
-            userFacade.deleteInformationByInformationFieldNamePath(userId, informationFieldNamePath);
+            userFacade.deleteInformationByInformationClass(userId, informationClass);
             return new ResponseEntity<>(HttpStatus.OK);
 
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException | NoSuchFieldException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

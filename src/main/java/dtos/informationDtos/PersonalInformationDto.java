@@ -1,7 +1,7 @@
 package dtos.informationDtos;
 
-import domain.entities.Address;
 import domain.enums.Gender;
+import dtos.AddressDto;
 import dtos.SimpleDateDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,5 +15,5 @@ public class PersonalInformationDto implements InformationDto {
     private String surname;
     private SimpleDateDto birthDay;
     private Gender gender;
-    private Address homeAddress;
+    private AddressDto homeAddress;
 }

@@ -71,4 +71,10 @@ public class UserFacadeImpl implements UserFacade {
     public void deleteInformationByInformationFieldNamePath(final Long userId, final String informationFieldNamePath) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, NoSuchFieldException {
         userService.deleteInformationByInformationFieldNamePath(userId, informationFieldNamePath);
     }
+
+    @Override
+    public void deleteInformationByInformationClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchFieldException, IllegalAccessException {
+        final Class<Information> informationClass = InformationMapper.informationClassDtoToClassOfInformation(informationClassDto);
+        userService.deleteInformationByInformationClass(userId, informationClass);
+    }
 }

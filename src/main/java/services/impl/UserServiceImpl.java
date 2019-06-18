@@ -2,6 +2,7 @@ package services.impl;
 
 import domain.entities.User;
 import domain.information.Information;
+import dtos.informationDtos.InformationClassDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -99,6 +100,19 @@ public class UserServiceImpl implements UserService {
         final Field prop = information.getClass().getDeclaredField(informationPath[1]);
         prop.setAccessible(true);
         prop.set(information, null);
+
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteInformationByInformationClass(final Long userId, final Class<Information> informationClass) throws NoSuchFieldException, IllegalAccessException {
+        final User user = getUserById(userId);
+
+        final String fieldName = informationClass.getSimpleName().substring(0, 1).toLowerCase() + informationClass.getSimpleName().substring(1);
+        final Field information = user.getClass().getDeclaredField(fieldName);
+        information.setAccessible(true);
+        information.set(information, null);
 
         userRepository.save(user);
     }

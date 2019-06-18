@@ -1,8 +1,10 @@
 package mappers;
 
+import domain.entities.Address;
 import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.information.PersonalInformation;
+import dtos.AddressDto;
 import dtos.RequestUserRegisterDto;
 import dtos.SimpleDateDto;
 import dtos.UserDto;
@@ -67,5 +69,21 @@ public class UserMapper {
         dateJson.put("month", simpleDateDto.getMonth());
         dateJson.put("day", simpleDateDto.getDay());
         return dateJson;
+    }
+
+    static AddressDto addressToAddressDto(final Address address) {
+        final AddressDto addressDto = new AddressDto();
+        addressDto.setPlanet(address.getPlanet());
+        addressDto.setContinent(address.getContinent());
+        addressDto.setCountry(address.getCountry());
+        addressDto.setCounty(address.getCounty());
+        addressDto.setLocalityType(address.getLocalityType());
+        addressDto.setLocality(address.getLocality());
+        addressDto.setNeighborhood(address.getNeighborhood());
+        addressDto.setStreet(address.getStreet());
+        addressDto.setStreetNumber(address.getStreetNumber());
+        addressDto.setFloor(address.getFloor());
+        addressDto.setApartmentNumber(address.getApartmentNumber());
+        return addressDto;
     }
 }

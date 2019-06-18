@@ -117,7 +117,7 @@ public class InformationMapper {
         dto.setSurname(entity.getSurname());
         dto.setBirthDay(UserMapper.simpleDateToSimpleDateDto(entity.getBirthDay()));
         dto.setGender(entity.getGender());
-        dto.setHomeAddress(entity.getHomeAddress());
+        dto.setHomeAddress(UserMapper.addressToAddressDto(entity.getHomeAddress()));
         return dto;
     }
 
