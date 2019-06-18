@@ -706,6 +706,13 @@ public class ChatbotServiceImpl implements ChatbotService {
                 final Information information = (Information) getterOfUser.invoke(user);
                 informationFieldNamePath = getFirstNullItemNamePath(information, infoClass);
 
+                // don't request same information 2 times în X hours
+                final Message lastRequest = messageService.getLastMessageByInformationClassAndInformationFieldNamePath(CHATBOT_ID, user.getId(), infoClass, informationFieldNamePath);
+                if (lastRequest != null && LocalDateTime.now().minusMinutes(MINUTES_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION)
+                        .isBefore(lastRequest.getDateTime())) {
+                    continue;
+                }
+
                 if (informationFieldNamePath != null) {
                     informationClass = infoClass;
                     break;

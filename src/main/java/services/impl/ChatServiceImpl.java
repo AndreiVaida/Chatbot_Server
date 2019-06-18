@@ -26,7 +26,7 @@ import static app.Main.CHATBOT_ID;
 import static domain.enums.ChatbotRequestType.DEFAULT;
 import static domain.enums.ChatbotRequestType.GET_INFORMATION_FROM_USER;
 import static domain.enums.SpeechType.DIRECTIVE;
-import static services.api.ChatbotService.HOURS_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION;
+import static services.api.ChatbotService.MINUTES_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -113,7 +113,7 @@ public class ChatServiceImpl implements ChatService {
         // generate a response
         // exceptional case: Andy requested an information and the user didn't answered => ask again (but just one time in 2 hours)
         if (updatedInformationValues == null && previousMessage != null && previousMessage.getEquivalentSentence().getInformationClass() != null // user didn't answered
-                && LocalDateTime.now().minusHours(HOURS_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION)
+                && LocalDateTime.now().minusMinutes(MINUTES_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION)
                 .isAfter(messageService.getLastMessageByInformationClassAndInformationFieldNamePath(
                         previousMessage.getFromUser().getId(), previousMessage.getToUser().getId(),
                         previousMessage.getEquivalentSentence().getInformationClass(), previousMessage.getEquivalentSentence().getInformationFieldNamePath())
@@ -122,6 +122,7 @@ public class ChatServiceImpl implements ChatService {
             final String previousSentenceText = chatbotService.translateSentenceToText(previousMessage.getEquivalentSentence(), addressingMode);
             final String responseText = getRandomRequestAgainText(addressingMode) + " " + previousSentenceText;
             final Message response = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), previousMessage.getEquivalentSentence(), MessageSource.USER_CHATBOT_CONVERSATION);
+            System.out.println("Requestion");
             return new ResponseMessageAndInformation(response, "");
         }
 
