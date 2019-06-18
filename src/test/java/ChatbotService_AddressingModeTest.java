@@ -54,7 +54,7 @@ public class ChatbotService_AddressingModeTest {
 
     @Before
     public void initialize() {
-        chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
+        chatbotService = new ChatbotServiceImpl(messageService, sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
 
         // add "salut", "bună" and "ziua" and set synonyms: "salut" ~= "bună"
         wordSalut = new Word("salut");

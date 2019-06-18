@@ -4,6 +4,7 @@ import domain.enums.ChatbotRequestType;
 import dtos.admin.AddedDataStatus;
 import dtos.admin.LinguisticExpressionDto;
 import dtos.MessageDto;
+import dtos.admin.RejectingExpressionDto;
 import dtos.admin.SentenceDetectionParametersDto;
 import dtos.admin.SentenceDto;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +41,13 @@ public interface AdminFacade {
 
     void deleteLinguisticExpression(final Long linguisticExpressionId);
 
+    // RejectingExpression
+    List<RejectingExpressionDto> getAllRejectingExpressions();
+
+    RejectingExpressionDto saveRejectingExpression(final RejectingExpressionDto rejectingExpressionDto);
+
+    void deleteRejectingExpression(final Long rejectingExpressionId);
+
     // File/data upload
     AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException;
 
@@ -52,6 +60,8 @@ public interface AdminFacade {
     AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException;
 
     AddedDataStatus addLinguisticExpressionsFromJsonFile(final MultipartFile linguisticExpressionsJsonFile) throws IOException;
+
+    AddedDataStatus addRejectingExpressionsFromJsonFile(final MultipartFile rejectingExpressionsJsonFile) throws IOException;
 
     ChatbotRequestType getChatbotRequestType();
 

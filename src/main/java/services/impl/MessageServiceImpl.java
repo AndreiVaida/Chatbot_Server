@@ -4,6 +4,7 @@ import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.User;
 import domain.enums.MessageSource;
+import domain.information.Information;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import repositories.MessageRepository;
@@ -62,5 +63,35 @@ public class MessageServiceImpl implements MessageService {
             return previousMessages.get(0);
         }
         return null;
+    }
+
+    @Override
+    public Message getLastMessageByInformationClassAndInformationFieldNamePath(final Long fromUserId, final Long toUserId, final Class<Information> informationClass, final String informationFieldNamePath) {
+        final List<Message> previousMessages = messageRepository.getAllByFromUser_IdAndToUser_IdAndEquivalentSentence_InformationClassAndEquivalentSentence_InformationFieldNamePathOrderByDateTimeDesc(
+                fromUserId, toUserId, informationClass, informationFieldNamePath, PageRequest.of(0, 1));
+        if (!previousMessages.isEmpty()) {
+            return previousMessages.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public Message getLastMessageOfUsers(final Long user1Id, final Long user2Id) {
+        final Message messageFromUser1 = getLastMessage(user1Id, user2Id);
+        final Message messageFromUser2 = getLastMessage(user2Id, user1Id);
+
+        if (messageFromUser1 == null && messageFromUser2 == null) {
+            return null;
+        }
+        if (messageFromUser1 != null && messageFromUser2 == null) {
+            return messageFromUser1;
+        }
+        if (messageFromUser1 == null && messageFromUser2 != null) {
+            return messageFromUser2;
+        }
+        if (messageFromUser1.getDateTime().isAfter(messageFromUser2.getDateTime())) {
+            return messageFromUser1;
+        }
+        return messageFromUser2;
     }
 }

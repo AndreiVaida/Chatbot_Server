@@ -3,6 +3,7 @@ package services.impl;
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
+import domain.entities.RejectingExpression;
 import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.entities.Word;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.PersonalInformationRepository;
+import repositories.RejectingExpressionRepository;
 import services.api.InformationDetectionService;
 
 import javax.persistence.EntityNotFoundException;
@@ -36,12 +38,12 @@ import static services.impl.ChatbotServiceImpl.splitInWords;
 public class InformationDetectionServiceImpl implements InformationDetectionService {
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final ExpressionItemRepository expressionItemRepository;
-    private final PersonalInformationRepository personalInformationRepository;
+    private final RejectingExpressionRepository rejectingExpressionRepository;
 
-    public InformationDetectionServiceImpl(LinguisticExpressionRepository linguisticExpressionRepository, ExpressionItemRepository expressionItemRepository, PersonalInformationRepository personalInformationRepository) {
+    public InformationDetectionServiceImpl(LinguisticExpressionRepository linguisticExpressionRepository, ExpressionItemRepository expressionItemRepository, PersonalInformationRepository personalInformationRepository, RejectingExpressionRepository rejectingExpressionRepository) {
         this.linguisticExpressionRepository = linguisticExpressionRepository;
         this.expressionItemRepository = expressionItemRepository;
-        this.personalInformationRepository = personalInformationRepository;
+        this.rejectingExpressionRepository = rejectingExpressionRepository;
     }
 
     @Override
@@ -177,6 +179,12 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                     for (int i = iInformationBegin; i < iInformationEnd; i++) {
                         informationWords[i - iInformationBegin] = answerWords[i];
                     }
+
+                    // Exceptional case for expression.size==1: user did not really responded
+                    if (isNotInformation(informationWords)) {
+                        continue; // skip to next subsentence
+                    }
+
                     try {
                         final Object informationAsItsType = convertTextToInformation(informationWords, itemClass, matchedLinguisticExpression);
                         if (informationAsItsType == null) {
@@ -206,6 +214,33 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
             return null;
         }
         return identifiedInformation;
+    }
+
+    /**
+     * @return true if the given subsentence contains expressions like "nu-ți spun", "nu știu" etc.
+     */
+    private boolean isNotInformation(final String[] words) {
+        final StringBuilder wordsAsExpression_SB = new StringBuilder();
+        for (String word : words) {
+            wordsAsExpression_SB.append(word).append(" ");
+        }
+        final String wordsAsExpression = Word.replaceDiacritics(wordsAsExpression_SB.toString()).toLowerCase();
+
+        final List<RejectingExpression> rejectingExpressions = rejectingExpressionRepository.findAll();
+        for (RejectingExpression rejectingExpression : rejectingExpressions) {
+            final String[] expressionWords = rejectingExpression.getText().split(" ");
+            boolean textContainsAllExpressionWords = true;
+            for (String expressionWord : expressionWords) {
+                if (!wordsAsExpression.contains(Word.replaceDiacritics(expressionWord))) {
+                    textContainsAllExpressionWords = false;
+                    break;
+                }
+            }
+            if (textContainsAllExpressionWords) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String[] splitInSubentences(final String text) {

@@ -138,7 +138,7 @@ public class DexRepository {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        // not found any conjugate words verbs in the second person
+        // not found any conjugate text verbs in the second person
         return null;
     }
 }

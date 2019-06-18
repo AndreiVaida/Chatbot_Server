@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.PersonalInformationRepository;
+import repositories.RejectingExpressionRepository;
 import services.api.InformationDetectionService;
 import services.impl.InformationDetectionServiceImpl;
 
@@ -43,13 +44,15 @@ public class InformationDetectionTest {
     @Autowired
     private LinguisticExpressionRepository linguisticExpressionRepository;
     @Autowired
+    private RejectingExpressionRepository rejectingExpressionRepository;
+    @Autowired
     private ExpressionItemRepository expressionItemRepository;
     private InformationDetectionService informationDetectionService;
     private User user;
 
     @Before
     public void initialize() {
-        informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
+        informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository, rejectingExpressionRepository);
         user = new User();
     }
 

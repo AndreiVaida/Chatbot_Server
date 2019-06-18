@@ -28,7 +28,7 @@ import java.util.Objects;
 @Data
 // Hibernate
 @Entity
-@Table(name = "LINGUISTIC_EXPRESSION")
+@Table(name = "LINGUISTIC_EXPRESSIONS")
 public class LinguisticExpression {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

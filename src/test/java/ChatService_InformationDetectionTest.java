@@ -2,10 +2,12 @@ import app.Main;
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
+import domain.entities.RejectingExpression;
 import domain.entities.Sentence;
 import domain.entities.SimpleDate;
 import domain.entities.User;
 import domain.entities.Word;
+import domain.enums.Gender;
 import domain.enums.ItemClass;
 import domain.enums.SpeechType;
 import domain.information.PersonalInformation;
@@ -23,6 +25,7 @@ import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.MessageRepository;
 import repositories.PersonalInformationRepository;
+import repositories.RejectingExpressionRepository;
 import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.UserRepository;
@@ -64,6 +67,8 @@ public class ChatService_InformationDetectionTest {
     @Autowired
     private LinguisticExpressionRepository linguisticExpressionRepository;
     @Autowired
+    private RejectingExpressionRepository rejectingExpressionRepository;
+    @Autowired
     private ExpressionItemRepository expressionItemRepository;
     @Autowired
     private SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
@@ -80,8 +85,8 @@ public class ChatService_InformationDetectionTest {
     public void initialize() {
         userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
-        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
-        informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
+        final ChatbotService chatbotService = new ChatbotServiceImpl(messageService, sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
+        informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository, rejectingExpressionRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationDetectionService);
         // add users
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
@@ -92,6 +97,7 @@ public class ChatService_InformationDetectionTest {
 
         // add data
         addLinguisticExpressions_STATEMENT();
+        addRejectingExpressions();
         addSentences_DIRECTIVE();
         Main.addDefaultSentenceDetectionParametersInDb(sentenceDetectionParametersRepository);
     }
@@ -150,6 +156,26 @@ public class ChatService_InformationDetectionTest {
         linguisticExpression.setInformationFieldNamePath("birthDay");
         linguisticExpression.setSpeechType(SpeechType.STATEMENT);
         informationDetectionService.addLinguisticExpression(linguisticExpression);
+        // PersonalInformation.homeAddress.planet
+        linguisticExpression = new LinguisticExpression();
+        expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem("pe", NOT_AN_INFORMATION));
+        expressionItems.add(new ExpressionItem(null, ItemClass.NAME));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(PersonalInformation.class);
+        linguisticExpression.setInformationFieldNamePath("homeAddress.planet");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationDetectionService.addLinguisticExpression(linguisticExpression);
+    }
+
+    private void addRejectingExpressions() {
+        rejectingExpressionRepository.save(new RejectingExpression("nu știu"));
+        rejectingExpressionRepository.save(new RejectingExpression("nu zic"));
+        rejectingExpressionRepository.save(new RejectingExpression("nu spun"));
+        rejectingExpressionRepository.save(new RejectingExpression("nu cred"));
+        rejectingExpressionRepository.save(new RejectingExpression("nu stau"));
+        rejectingExpressionRepository.save(new RejectingExpression("secret"));
+        rejectingExpressionRepository.save(new RejectingExpression("vrei ști"));
     }
 
     private void addSentences_DIRECTIVE() {
@@ -181,10 +207,24 @@ public class ChatService_InformationDetectionTest {
         words.add(word_semnulÎntrebării);
         sentence = new Sentence(words, DIRECTIVE, PersonalInformation.class, "birthDay");
         sentenceRepository.save(sentence);
+
+        // PersonalInformation.homeAddress.planet
+        final Word word_Pe = new Word("Pe");
+        final Word word_Ce = new Word("ce");
+        final Word word_Stradă = new Word("stradă");
+        final Word word_Stai = new Word("stai");
+        words = new ArrayList<>();
+        words.add(word_Pe);
+        words.add(word_Ce);
+        words.add(word_Stradă);
+        words.add(word_Stai);
+        words.add(word_semnulÎntrebării);
+        sentence = new Sentence(words, DIRECTIVE, PersonalInformation.class, "homeAddress.planet");
+        sentenceRepository.save(sentence);
     }
 
     @Test
-    public void testDetectPersonalInformation() {
+    public void testDetectPersonalInformation_firstName___valid() {
         Assert.assertNull(user.getPersonalInformation().getFirstName());
         // the chatbot request the name
         Message messageFromChatbot = chatService.requestMessageFromChatbot(user.getId(), GET_INFORMATION_FROM_USER);
@@ -194,5 +234,54 @@ public class ChatService_InformationDetectionTest {
         // the user give his name
         chatService.addMessageAndIdentifyInformationAndGetResponse("eu sunt Andrei", user.getId(), andy.getId());
         Assert.assertEquals("Andrei", user.getPersonalInformation().getFirstName());
+    }
+
+    @Test
+    public void testDetectPersonalInformation_firstName___invalid() {
+        Assert.assertNull(user.getPersonalInformation().getFirstName());
+        // the chatbot request the name
+        Message messageFromChatbot = chatService.requestMessageFromChatbot(user.getId(), GET_INFORMATION_FROM_USER);
+        Assert.assertEquals(DIRECTIVE, messageFromChatbot.getEquivalentSentence().getSpeechType());
+        Assert.assertEquals(PersonalInformation.class, messageFromChatbot.getEquivalentSentence().getInformationClass());
+        Assert.assertEquals("firstName", messageFromChatbot.getEquivalentSentence().getInformationFieldNamePath());
+        // the user noes NOT give his name
+        chatService.addMessageAndIdentifyInformationAndGetResponse("NU ÎȚI SPUN", user.getId(), andy.getId());
+        Assert.assertNull(user.getPersonalInformation().getFirstName());
+    }
+
+    @Test
+    public void testDetectPersonalInformation_homeAddress_street___valid() {
+        user.getPersonalInformation().setFirstName("First Name");
+        user.getPersonalInformation().setSurname("Surname");
+        user.getPersonalInformation().setGender(Gender.MALE);
+        user.getPersonalInformation().setBirthDay(new SimpleDate(1,1,1));
+        userService.updateUser(user);
+        Assert.assertNull(user.getPersonalInformation().getHomeAddress());
+        // the chatbot request the planet name
+        Message messageFromChatbot = chatService.requestMessageFromChatbot(user.getId(), GET_INFORMATION_FROM_USER);
+        Assert.assertEquals(DIRECTIVE, messageFromChatbot.getEquivalentSentence().getSpeechType());
+        Assert.assertEquals(PersonalInformation.class, messageFromChatbot.getEquivalentSentence().getInformationClass());
+        Assert.assertEquals("homeAddress.planet", messageFromChatbot.getEquivalentSentence().getInformationFieldNamePath());
+        // the user give his planet name
+        chatService.addMessageAndIdentifyInformationAndGetResponse("stau pe Marte", user.getId(), andy.getId());
+        Assert.assertEquals("Marte", user.getPersonalInformation().getHomeAddress().getPlanet());
+    }
+
+    @Test
+    public void testDetectPersonalInformation_homeAddress_street___invalid() {
+        user.getPersonalInformation().setFirstName("First Name");
+        user.getPersonalInformation().setSurname("Surname");
+        user.getPersonalInformation().setGender(Gender.MALE);
+        user.getPersonalInformation().setBirthDay(new SimpleDate(1,1,1));
+        userService.updateUser(user);
+        Assert.assertNull(user.getPersonalInformation().getHomeAddress());
+        // the chatbot request the planet name
+        Message messageFromChatbot = chatService.requestMessageFromChatbot(user.getId(), GET_INFORMATION_FROM_USER);
+        Assert.assertEquals(DIRECTIVE, messageFromChatbot.getEquivalentSentence().getSpeechType());
+        Assert.assertEquals(PersonalInformation.class, messageFromChatbot.getEquivalentSentence().getInformationClass());
+        Assert.assertEquals("homeAddress.planet", messageFromChatbot.getEquivalentSentence().getInformationFieldNamePath());
+        // the user give his planet name
+        chatService.addMessageAndIdentifyInformationAndGetResponse("ce de vrei să ști asta ?", user.getId(), andy.getId());
+        Assert.assertNull(user.getPersonalInformation().getHomeAddress());
     }
 }

@@ -1,15 +1,15 @@
 package services.api;
 
 import domain.entities.LinguisticExpression;
+import domain.entities.RejectingExpression;
 import domain.entities.Sentence;
 import domain.entities.SentenceDetectionParameters;
 import domain.enums.ChatbotRequestType;
-import dtos.admin.AddedDataStatus;
 import dtos.MessageDto;
+import dtos.admin.AddedDataStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 public interface AdminService {
@@ -53,8 +53,14 @@ public interface AdminService {
 
     void deleteLinguisticExpression(final Long linguisticExpressionId);
 
-    // File/data upload
+    // RejectingExpression
+    List<RejectingExpression> getAllRejectingExpressions();
 
+    RejectingExpression saveRejectingExpression(final RejectingExpression rejectingExpression);
+
+    void deleteRejectingExpression(final Long rejectingExpressionId);
+
+    // File/data upload
     AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessags) throws IOException;
 
     AddedDataStatus addMessageDtos(final List<MessageDto> messageDtos);
@@ -79,6 +85,8 @@ public interface AdminService {
     AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException;
 
     AddedDataStatus addLinguisticExpressionsFromJsonFile(final MultipartFile linguisticExpressionsJsonFile) throws IOException;
+
+    AddedDataStatus addRejectingExpressionsFromJsonFile(final MultipartFile rejectingExpressionsJsonFile) throws IOException;
 
     ChatbotRequestType getChatbotRequestType();
 

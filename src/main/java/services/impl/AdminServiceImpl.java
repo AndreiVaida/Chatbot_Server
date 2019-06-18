@@ -4,6 +4,7 @@ import app.Main;
 import domain.entities.CsvConversationTimestamp;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
+import domain.entities.RejectingExpression;
 import domain.entities.Sentence;
 import domain.entities.SentenceDetectionParameters;
 import domain.entities.User;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import repositories.CsvConversationTimestampRepository;
 import repositories.LinguisticExpressionRepository;
+import repositories.RejectingExpressionRepository;
 import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
@@ -65,6 +67,7 @@ public class AdminServiceImpl implements AdminService {
     private final SentenceRepository sentenceRepository;
     private final WordRepository wordRepository;
     private final LinguisticExpressionRepository linguisticExpressionRepository;
+    private final RejectingExpressionRepository rejectingExpressionRepository;
     private final ChatService chatService;
     private final ChatbotService chatbotService;
     private final UserService userService;
@@ -72,10 +75,11 @@ public class AdminServiceImpl implements AdminService {
     private final CsvConversationTimestampRepository csvConversationTimestampRepository;
     private final String fileWithConversations = "src/main/resources/conversations/ConversationsTriburile1.txt";
 
-    public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, ChatService chatService, ChatbotService chatbotService, UserService userService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, CsvConversationTimestampRepository csvConversationTimestampRepository) {
+    public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, RejectingExpressionRepository rejectingExpressionRepository, ChatService chatService, ChatbotService chatbotService, UserService userService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, CsvConversationTimestampRepository csvConversationTimestampRepository) {
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
+        this.rejectingExpressionRepository = rejectingExpressionRepository;
         this.chatService = chatService;
         this.chatbotService = chatbotService;
         this.userService = userService;
@@ -161,8 +165,27 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public void deleteLinguisticExpression(final Long linguisticExpressionId) {
         linguisticExpressionRepository.deleteById(linguisticExpressionId);
+    }
+
+    @Override
+    @Transactional
+    public List<RejectingExpression> getAllRejectingExpressions() {
+        return rejectingExpressionRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public RejectingExpression saveRejectingExpression(final RejectingExpression rejectingExpression) {
+        return rejectingExpressionRepository.save(rejectingExpression);
+    }
+
+    @Override
+    @Transactional
+    public void deleteRejectingExpression(final Long rejectingExpressionId) {
+        rejectingExpressionRepository.deleteById(rejectingExpressionId);
     }
 
     @Override
@@ -278,7 +301,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private boolean existsByWords(final Sentence sentence) {
-        // check if all the words exists and, if a words exists in DB, update the word from the given sentence with the word from DB
+        // check if all the text exists and, if a text exists in DB, update the word from the given sentence with the word from DB
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
             final Word existingWord = wordRepository.getFirstByTextIgnoreCase(word.getText());
@@ -287,7 +310,7 @@ public class AdminServiceImpl implements AdminService {
             }
             sentence.getWords().set(i, existingWord);
         }
-        // all the words exists
+        // all the text exists
         final List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldNamePath(sentence.getSpeechType(), sentence.getInformationClass(), sentence.getInformationFieldNamePath());
         for (Sentence existingSentence : sentences) {
             if (sentence.getWords().equals(existingSentence.getWords())) {
@@ -351,6 +374,30 @@ public class AdminServiceImpl implements AdminService {
         }
 
         return new AddedDataStatus(numberOfLinguisticExpressions, numberOfAddedLinguisticExpressions);
+    }
+
+    @Override
+    public AddedDataStatus addRejectingExpressionsFromJsonFile(MultipartFile rejectingExpressionsJsonFile) throws IOException {
+        int numberOfRejectingExpressions = 0;
+        int numberOfAddedRejectingExpressions = 0;
+        final JSONParser jsonParser = new JSONParser(rejectingExpressionsJsonFile.getInputStream());
+        try {
+            final List<Object> jsonRejectingExpressions = (List<Object>) jsonParser.parse();
+            numberOfRejectingExpressions = jsonRejectingExpressions.size();
+            for (Object rejectingExpressionObject : jsonRejectingExpressions) {
+                final Map<String, Object> rejectingExpressionJsonMap = (Map<String, Object>) rejectingExpressionObject;
+                final String text = (String) rejectingExpressionJsonMap.get("text");
+
+                if (!rejectingExpressionRepository.existsByTextIgnoreCase(text)) {
+                    rejectingExpressionRepository.save(new RejectingExpression(text));
+                    numberOfAddedRejectingExpressions++;
+                }
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return new AddedDataStatus(numberOfRejectingExpressions, numberOfAddedRejectingExpressions);
     }
 
     @Override

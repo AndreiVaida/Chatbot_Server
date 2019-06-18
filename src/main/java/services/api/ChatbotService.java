@@ -13,6 +13,7 @@ import java.util.List;
 public interface ChatbotService {
     LocalTime endOfMorning = LocalTime.of(11, 0, 0);
     LocalTime startOfEvening = LocalTime.of(18, 0, 0);
+    int HOURS_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION = 2;
 
     /**
      * @param text - the text for which is intended to get a sentence
@@ -46,7 +47,12 @@ public interface ChatbotService {
     Sentence pickRandomSentence();
 
     /**
-     * @return a sentence which has the least replies
+     * Generate, save and return the greeting sentence.
+     */
+    Sentence generateGreetingSentence();
+
+    /**
+     * @return a sentence which has the least replies. Will not return a directive requesting information.
      * If no sentences are stored in DB, we create a new one with the text „Salut”
      */
     Sentence pickSentenceWithFewReplies();

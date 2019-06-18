@@ -4,6 +4,7 @@ import domain.entities.Message;
 import domain.entities.ResponseMessageAndInformation;
 import domain.entities.Sentence;
 import domain.entities.User;
+import domain.enums.AddressingMode;
 import domain.enums.ChatbotRequestType;
 import domain.enums.MessageSource;
 import domain.information.Information;
@@ -17,11 +18,15 @@ import services.api.UserService;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static app.Main.CHATBOT_ID;
+import static domain.enums.ChatbotRequestType.DEFAULT;
 import static domain.enums.ChatbotRequestType.GET_INFORMATION_FROM_USER;
-import static domain.enums.ChatbotRequestType.LEARN_TO_SPEAK;
+import static domain.enums.SpeechType.DIRECTIVE;
+import static services.api.ChatbotService.HOURS_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -29,7 +34,8 @@ public class ChatServiceImpl implements ChatService {
     private final MessageService messageService;
     private final ChatbotService chatbotService;
     private final InformationDetectionService informationDetectionService;
-    private ChatbotRequestType chatbotRequestType = LEARN_TO_SPEAK;
+    private ChatbotRequestType chatbotRequestType = DEFAULT;
+    private final Random random;
 
     @Autowired
     public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService, InformationDetectionService informationDetectionService) {
@@ -37,6 +43,7 @@ public class ChatServiceImpl implements ChatService {
         this.userService = userService;
         this.chatbotService = chatbotService;
         this.informationDetectionService = informationDetectionService;
+        random = new Random();
     }
 
     @Override
@@ -104,6 +111,21 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // generate a response
+        // exceptional case: Andy requested an information and the user didn't answered => ask again (but just one time in 2 hours)
+        if (updatedInformationValues == null && previousMessage != null && previousMessage.getEquivalentSentence().getInformationClass() != null // user didn't answered
+                && LocalDateTime.now().minusHours(HOURS_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION)
+                .isAfter(messageService.getLastMessageByInformationClassAndInformationFieldNamePath(
+                        previousMessage.getFromUser().getId(), previousMessage.getToUser().getId(),
+                        previousMessage.getEquivalentSentence().getInformationClass(), previousMessage.getEquivalentSentence().getInformationFieldNamePath())
+                        .getDateTime())) { // ask user just 2 times in a row, wait at least 2 hours before asking again
+            final AddressingMode addressingMode = message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode();
+            final String previousSentenceText = chatbotService.translateSentenceToText(previousMessage.getEquivalentSentence(), addressingMode);
+            final String responseText = getRandomRequestAgainText(addressingMode) + " " + previousSentenceText;
+            final Message response = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), previousMessage.getEquivalentSentence(), MessageSource.USER_CHATBOT_CONVERSATION);
+            return new ResponseMessageAndInformation(response, "");
+        }
+
+        // normal case
         final Message response = generateResponse(message);
 
         StringBuilder informationResponse = new StringBuilder();
@@ -135,7 +157,7 @@ public class ChatServiceImpl implements ChatService {
 
     private Message generateResponse(final Message message) {
         Sentence responseSentence;
-        if (chatbotRequestType.equals(GET_INFORMATION_FROM_USER)) {
+        if (chatbotRequestType == GET_INFORMATION_FROM_USER) {
             responseSentence = chatbotService.pickSentenceRequestingInformation(message.getFromUser());
         } else {
             responseSentence = chatbotService.generateResponse(message);
@@ -147,11 +169,53 @@ public class ChatServiceImpl implements ChatService {
             isUnknownMessage = true;
         }
 
+        // default, if the response is not a directive also include in response an information request or a sentence with few replies
+        Sentence additionalSentence = null;
+        if (isUnknownMessage || (chatbotRequestType == DEFAULT && responseSentence.getSpeechType() != DIRECTIVE && random.nextBoolean())) {
+            if (random.nextInt(4) == 0) {
+                additionalSentence = chatbotService.pickSentenceWithFewReplies();
+                System.out.println("BOOL: pickSentenceWithFewReplies            " + isUnknownMessage);
+            } else {
+                additionalSentence = chatbotService.pickSentenceRequestingInformation(message.getFromUser());
+                System.out.println("BOOL: pickSentenceRequestingInformation     " + isUnknownMessage);
+            }
+        }
+
+        // compose message (response + additional)
+        Message responseMessage = null;
+        Message additionalMessage = null;
+        if (!isUnknownMessage) {
+            final String responseText = chatbotService.translateSentenceToText(responseSentence, message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode());
+            responseMessage = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), responseSentence, MessageSource.USER_CHATBOT_CONVERSATION);
+            responseMessage.setIsUnknownMessage(isUnknownMessage); // always false
+        }
+        if (additionalSentence != null) {
+            final String additionalText = chatbotService.translateSentenceToText(additionalSentence, message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode());
+            additionalMessage = messageService.addMessage(additionalText, message.getToUser(), message.getFromUser(), additionalSentence, MessageSource.USER_CHATBOT_CONVERSATION);
+        }
+
         // save the response
-        final String responseText = chatbotService.translateSentenceToText(responseSentence, message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode());
-        final Message responseMessage = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), responseSentence, MessageSource.USER_CHATBOT_CONVERSATION);
-        responseMessage.setIsUnknownMessage(isUnknownMessage);
+        if (additionalMessage != null) {
+            if (responseMessage != null) {
+                additionalMessage.setText(responseMessage.getText() + ". " + additionalMessage.getText());
+            }
+            return additionalMessage;
+        }
         return responseMessage;
+    }
+
+    private String getRandomRequestAgainText(final AddressingMode addressingMode) {
+        final List<String> requestAgainSentences = new ArrayList<>();
+        if (addressingMode == AddressingMode.FORMAL) {
+            requestAgainSentences.add("Nu mi-ați răspuns la întrebare.");
+        } else {
+            requestAgainSentences.add("Nu mi-ai răspuns la întrebare.");
+            requestAgainSentences.add("Ce ?");
+        }
+        requestAgainSentences.add("Nu înțeleg.");
+        requestAgainSentences.add("Nu accept acest răspuns.");
+        requestAgainSentences.add("Pardon ?");
+        return requestAgainSentences.get(random.nextInt(requestAgainSentences.size()));
     }
 
     @Override
@@ -177,11 +241,23 @@ public class ChatServiceImpl implements ChatService {
         final User fromUser = userService.getUserById(CHATBOT_ID);
         final User toUser = userService.getUserById(userId);
 
-        final Sentence sentence = getSentenceAccordingToUserAndRequestType(toUser, chatbotRequestType);
+        final Message lastMessage = messageService.getLastMessageOfUsers(fromUser.getId(), toUser.getId());
+        final Sentence sentence;
+
+        // if requestType is default and passed >30 minutes from last conversation => greets again
+        if ((chatbotRequestType == null || chatbotRequestType == DEFAULT) &&
+                lastMessage != null && LocalDateTime.now().minusMinutes(30).isAfter(lastMessage.getDateTime())) {
+            sentence = chatbotService.generateGreetingSentence();
+        } else {
+            sentence = getSentenceAccordingToUserAndRequestType(toUser, chatbotRequestType);
+        }
         return messageService.addMessage(chatbotService.translateSentenceToText(sentence, toUser.getAddressingModeStatus().getPreferredAddressingMode()),
                 fromUser, toUser, sentence, MessageSource.USER_CHATBOT_CONVERSATION);
     }
 
+    /**
+     * @param chatbotRequestType only LEARN_TO_SPEAK and GET_INFORMATION_FROM_USER, otherwise return a random one
+     */
     private Sentence getSentenceAccordingToUserAndRequestType(final User toUser, ChatbotRequestType chatbotRequestType) {
         if (chatbotRequestType == null) {
             chatbotRequestType = this.chatbotRequestType;
@@ -191,10 +267,8 @@ public class ChatServiceImpl implements ChatService {
                 return chatbotService.pickSentenceWithFewReplies();
             case GET_INFORMATION_FROM_USER:
                 return chatbotService.pickSentenceRequestingInformation(toUser);
-            case RANDOM:
-                return chatbotService.pickRandomSentence();
             default:
-                return chatbotService.pickSentenceRequestingInformation(toUser);
+                return chatbotService.pickRandomSentence();
         }
     }
 }

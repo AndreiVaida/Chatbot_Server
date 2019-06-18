@@ -4,6 +4,8 @@ import domain.entities.Message;
 import domain.entities.Sentence;
 import domain.entities.User;
 import domain.enums.MessageSource;
+import domain.information.Information;
+import org.w3c.dom.html.HTMLModElement;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,4 +31,11 @@ public interface MessageService {
      * @return the last message sent by fromUser to toUser or <null> if there is no message
      */
     Message getLastMessage(final Long fromUserId, final Long toUserId);
+
+    Message getLastMessageByInformationClassAndInformationFieldNamePath(final Long fromUserId, final Long toUserId, final Class<Information> informationClass, final String informationFieldNamePath);
+
+    /**
+     * @return last message sent between the given users or <null> if there is no message
+     */
+    Message getLastMessageOfUsers(final Long user1Id, final Long user2Id);
 }

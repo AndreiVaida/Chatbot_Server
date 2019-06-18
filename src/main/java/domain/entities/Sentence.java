@@ -127,7 +127,7 @@ public class Sentence {
     public String toString() {
         return "Sentence{" +
                 "id=" + id +
-                ", words=" + words +
+                ", text=" + words +
                 ", speechType=" + speechType +
                 ", informationClassDto=" + informationClass +
                 ", informationFieldNamePath='" + informationFieldNamePath + '\'' +

@@ -1,11 +1,13 @@
 package facades.impl;
 
 import domain.entities.LinguisticExpression;
+import domain.entities.RejectingExpression;
 import domain.entities.Sentence;
 import domain.enums.ChatbotRequestType;
+import dtos.MessageDto;
 import dtos.admin.AddedDataStatus;
 import dtos.admin.LinguisticExpressionDto;
-import dtos.MessageDto;
+import dtos.admin.RejectingExpressionDto;
 import dtos.admin.SentenceDetectionParametersDto;
 import dtos.admin.SentenceDto;
 import facades.api.AdminFacade;
@@ -99,6 +101,22 @@ public class AdminFacadeImpl implements AdminFacade {
     }
 
     @Override
+    public List<RejectingExpressionDto> getAllRejectingExpressions() {
+        return adminService.getAllRejectingExpressions().stream().map(InformationMapper::rejectingExpressionToRejectingExpressionDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public RejectingExpressionDto saveRejectingExpression(final RejectingExpressionDto rejectingExpressionDto) {
+        final RejectingExpression rejectingExpression = InformationMapper.rejectingExpressionDtoToRejectingExpression(rejectingExpressionDto);
+        return InformationMapper.rejectingExpressionToRejectingExpressionDto(adminService.saveRejectingExpression(rejectingExpression));
+    }
+
+    @Override
+    public void deleteRejectingExpression(final Long rejectingExpressionId) {
+        adminService.deleteRejectingExpression(rejectingExpressionId);
+    }
+
+    @Override
     public AddedDataStatus addMessagesFromFile(final MultipartFile fileWithMessages) throws IOException {
         return adminService.addMessagesFromFile(fileWithMessages);
     }
@@ -126,6 +144,11 @@ public class AdminFacadeImpl implements AdminFacade {
     @Override
     public AddedDataStatus addLinguisticExpressionsFromJsonFile(final MultipartFile linguisticExpressionsJsonFile) throws IOException {
         return adminService.addLinguisticExpressionsFromJsonFile(linguisticExpressionsJsonFile);
+    }
+
+    @Override
+    public AddedDataStatus addRejectingExpressionsFromJsonFile(final MultipartFile rejectingExpressionsJsonFile) throws IOException {
+        return adminService.addRejectingExpressionsFromJsonFile(rejectingExpressionsJsonFile);
     }
 
     @Override

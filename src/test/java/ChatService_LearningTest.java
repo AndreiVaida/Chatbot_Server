@@ -17,6 +17,7 @@ import repositories.ExpressionItemRepository;
 import repositories.LinguisticExpressionRepository;
 import repositories.MessageRepository;
 import repositories.PersonalInformationRepository;
+import repositories.RejectingExpressionRepository;
 import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.UserRepository;
@@ -55,6 +56,8 @@ public class ChatService_LearningTest {
     @Autowired
     private LinguisticExpressionRepository linguisticExpressionRepository;
     @Autowired
+    private RejectingExpressionRepository rejectingExpressionRepository;
+    @Autowired
     private ExpressionItemRepository expressionItemRepository;
     @Autowired
     private SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
@@ -71,8 +74,8 @@ public class ChatService_LearningTest {
     public void initialize() {
         userService = new UserServiceImpl(userRepository, personalInformationRepository, new BCryptPasswordEncoder());
         messageService = new MessageServiceImpl(messageRepository);
-        final ChatbotService chatbotService = new ChatbotServiceImpl(sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
-        final InformationDetectionService informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository);
+        final ChatbotService chatbotService = new ChatbotServiceImpl(messageService, sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
+        final InformationDetectionService informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository, rejectingExpressionRepository);
         chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationDetectionService);
         // add users
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));

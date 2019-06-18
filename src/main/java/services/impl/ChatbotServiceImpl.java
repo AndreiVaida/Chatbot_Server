@@ -28,6 +28,7 @@ import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
 import services.api.ChatbotService;
+import services.api.MessageService;
 
 import javax.transaction.Transactional;
 import java.beans.BeanInfo;
@@ -36,6 +37,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -45,6 +47,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import static app.Main.CHATBOT_ID;
 import static domain.enums.AddressingMode.FORMAL;
 import static domain.enums.AddressingMode.FORMAL_AND_INFORMAL;
 import static domain.enums.AddressingMode.INFORMAL;
@@ -57,6 +60,7 @@ import static domain.enums.SpeechType.STATEMENT;
 @Service
 public class ChatbotServiceImpl implements ChatbotService {
     private static final String wordsSplitRegex = "[\\s]+"; // TODO: change regex with a custom function which consider also the signs as items (, . ...)
+    private final MessageService messageService;
     private final SentenceRepository sentenceRepository;
     private final WordRepository wordRepository;
     private final SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
@@ -64,7 +68,8 @@ public class ChatbotServiceImpl implements ChatbotService {
     private final LinguisticExpressionRepository linguisticExpressionRepository;
     private final Random random;
 
-    public ChatbotServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, DexRepository dexRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
+    public ChatbotServiceImpl(MessageService messageService, SentenceRepository sentenceRepository, WordRepository wordRepository, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, DexRepository dexRepository, LinguisticExpressionRepository linguisticExpressionRepository) {
+        this.messageService = messageService;
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
         this.sentenceDetectionParametersRepository = sentenceDetectionParametersRepository;
@@ -523,15 +528,15 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     /**
-     * @param words                 - words to match
-     * @param maxNrOfExtraWords     how many words may have in addition the identified sentences (inclusive). Used in filter and sorting.
-     * @param maxNrOfUnmatchedWords how many words may not be matched int the sentences (inclusive). Used in filter and sorting.
+     * @param words                 - text to match
+     * @param maxNrOfExtraWords     how many text may have in addition the identified sentences (inclusive). Used in filter and sorting.
+     * @param maxNrOfUnmatchedWords how many text may not be matched int the sentences (inclusive). Used in filter and sorting.
      * @param weight                ∈ [0,1] and means the priority of maxNrOfExtraWords and maxNrOfUnmatchedWords. Used only in sorting.
      *                              0 = <nrOfExtraWords> should be as low as possible, don't care about <nrOfUnmatchedWords>
      *                              1 = <nrOfUnmatchedWords> should be as low as possible, don't care about <nrOfExtraWords>
-     * @return similar sentences identified (it should have at last 75% of items matched with the provided words) or an empty list if no proper sentence is found
+     * @return similar sentences identified (it should have at last 75% of items matched with the provided text) or an empty list if no proper sentence is found
      * Matching a sentence means:
-     * - the words from the given list must be in the sentence
+     * - the text from the given list must be in the sentence
      * - if the word is not in the sentence, check if a synonym of the word is in the sentence
      */
     public List<Sentence> findSimilarSentencesByWords(final List<Word> words, final int maxNrOfExtraWords, final int maxNrOfUnmatchedWords, final double weight) {
@@ -564,8 +569,8 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     /**
-     * The function does not take into account the positions of the words.
-     * Consider that a word from <wordsToMatch> exists in <words> if the the list contains the word or a synonym of the word
+     * The function does not take into account the positions of the text.
+     * Consider that a word from <wordsToMatch> exists in <text> if the the list contains the word or a synonym of the word
      */
     private MatchingResult compareWords(final List<Word> wordsToMatch, final List<Word> words) {
         int nrOfExtraWords = 0;
@@ -637,17 +642,18 @@ public class ChatbotServiceImpl implements ChatbotService {
     public Sentence pickRandomSentence() {
         final long nrOfSentences = sentenceRepository.count();
         if (nrOfSentences == 0) {
-            return generateDefaultSentence();
+            return generateGreetingSentence();
         }
         return sentenceRepository.findAll().get(random.nextInt((int) nrOfSentences));
     }
 
-    private Sentence generateDefaultSentence() {
-        final Word wordWithoutDiacritics = wordRepository.getFirstByTextIgnoreCase("salut");
-        boolean wordExists = wordWithoutDiacritics != null;
+    @Override
+    public Sentence generateGreetingSentence() {
+        final Word wordSalut = wordRepository.getFirstByTextIgnoreCase("salut");
+        boolean wordExists = wordSalut != null;
         if (wordExists) {
             final List<Word> words = new ArrayList<>();
-            words.add(wordWithoutDiacritics);
+            words.add(wordSalut);
             return sentenceRepository.findAllByWords(words).stream().min(Comparator.comparingInt(s -> s.getWords().size())).get();
         } else {
             final Word word = new Word();
@@ -666,9 +672,11 @@ public class ChatbotServiceImpl implements ChatbotService {
     public Sentence pickSentenceWithFewReplies() {
         final long nrOfSentences = sentenceRepository.count();
         if (nrOfSentences == 0) {
-            return generateDefaultSentence();
+            return generateGreetingSentence();
         }
-        return sentenceRepository.findAll().stream().min((sentence1, sentence2) -> {
+        return sentenceRepository.findAll().stream()
+                .filter(sentence -> sentence.getInformationClass() == null)
+                .min((sentence1, sentence2) -> {
             Integer nrOfResponses_sentence1 = sentence1.getResponses().size();
             Integer nrOfResponses_sentence2 = sentence2.getResponses().size();
             if (sentence1.getSynonyms().keySet().stream().anyMatch(synonym -> !synonym.getResponses().isEmpty())) {
@@ -696,8 +704,8 @@ public class ChatbotServiceImpl implements ChatbotService {
             try {
                 final Method getterOfUser = user.getClass().getMethod("get" + infoClass.getSimpleName());
                 final Information information = (Information) getterOfUser.invoke(user);
-
                 informationFieldNamePath = getFirstNullItemNamePath(information, infoClass);
+
                 if (informationFieldNamePath != null) {
                     informationClass = infoClass;
                     break;

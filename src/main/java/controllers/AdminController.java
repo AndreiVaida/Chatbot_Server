@@ -1,9 +1,10 @@
 package controllers;
 
 import domain.enums.ChatbotRequestType;
+import dtos.MessageDto;
 import dtos.admin.AddedDataStatus;
 import dtos.admin.LinguisticExpressionDto;
-import dtos.MessageDto;
+import dtos.admin.RejectingExpressionDto;
 import dtos.admin.SentenceDetectionParametersDto;
 import dtos.admin.SentenceDto;
 import facades.api.AdminFacade;
@@ -121,6 +122,25 @@ public class AdminController extends AbstractController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    // REJECTING EXPRESION
+    @GetMapping("/rejectingExpression")
+    public ResponseEntity<List<RejectingExpressionDto>> getAllRejectingExpressions() {
+        final List<RejectingExpressionDto> rejectingExpressions = adminFacade.getAllRejectingExpressions();
+        return new ResponseEntity<>(rejectingExpressions, HttpStatus.OK);
+    }
+
+    @PostMapping("/rejectingExpression")
+    public ResponseEntity<RejectingExpressionDto> saveRejectingExpression(@RequestBody RejectingExpressionDto rejectingExpressionDto) {
+        rejectingExpressionDto = adminFacade.saveRejectingExpression(rejectingExpressionDto);
+        return new ResponseEntity<>(rejectingExpressionDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/rejectingExpression/{rejectingExpressionId}")
+    public ResponseEntity<?> deleteRejectingExpression(@PathVariable final Long rejectingExpressionId) {
+        adminFacade.deleteRejectingExpression(rejectingExpressionId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     // MESSAGE
     @PostMapping("/messageDto")
     public ResponseEntity<AddedDataStatus> addMessagesDto(@RequestBody List<MessageDto> messageDtos) {
@@ -168,6 +188,10 @@ public class AdminController extends AbstractController {
             }
             case "linguisticExpressions": {
                 final AddedDataStatus addedDataStatus = adminFacade.addLinguisticExpressionsFromJsonFile(file);
+                return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
+            }
+            case "rejectingExpressions": {
+                final AddedDataStatus addedDataStatus = adminFacade.addRejectingExpressionsFromJsonFile(file);
                 return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
             }
             default: {

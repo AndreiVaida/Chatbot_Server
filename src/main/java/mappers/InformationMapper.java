@@ -2,6 +2,7 @@ package mappers;
 
 import domain.entities.ExpressionItem;
 import domain.entities.LinguisticExpression;
+import domain.entities.RejectingExpression;
 import domain.information.FacultyInformation;
 import domain.information.FreeTimeInformation;
 import domain.information.Information;
@@ -9,6 +10,7 @@ import domain.information.PersonalInformation;
 import domain.information.RelationshipsInformation;
 import domain.information.SchoolInformation;
 import dtos.admin.ExpressionItemDto;
+import dtos.admin.RejectingExpressionDto;
 import dtos.informationDtos.FacultyInformationDto;
 import dtos.informationDtos.FreeTimeInformationDto;
 import dtos.informationDtos.InformationClassDto;
@@ -99,6 +101,14 @@ public class InformationMapper {
         expressionItemDto.setText(expressionItem.getText());
         expressionItemDto.setItemClass(expressionItem.getItemClass());
         return expressionItemDto;
+    }
+
+    public static RejectingExpression rejectingExpressionDtoToRejectingExpression(final RejectingExpressionDto dto) {
+        return new RejectingExpression(dto.getId(), dto.getText());
+    }
+
+    public static RejectingExpressionDto rejectingExpressionToRejectingExpressionDto(final RejectingExpression entity) {
+        return new RejectingExpressionDto(entity.getId(), entity.getText());
     }
 
     public static PersonalInformationDto personalInformationToPersonalInformationDto(final PersonalInformation entity) {
