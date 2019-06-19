@@ -84,4 +84,9 @@ public class UserFacadeImpl implements UserFacade {
     public void updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException {
         userService.updateProfilePicture(userId, profilePicture);
     }
+
+    @Override
+    public void updateUser(final Long userId, final String newFirstName) {
+        userService.updateUser(userId, newFirstName);
+    }
 }

@@ -466,7 +466,7 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                     return new SimpleDate(year, month, day);
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println(e);
                     return null;
                 }
             }

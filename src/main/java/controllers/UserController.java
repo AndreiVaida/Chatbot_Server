@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping("/users")
@@ -41,17 +42,23 @@ public class UserController extends AbstractController {
         return new ResponseEntity<>(CREATED);
     }
 
+    @PostMapping("/{userId}")
+    public ResponseEntity<?> updateUserFirstName(@PathVariable Long userId, @RequestBody final String newFirstName) {
+        userFacade.updateUser(userId, newFirstName);
+        return new ResponseEntity<>(OK);
+    }
+
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable final Long userId) {
         final UserDto userDto = userFacade.getUserById(userId);
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
+        return new ResponseEntity<>(userDto, OK);
     }
 
     @GetMapping("/{userId}/{informationClass}")
     public ResponseEntity<?> getInformationByClass(final @PathVariable Long userId, @PathVariable final InformationClassDto informationClass) {
         try {
             final InformationDto informationDto = userFacade.getInformationByClass(userId, informationClass);
-            return new ResponseEntity<>(informationDto, HttpStatus.OK);
+            return new ResponseEntity<>(informationDto, OK);
 
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -62,7 +69,7 @@ public class UserController extends AbstractController {
     public ResponseEntity<?> deleteInformationByInformationFieldNamePath(final @PathVariable Long userId, @PathVariable final InformationClassDto informationClass) {
         try {
             userFacade.deleteInformationByInformationClass(userId, informationClass);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(OK);
 
         } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | IntrospectionException | InvocationTargetException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

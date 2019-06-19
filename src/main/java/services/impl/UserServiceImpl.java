@@ -146,6 +146,15 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    public void updateUser(final Long userId, final String newFirstName) {
+        final User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
+
+        user.getPersonalInformation().setFirstName(newFirstName);
+        userRepository.save(user);
+    }
+
 //    @Override
 //    public void updateUser(final List<Information> informationList, final User user) {
 //        for (Information information : informationList) {
