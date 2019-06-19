@@ -1,6 +1,5 @@
 package facades.impl;
 
-import domain.entities.User;
 import domain.information.FacultyInformation;
 import domain.information.FreeTimeInformation;
 import domain.information.Information;
@@ -15,9 +14,11 @@ import facades.api.UserFacade;
 import mappers.InformationMapper;
 import mappers.UserMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import services.api.UserService;
 
 import java.beans.IntrospectionException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,5 +78,10 @@ public class UserFacadeImpl implements UserFacade {
     public void deleteInformationByInformationClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, IntrospectionException, InvocationTargetException {
         final Class<Information> informationClass = InformationMapper.informationClassDtoToClassOfInformation(informationClassDto);
         userService.deleteInformationByInformationClass(userId, informationClass);
+    }
+
+    @Override
+    public void updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException {
+        userService.updateProfilePicture(userId, profilePicture);
     }
 }

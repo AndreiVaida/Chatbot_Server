@@ -13,6 +13,7 @@ public class UserDto {
     private String firstName;
     private String surname;
     private SimpleDateDto birthDay;
+    private byte[] profilePicture;
 
     @Override
     public String toString() {

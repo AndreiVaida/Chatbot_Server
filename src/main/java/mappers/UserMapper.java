@@ -33,6 +33,7 @@ public class UserMapper {
             userDto.setSurname(user.getPersonalInformation().getSurname());
             userDto.setBirthDay(simpleDateToSimpleDateDto(user.getPersonalInformation().getBirthDay()));
         }
+        userDto.setProfilePicture(user.getProfilePicture());
         return userDto;
     }
 

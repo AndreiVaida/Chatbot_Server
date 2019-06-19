@@ -2,9 +2,10 @@ package services.api;
 
 import domain.entities.User;
 import domain.information.Information;
-import dtos.informationDtos.InformationClassDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.beans.IntrospectionException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -30,4 +31,6 @@ public interface UserService {
     void deleteInformationByInformationFieldNamePath(final Long userId, final String informationFieldNamePath) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException;
 
     void deleteInformationByInformationClass(final Long userId, final Class<Information> informationClass) throws NoSuchFieldException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, IntrospectionException;
+
+    void updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException;
 }

@@ -15,10 +15,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.beans.IntrospectionException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+
+import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping("/users")
@@ -33,7 +38,7 @@ public class UserController extends AbstractController {
     @PostMapping
     public ResponseEntity<?> createAccount(@RequestBody @Validated final RequestUserRegisterDto requestUserRegisterDto) {
         userFacade.addUser(requestUserRegisterDto);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(CREATED);
     }
 
     @GetMapping("/{userId}")
@@ -62,5 +67,14 @@ public class UserController extends AbstractController {
         } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | IntrospectionException | InvocationTargetException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @PostMapping("{userId}/profilePicture")
+    public ResponseEntity<?> createGraphicResource(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
+        userFacade.updateProfilePicture(userId, file);
+        return new ResponseEntity<>(CREATED);
     }
 }

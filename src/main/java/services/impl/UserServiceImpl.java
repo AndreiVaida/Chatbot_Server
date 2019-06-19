@@ -2,10 +2,10 @@ package services.impl;
 
 import domain.entities.User;
 import domain.information.Information;
-import dtos.informationDtos.InformationClassDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import repositories.PersonalInformationRepository;
 import repositories.UserRepository;
 import services.api.UserService;
@@ -17,6 +17,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -131,6 +132,17 @@ public class UserServiceImpl implements UserService {
             informationField.set(information, null);
         }
 
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException {
+        final byte[] bytes = profilePicture.getBytes();
+        final User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
+
+        user.setProfilePicture(bytes);
         userRepository.save(user);
     }
 

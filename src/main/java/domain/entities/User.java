@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,8 +19,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import static javax.persistence.FetchType.LAZY;
 
 // Lombok
 @NoArgsConstructor
@@ -73,6 +77,11 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "ADDRESSING_MODE_STATUS")
     private AddressingModeStatus addressingModeStatus = new AddressingModeStatus();
+
+    @Column(name = "CONTENT")
+    @Basic(fetch = LAZY)
+    @Lob
+    private byte[] profilePicture;
 
     public User(Long id, String email, String password, String firstName, String surname, SimpleDate birthDay) {
         this.id = id;
