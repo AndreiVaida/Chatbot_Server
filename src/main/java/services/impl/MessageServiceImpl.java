@@ -13,6 +13,7 @@ import services.api.MessageService;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -44,7 +45,8 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<Message> getMessagesByUsers(final Long userId1, final Long userId2, final LocalDateTime maxDateTime, final Integer nrOfMessages) {
-        return messageRepository.findAllByUsers(userId1, userId2, maxDateTime, PageRequest.of(0, nrOfMessages));
+        final List<Message> messages = messageRepository.findAllByUsers(userId1, userId2, LocalDateTime.of(1,1,1,1,1), maxDateTime, PageRequest.of(0, nrOfMessages));
+        return messages.subList(1, messages.size());
     }
 
     @Override

@@ -17,11 +17,17 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findAllByUsers(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
     @Query("SELECT m FROM Message m " +
-            "WHERE (m.fromUser.id = :userId1 AND m.toUser.id = :userId2) OR (m.fromUser.id = :userId2 AND m.toUser.id = :userId1) " +
-            "AND m.dateTime <= :maxDateTime " +
+            "WHERE ((m.fromUser.id = :userId1 AND m.toUser.id = :userId2) OR (m.fromUser.id = :userId2 AND m.toUser.id = :userId1)) " +
+            "AND m.dateTime BETWEEN :minDateTime and :maxDateTime " +
             "ORDER BY m.dateTime DESC")
     List<Message> findAllByUsers(@Param("userId1") Long userId1, @Param("userId2") Long userId2,
-                                 @Param("maxDateTime") LocalDateTime maxDateTime, Pageable pageRequest);
+                                 @Param("minDateTime") LocalDateTime minDateTime, @Param("maxDateTime") LocalDateTime maxDateTime,
+                                 Pageable pageRequest);
+
+    @Query("SELECT m FROM Message m " +
+            "WHERE ((m.fromUser.id = :userId1 AND m.toUser.id = :userId2) OR (m.fromUser.id = :userId2 AND m.toUser.id = :userId1)) " +
+            "AND m.id < :maxId ORDER BY m.dateTime DESC")
+    List<Message> findAllByUsersAndMaxId(@Param("userId1") Long userId1, @Param("userId2") Long userId2, @Param("maxId") Long maxId);
 
     @Query("SELECT m FROM Message m " +
             "WHERE m.id <> :messageId " +

@@ -188,7 +188,7 @@ public class ChatServiceImpl implements ChatService {
         if (!isUnknownMessage) {
             final String responseText = chatbotService.translateSentenceToText(responseSentence, message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode());
             responseMessage = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), responseSentence, MessageSource.USER_CHATBOT_CONVERSATION);
-            responseMessage.setIsUnknownMessage(isUnknownMessage); // always false
+            responseMessage.setIsUnknownMessage(false); // always false
         }
         if (additionalSentence != null) {
             final String additionalText = chatbotService.translateSentenceToText(additionalSentence, message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode());
