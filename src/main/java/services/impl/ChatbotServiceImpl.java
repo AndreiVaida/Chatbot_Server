@@ -300,7 +300,8 @@ public class ChatbotServiceImpl implements ChatbotService {
         final StringBuilder text = new StringBuilder();
         for (int i = 0; i < sentence.getWords().size(); i++) {
             final Word word = sentence.getWords().get(i);
-            if (i > 0 && (Character.isLetterOrDigit(word.getText().charAt(0)) || word.getText().charAt(0) == '(')) {
+            if (i > 0 && (Character.isLetterOrDigit(word.getText().charAt(0)) || word.getText().charAt(0) == '(')
+                    && text.charAt(text.length() - 1) != '(') {
                 text.append(" ");
             }
             // check addressing mode
@@ -695,9 +696,9 @@ public class ChatbotServiceImpl implements ChatbotService {
         String informationFieldNamePath = null;
         final List<Class> informationClasses = new ArrayList<>();
         informationClasses.add(PersonalInformation.class);
+        informationClasses.add(FreeTimeInformation.class);
         informationClasses.add(SchoolInformation.class);
         informationClasses.add(FacultyInformation.class);
-        informationClasses.add(FreeTimeInformation.class);
         informationClasses.add(RelationshipsInformation.class);
 
         for (Class infoClass : informationClasses) {
@@ -706,7 +707,7 @@ public class ChatbotServiceImpl implements ChatbotService {
                 final Information information = (Information) getterOfUser.invoke(user);
                 informationFieldNamePath = getFirstNullItemNamePath(information, infoClass);
 
-                // don't request same information 2 times în X hours
+                // don't request same information 2 times în X minutes
                 final Message lastRequest = messageService.getLastMessageByInformationClassAndInformationFieldNamePath(CHATBOT_ID, user.getId(), infoClass, informationFieldNamePath);
                 if (lastRequest != null && LocalDateTime.now().minusMinutes(MINUTES_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION)
                         .isBefore(lastRequest.getDateTime())) {

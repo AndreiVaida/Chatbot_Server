@@ -46,6 +46,9 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public List<Message> getMessagesByUsers(final Long userId1, final Long userId2, final LocalDateTime maxDateTime, final Integer nrOfMessages) {
         final List<Message> messages = messageRepository.findAllByUsers(userId1, userId2, LocalDateTime.of(1,1,1,1,1), maxDateTime, PageRequest.of(0, nrOfMessages));
+        if (messages.isEmpty()) {
+            return messages;
+        }
         return messages.subList(1, messages.size());
     }
 

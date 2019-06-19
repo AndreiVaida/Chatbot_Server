@@ -1,0 +1,116 @@
+[
+  {
+    "expressionItems": [[{"text": "place", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "place", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "plac", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "plac", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "să", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "să", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "ador", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "ador", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "iubesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "iubesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NAME"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "hobbies"
+  },
+  {
+    "expressionItems": [[{"text": null, "itemClass": "BOOLEAN"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "likeReading"
+  },
+  {
+    "expressionItems": [[{"text": "este", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "este", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "e", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "e", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "se", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "este", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "favouriteBook"
+  },
+  {
+    "expressionItems": [[{"text": "acum", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "acum", "itemClass": "NOT_AN_INFORMATION"}, {"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "momentan", "itemClass": "NOT_AN_INFORMATION"}, {"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "momentan", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NAME"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "currentReadingBook"
+  },
+  {
+    "expressionItems": [[{"text": null, "itemClass": "BOOLEAN"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "likeVideoGames"
+  },
+  {
+    "expressionItems": [[{"text": "este", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "este", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "e", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "e", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "se", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "joc", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "mă", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "favouriteVideoGame"
+  },
+  {
+    "expressionItems": [[{"text": "acum", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "acum", "itemClass": "NOT_AN_INFORMATION"}, {"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "momentan", "itemClass": "NOT_AN_INFORMATION"}, {"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "momentan", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "currentPlayedGame"
+  },
+  {
+    "expressionItems": [[{"text": null, "itemClass": "BOOLEAN"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "likeBoardGames"
+  },
+  {
+    "expressionItems": [[{"text": "este", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "este", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "e", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "e", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "se", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "joc", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "mă", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "favouriteBoardGame"
+  },
+  {
+    "expressionItems": [[{"text": "acum", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "acum", "itemClass": "NOT_AN_INFORMATION"}, {"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "momentan", "itemClass": "NOT_AN_INFORMATION"}, {"text": "joc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "momentan", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": null, "itemClass": "NAME"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "currentBoardGame"
+  }
+]

@@ -392,7 +392,18 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
             }
 
             case BOOLEAN: {
-                return informationWords[0].toLowerCase().startsWith("da");
+                final StringBuilder informationString_SB = new StringBuilder();
+                for (String word : informationWords) {
+                    informationString_SB.append(word).append(" ");
+                }
+                final String informationString = Word.replaceDiacritics(informationString_SB.toString()).toLowerCase();
+                if (informationString.contains("da") && informationString.contains("de unde")) {
+                    return false;
+                }
+                return informationString.contains("da") || informationString.contains("sigur") || informationString.contains("afirm") || informationString.contains("categoric") ||
+                        informationString.contains("absolut") || informationString.contains("normal") || (informationString.contains("evident") && !informationString.contains("nu")) ||
+                        informationString.contains("desigur") || informationString.contains("putin") || informationString.contains("cateodata") ||
+                        (informationString.contains("ca") && informationString.contains("de") && informationString.contains("cat"));
             }
 
             case DATE: {

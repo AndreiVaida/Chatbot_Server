@@ -179,7 +179,7 @@ public class InformationMapper {
         dto.setCurrentPlayedGame(entity.getCurrentPlayedGame());
         dto.setLikeBoardGames(entity.getLikeBoardGames());
         dto.setFavouriteBoardGame(entity.getFavouriteBoardGame());
-        dto.setCurrentReadingBook(entity.getCurrentBoardGame());
+        dto.setCurrentBoardGame(entity.getCurrentBoardGame());
         return dto;
     }
 }

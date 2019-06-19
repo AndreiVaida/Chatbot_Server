@@ -626,4 +626,25 @@ public class InformationDetectionTest {
         Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("citesc"));
         Assert.assertTrue(user.getFreeTimeInformation().getHobbies().contains("fac poze"));
     }
+
+    @Test
+    public void testFreeTimeInformation_LikeReading() throws InstantiationException, IllegalAccessException {
+        /* DIRECTIVE: "Îți place să citești ?" */
+        // TEST 1: "Da"
+        // add linguistic expression
+        LinguisticExpression linguisticExpression = new LinguisticExpression();
+        List<ExpressionItem> expressionItems = new ArrayList<>();
+        expressionItems.add(new ExpressionItem(null, BOOLEAN));
+        linguisticExpression.setItems(expressionItems);
+        linguisticExpression.setInformationClass(FreeTimeInformation.class);
+        linguisticExpression.setInformationFieldNamePath("likeReading");
+        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+        informationDetectionService.addLinguisticExpression(linguisticExpression);
+        Assert.assertEquals(1, informationDetectionService.getAllLinguisticExpressions().size());
+
+        // Test 1.1: likeReading ("Da")
+        informationDetectionService.identifyAndSetInformation(FreeTimeInformation.class, "likeReading", new Message("Da"), user);
+        Assert.assertNotNull(user.getFreeTimeInformation());
+        Assert.assertEquals(true, user.getFreeTimeInformation().getLikeReading());
+    }
 }

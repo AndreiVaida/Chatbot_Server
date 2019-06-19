@@ -1,0 +1,62 @@
+[
+  {
+    "texts": ["Ce îți place să faci în timpul liber ?", "Ce hobby-uri ai ?", "Ce faci de obicei în timpul liber ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "hobbies#?"
+  },
+  {
+    "texts": ["Îți place să citești ?", "Ție îți place să citești cărți ?", "Îți plac cărțile ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "likeReading"
+  },
+  {
+    "texts": ["Care e cartea ta preferată ?", "Care e cartea ta favorită ?", "Ce îți place să citești cel mai mult ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "favouriteBook"
+  },
+  {
+    "texts": ["Ce carte citești acum ?", "Ce citești în perioada asta ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "currentReadingBook"
+  },
+  {
+    "texts": ["Îți plac jocurile (pe calculator) ?", "Îți plac jocurile video ?", "Îți place să te joci pe calculator ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "likeVideoGames"
+  },
+  {
+    "texts": ["Care e jocul tău preferat (pe calculator) ?", "Ce îți place să joci cel mai mult pe calculator ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "favouriteVideoGame"
+  },
+  {
+    "texts": ["Ce joci acum pe calculator ?", "Acum ce joci ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "currentPlayedGame"
+  },
+  {
+    "texts": ["Îți plac jocurile (cele de masă) ?", "Îți place să joci jocuri de masă ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "likeBoardGames"
+  },
+  {
+    "texts": ["Care e jocul tău preferat (de masă) ?", "Ce îți place să joci cel mai mult cu prietenii (dintre jocurile de masă) ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "favouriteBoardGame"
+  },
+  {
+    "texts": ["Ce joc de masă ai jucat ultima dată ?", "În ultima perioadă ce joc de masă ai jucat mai mult ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FREE_TIME_INFORMATION",
+    "informationFieldNamePath": "currentBoardGame"
+  }
+]

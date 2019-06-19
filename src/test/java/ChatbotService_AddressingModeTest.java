@@ -11,11 +11,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import repositories.DexRepository;
 import repositories.LinguisticExpressionRepository;
+import repositories.MessageRepository;
 import repositories.SentenceDetectionParametersRepository;
 import repositories.SentenceRepository;
 import repositories.WordRepository;
 import services.api.ChatbotService;
+import services.api.MessageService;
 import services.impl.ChatbotServiceImpl;
+import services.impl.MessageServiceImpl;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -39,6 +42,8 @@ public class ChatbotService_AddressingModeTest {
     private SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
     @Autowired
     private DexRepository dexRepository;
+    @Autowired
+    private MessageRepository messageRepository;
     private ChatbotService chatbotService;
 
     private Word wordSalut;
@@ -54,6 +59,7 @@ public class ChatbotService_AddressingModeTest {
 
     @Before
     public void initialize() {
+        final MessageService messageService = new MessageServiceImpl(messageRepository);
         chatbotService = new ChatbotServiceImpl(messageService, sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
 
         // add "salut", "bună" and "ziua" and set synonyms: "salut" ~= "bună"
