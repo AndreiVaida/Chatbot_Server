@@ -77,11 +77,11 @@ public class UserController extends AbstractController {
     }
 
     @PostMapping("{userId}/profilePicture")
-    public ResponseEntity<?> createGraphicResource(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<UserDto> uploadProfilePicture(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
-        userFacade.updateProfilePicture(userId, file);
-        return new ResponseEntity<>(CREATED);
+        final UserDto userDto = userFacade.updateProfilePicture(userId, file);
+        return new ResponseEntity<>(userDto, CREATED);
     }
 }

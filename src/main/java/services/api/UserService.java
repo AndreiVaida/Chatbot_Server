@@ -32,7 +32,7 @@ public interface UserService {
 
     void deleteInformationByInformationClass(final Long userId, final Class<Information> informationClass) throws NoSuchFieldException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, IntrospectionException;
 
-    void updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException;
+    User updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException;
 
     void updateUser(final Long userId, final String newFirstName);
 }

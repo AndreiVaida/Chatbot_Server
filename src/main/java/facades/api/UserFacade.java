@@ -26,7 +26,7 @@ public interface UserFacade {
 
     void deleteInformationByInformationClass(final Long userId, final InformationClassDto informationClassDto) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, IntrospectionException, InvocationTargetException;
 
-    void updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException;
+    UserDto updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException;
 
     void updateUser(final Long userId, final String newFirstName);
 }

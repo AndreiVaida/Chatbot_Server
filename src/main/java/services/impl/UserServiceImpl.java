@@ -137,13 +137,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException {
+    public User updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException {
         final byte[] bytes = profilePicture.getBytes();
         final User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         user.setProfilePicture(bytes);
         userRepository.save(user);
+        return user;
     }
 
     @Override

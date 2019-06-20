@@ -81,8 +81,8 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
-    public void updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException {
-        userService.updateProfilePicture(userId, profilePicture);
+    public UserDto updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException {
+        return UserMapper.userToUserDto(userService.updateProfilePicture(userId, profilePicture));
     }
 
     @Override
