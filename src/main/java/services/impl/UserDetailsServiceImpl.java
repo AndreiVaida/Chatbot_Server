@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import repositories.UserRepository;
 
+import javax.transaction.Transactional;
+
 import static java.util.Collections.emptyList;
 
 @Service
@@ -20,6 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         final User user = userRepository.getByEmail(username);
         if (user == null) {
