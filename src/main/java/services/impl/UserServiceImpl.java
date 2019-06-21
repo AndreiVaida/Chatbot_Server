@@ -2,6 +2,7 @@ package services.impl;
 
 import domain.entities.User;
 import domain.information.Information;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -80,7 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(final User user) {
+    public void updateUserFirstName(final User user) {
         userRepository.save(user);
     }
 
@@ -117,6 +118,9 @@ public class UserServiceImpl implements UserService {
         // get Information of user
         final Method getterOfUser = user.getClass().getMethod("get" + informationClass.getSimpleName());
         final Information information = (Information) getterOfUser.invoke(user);
+        if (information == null) {
+            return;
+        }
 
         // iterate Information fields and set them null
         final BeanInfo beanInformation = Introspector.getBeanInfo(information.getClass(), Object.class);
@@ -148,7 +152,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(final Long userId, final String newFirstName) {
+    @Transactional
+    public User deleteProfilePicture(Long userId) {
+        final User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
+
+        user.setProfilePicture(null);
+        userRepository.save(user);
+        return user;
+    }
+
+    @Override
+    public void updateUserFirstName(final Long userId, final String newFirstName) {
         final User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
@@ -157,7 +172,7 @@ public class UserServiceImpl implements UserService {
     }
 
 //    @Override
-//    public void updateUser(final List<Information> informationList, final User user) {
+//    public void updateUserFirstName(final List<Information> informationList, final User user) {
 //        for (Information information : informationList) {
 //            // iterate getters of the information object
 //            for (Method getterOfInformation : information.getClass().getMethods()) {

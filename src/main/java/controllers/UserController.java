@@ -44,7 +44,7 @@ public class UserController extends AbstractController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<?> updateUserFirstName(@PathVariable Long userId, @RequestBody final String newFirstName) {
-        userFacade.updateUser(userId, newFirstName);
+        userFacade.updateUserFirstName(userId, newFirstName);
         return new ResponseEntity<>(OK);
     }
 
@@ -66,7 +66,7 @@ public class UserController extends AbstractController {
     }
 
     @DeleteMapping("/{userId}/{informationClass}")
-    public ResponseEntity<?> deleteInformationByInformationFieldNamePath(final @PathVariable Long userId, @PathVariable final InformationClassDto informationClass) {
+    public ResponseEntity<?> deleteInformationByClass(final @PathVariable Long userId, @PathVariable final InformationClassDto informationClass) {
         try {
             userFacade.deleteInformationByInformationClass(userId, informationClass);
             return new ResponseEntity<>(OK);
@@ -83,5 +83,11 @@ public class UserController extends AbstractController {
         }
         final UserDto userDto = userFacade.updateProfilePicture(userId, file);
         return new ResponseEntity<>(userDto, CREATED);
+    }
+
+    @DeleteMapping("{userId}/profilePicture")
+    public ResponseEntity<UserDto> deleteProfilePicture(@PathVariable Long userId) throws IOException {
+        final UserDto userDto = userFacade.deleteProfilePicture(userId);
+        return new ResponseEntity<>(userDto, OK);
     }
 }

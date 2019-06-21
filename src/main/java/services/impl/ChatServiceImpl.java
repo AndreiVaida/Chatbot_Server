@@ -104,7 +104,7 @@ public class ChatServiceImpl implements ChatService {
         try {
             updatedInformationValues = informationDetectionService.identifyAndSetInformation(informationClass, informationFieldNamePath, message, fromUser);
             if (updatedInformationValues != null) {
-                userService.updateUser(fromUser);
+                userService.updateUserFirstName(fromUser);
             }
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();

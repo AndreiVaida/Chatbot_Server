@@ -86,7 +86,12 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
-    public void updateUser(final Long userId, final String newFirstName) {
-        userService.updateUser(userId, newFirstName);
+    public UserDto deleteProfilePicture(final Long userId) {
+        return UserMapper.userToUserDto(userService.deleteProfilePicture(userId));
+    }
+
+    @Override
+    public void updateUserFirstName(final Long userId, final String newFirstName) {
+        userService.updateUserFirstName(userId, newFirstName);
     }
 }

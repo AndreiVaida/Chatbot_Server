@@ -52,21 +52,21 @@ public class User {
     private PersonalInformation personalInformation;
 
     // RELATIONSHIPS
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "RELATIONSHIPS_INFORMATION")
     private RelationshipsInformation relationshipsInformation;
 
     // EDUCATION
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "SCHOOL_INFORMATION")
     private SchoolInformation schoolInformation;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "FACULTY_INFORMATION")
     private FacultyInformation facultyInformation;
 
     // FREE TIME
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "FREE_TIME_INFORMATION")
     private FreeTimeInformation freeTimeInformation;
 
@@ -74,7 +74,7 @@ public class User {
     @Column(name = "FAVOURITE_FOOD")
     private String favouriteFood; // TODO: GASTRONOMY INFORMATION
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "ADDRESSING_MODE_STATUS")
     private AddressingModeStatus addressingModeStatus = new AddressingModeStatus();
 

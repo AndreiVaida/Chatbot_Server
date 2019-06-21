@@ -18,7 +18,7 @@ public interface UserService {
 
     User findUserByEmail(final String email);
 
-    void updateUser(final User user);
+    void updateUserFirstName(final User user);
 
     Information getInformationByClass(final Long userId, final Class<Information> informationClass) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException;
 
@@ -34,5 +34,7 @@ public interface UserService {
 
     User updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException;
 
-    void updateUser(final Long userId, final String newFirstName);
+    User deleteProfilePicture(final Long userId);
+
+    void updateUserFirstName(final Long userId, final String newFirstName);
 }

@@ -28,5 +28,7 @@ public interface UserFacade {
 
     UserDto updateProfilePicture(final Long userId, final MultipartFile profilePicture) throws IOException;
 
-    void updateUser(final Long userId, final String newFirstName);
+    UserDto deleteProfilePicture(final Long userId);
+
+    void updateUserFirstName(final Long userId, final String newFirstName);
 }
