@@ -456,10 +456,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         return null;
     }
 
-    /**
-     * @return random good response or <null> if no responses are available for the provided sentence
-     */
-    private Sentence pickGoodResponseForSentence(final Sentence sentence) {
+    public Sentence pickGoodResponseForSentence(final Sentence sentence) {
         if (sentence.getResponses().isEmpty()) {
             return null;
         }
@@ -650,22 +647,32 @@ public class ChatbotServiceImpl implements ChatbotService {
 
     @Override
     public Sentence generateGreetingSentence() {
-        final Word wordSalut = wordRepository.getFirstByTextIgnoreCase("salut");
-        boolean wordExists = wordSalut != null;
-        if (wordExists) {
-            final List<Word> words = new ArrayList<>();
-            words.add(wordSalut);
-            return sentenceRepository.findAllByWords(words).stream().min(Comparator.comparingInt(s -> s.getWords().size())).get();
-        } else {
-            final Word word = new Word();
-            word.setText("Salut");
-            //wordRepository.save(word);
-            final Sentence sentence = new Sentence();
-            sentence.getWords().add(word);
-            sentence.setSpeechType(STATEMENT);
-            sentenceRepository.save(sentence);
-            return sentence;
+        final Word wordSalut = getOrAddWordInDb("salut", INFORMAL);
+        final List<Word> words = new ArrayList<>();
+        words.add(wordSalut);
+
+        if (random.nextBoolean()) {
+            // add „Eu sunt Andy”
+            final Word dotOrExclamation;
+            if (random.nextBoolean()) {
+                dotOrExclamation = getOrAddWordInDb(".", null);
+            } else {
+                dotOrExclamation = getOrAddWordInDb("!", null);
+            }
+            final Word wordEu = getOrAddWordInDb("Eu", INFORMAL);
+            final Word wordSunt = getOrAddWordInDb("sunt", INFORMAL);
+            final Word wordAndy = getOrAddWordInDb("Andy", INFORMAL);
+            words.add(dotOrExclamation);
+            words.add(wordEu);
+            words.add(wordSunt);
+            words.add(wordAndy);
         }
+
+        final Sentence sentence = new Sentence();
+        sentence.setWords(words);
+        sentence.setSpeechType(STATEMENT);
+        sentenceRepository.save(sentence);
+        return sentence;
     }
 
     @Override

@@ -34,6 +34,10 @@ public class UserMapper {
             userDto.setBirthDay(simpleDateToSimpleDateDto(user.getPersonalInformation().getBirthDay()));
         }
         userDto.setProfilePicture(user.getProfilePicture());
+        userDto.setAdmin(false);
+        if (user.getIsAdministrator()) {
+            userDto.setAdmin(true);
+        }
         return userDto;
     }
 
@@ -58,6 +62,7 @@ public class UserMapper {
         userJson.put("firstName", userDto.getFirstName());
         userJson.put("surname", userDto.getSurname());
         userJson.put("birthDay", simpleDateDtoToJson(userDto.getBirthDay()));
+        userJson.put("isAdmin", userDto.isAdmin());
         return userJson;
     }
 

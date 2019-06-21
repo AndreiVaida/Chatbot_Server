@@ -32,6 +32,11 @@ public class ChatFacadeImpl implements ChatFacade {
     }
 
     @Override
+    public MessageDto addMessageFromGuest(final String message) {
+        return MessageMapper.messageToMessageDto(chatService.addMessageFromGuestAndGetResponse(message));
+    }
+
+    @Override
     public List<MessageDto> getMessages(final Long userId1, final Long userId2) {
         return chatService.getMessages(userId1, userId2).stream()
                 .map(MessageMapper::messageToMessageDto)

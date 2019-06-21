@@ -21,7 +21,11 @@ public class MessageMapper {
     public static MessageDto messageToMessageDto(final Message message) {
         final MessageDto messageDto = new MessageDto();
         messageDto.setFromUserId(message.getFromUser().getId());
-        messageDto.setToUserId(message.getToUser().getId());
+        if (message.getToUser() != null) {
+            messageDto.setToUserId(message.getToUser().getId());
+        } else {
+            messageDto.setToUserId(null);
+        }
         messageDto.setMessage(message.getText());
         messageDto.setDateTime(message.getDateTime());
         messageDto.setIsUnknownMessage(message.getIsUnknownMessage());

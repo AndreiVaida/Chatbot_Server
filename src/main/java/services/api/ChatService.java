@@ -22,6 +22,13 @@ public interface ChatService {
     Message addMessage(final String text, final Long fromUserId, Long toUserId, final MessageSource messageSource);
 
     /**
+     * @param message from anyone
+     * @return a response
+     * WARNING: Andy is not learning using this method.
+     */
+    Message addMessageFromGuestAndGetResponse(final String message);
+
+    /**
      * This method update synonyms and responses.
      * @param learningUser1 - imaginary user, must exist in DB
      * @param learningUser2 - imaginary user, must exist in DB

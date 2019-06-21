@@ -38,6 +38,13 @@ public interface ChatbotService {
      */
     Sentence generateResponse(final Message message);
 
+    /**
+     * @return random good response or <null> if no responses are available for the provided sentence
+     */
+    Sentence pickGoodResponseForSentence(final Sentence sentence);
+
+    /**
+     * @param addressingMode may be null*/
     String translateSentenceToText(final Sentence sentence, final AddressingMode addressingMode);
 
     /**

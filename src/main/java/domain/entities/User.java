@@ -83,6 +83,9 @@ public class User {
     @Lob
     private byte[] profilePicture;
 
+    @Column(name = "IS_ADMINISTRATOR")
+    private Boolean isAdministrator = false;
+
     public User(Long id, String email, String password, String firstName, String surname, SimpleDate birthDay) {
         this.id = id;
         this.email = email;

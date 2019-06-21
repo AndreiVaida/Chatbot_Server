@@ -11,6 +11,8 @@ import java.util.List;
 public interface ChatFacade {
     ResponseMessageAndInformationDto addMessage(final RequestSendMessageDto requestSendMessageDto);
 
+    MessageDto addMessageFromGuest(final String message);
+
     List<MessageDto> getMessages(final Long userId1, final Long userId2);
 
     List<MessageDto> getMessages(final Long userId1, final Long userId2, final LocalDateTime from, final Integer nrOfMessages);

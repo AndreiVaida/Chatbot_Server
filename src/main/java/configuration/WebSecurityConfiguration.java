@@ -2,9 +2,11 @@ package configuration;
 
 import com.google.common.collect.ImmutableList;
 import facades.api.UserFacade;
+import filters.AdministratorFilter;
 import filters.JWTAuthenticationFilter;
 import filters.JWTAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpMethod;
@@ -17,30 +19,37 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import services.api.UserService;
+import services.api.UserPermissionService;
 import services.impl.UserDetailsServiceImpl;
+
+import static configuration.SecurityConstraints.CHAT_GUEST_URL;
+import static configuration.SecurityConstraints.CHAT_SAMPLE_URL;
+import static configuration.SecurityConstraints.REGISTER_URL;
+import static configuration.SecurityConstraints.USER_GET_URL;
 
 @EnableWebSecurity
 @ComponentScan(basePackages = {"services", "filters"})
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final UserFacade userFacade;
     private final UserDetailsServiceImpl userDetailsService;
+    private final UserPermissionService userPermissionService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public WebSecurityConfiguration(UserFacade userFacade, UserDetailsServiceImpl userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public WebSecurityConfiguration(UserFacade userFacade, UserDetailsServiceImpl userDetailsService, UserPermissionService userPermissionService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userFacade = userFacade;
         this.userDetailsService = userDetailsService;
+        this.userPermissionService = userPermissionService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().authorizeRequests()
-                .antMatchers(HttpMethod.GET).permitAll()
-                .antMatchers(HttpMethod.POST).permitAll()
-                .antMatchers(HttpMethod.PUT).permitAll()
-                .antMatchers(HttpMethod.DELETE).permitAll()
+                .antMatchers(HttpMethod.GET, CHAT_SAMPLE_URL, USER_GET_URL).permitAll()
+                .antMatchers(HttpMethod.POST, "/login", REGISTER_URL, CHAT_GUEST_URL).permitAll()
+                .antMatchers(HttpMethod.PUT).authenticated()
+                .antMatchers(HttpMethod.DELETE).authenticated()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager(), userFacade))
@@ -72,5 +81,15 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 //        final UrlBasedCorsConfigurationSource messageSource = new UrlBasedCorsConfigurationSource();
 //        messageSource.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
         return source;
+    }
+
+    @Bean
+    public FilterRegistrationBean<AdministratorFilter> loggingFilter(){
+        FilterRegistrationBean<AdministratorFilter> registrationBean = new FilterRegistrationBean<>();
+
+        registrationBean.setFilter(new AdministratorFilter(userPermissionService));
+        registrationBean.addUrlPatterns("/admin/*");
+
+        return registrationBean;
     }
 }

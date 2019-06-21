@@ -75,6 +75,24 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public Message addMessageFromGuestAndGetResponse(final String message) {
+        final User chatbot = userService.getUserById(CHATBOT_ID);
+
+        final Sentence sentence = chatbotService.getExistingSentenceOrCreateANewOne(message);
+        Sentence responseSentence = chatbotService.pickGoodResponseForSentence(sentence);
+        boolean isUnknownMessage = false;
+        if (responseSentence == null) {
+            responseSentence = chatbotService.pickRandomSentence();
+            isUnknownMessage = true;
+        }
+        final String responseText = chatbotService.translateSentenceToText(responseSentence, null);
+        final Message responseMessage = new Message(responseText);
+        responseMessage.setFromUser(chatbot);
+        responseMessage.setIsUnknownMessage(isUnknownMessage);
+        return responseMessage;
+    }
+
+    @Override
     public Message addMessageAndLearn(final String text, final User learningUser1, User learningUser2, final Message previousMessage, final MessageSource messageSource) {
         return addMessageAndSetItAsResponse(text, learningUser1, learningUser2, messageSource, previousMessage);
     }
@@ -173,7 +191,7 @@ public class ChatServiceImpl implements ChatService {
         // default, if the response is not a directive also include in response an information request or a sentence with few replies
         Sentence additionalSentence = null;
         if (isUnknownMessage || (chatbotRequestType == DEFAULT && responseSentence.getSpeechType() != DIRECTIVE && random.nextBoolean())) {
-            if (random.nextInt(4) == 0) {
+            if (random.nextInt(5) == 0) {
                 additionalSentence = chatbotService.pickSentenceWithFewReplies();
                 System.out.println("BOOL: pickSentenceWithFewReplies            " + isUnknownMessage);
             } else {
@@ -240,6 +258,14 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public Message requestMessageFromChatbot(final Long userId, ChatbotRequestType chatbotRequestType) {
         final User fromUser = userService.getUserById(CHATBOT_ID);
+
+        if (userId == null) {
+            final Sentence sentence = chatbotService.generateGreetingSentence();
+            final String text = chatbotService.translateSentenceToText(sentence, null);
+            final Message message = new Message(text);
+            message.setFromUser(fromUser);
+            return message;
+        }
         final User toUser = userService.getUserById(userId);
 
         final Message lastMessage = messageService.getLastMessageOfUsers(fromUser.getId(), toUser.getId());
