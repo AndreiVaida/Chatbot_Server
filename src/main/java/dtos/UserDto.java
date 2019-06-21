@@ -14,7 +14,7 @@ public class UserDto {
     private String surname;
     private SimpleDateDto birthDay;
     private byte[] profilePicture;
-    private boolean isAdmin;
+    private Boolean isAdmin;
 
     @Override
     public String toString() {

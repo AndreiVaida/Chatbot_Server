@@ -112,7 +112,7 @@ public class Main {
     }
 
     private void addAdminInDb() {
-        final User admin = new User(null, "admin", "admin", "Admin", "Suprem", null);
+        final User admin = new User(null, "admin", "admin", "Admin", null, null);
         userService.addUser(admin);
     }
 
