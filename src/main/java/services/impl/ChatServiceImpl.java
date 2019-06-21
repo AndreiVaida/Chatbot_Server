@@ -129,7 +129,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // generate a response
-        // exceptional case: Andy requested an information and the user didn't answered => ask again (but just one time in 2 hours)
+        // exceptional case: Andy requested an information and the user didn't answered => ask again (but just one time in MINUTES_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION minutes)
         if (updatedInformationValues == null && previousMessage != null && previousMessage.getEquivalentSentence().getInformationClass() != null // user didn't answered
                 && LocalDateTime.now().minusMinutes(MINUTES_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION)
                 .isAfter(messageService.getLastMessageByInformationClassAndInformationFieldNamePath(
@@ -179,11 +179,13 @@ public class ChatServiceImpl implements ChatService {
         if (chatbotRequestType == GET_INFORMATION_FROM_USER) {
             responseSentence = chatbotService.pickSentenceRequestingInformation(message.getFromUser());
         } else {
+            // default
             responseSentence = chatbotService.generateResponse(message);
         }
 
         boolean isUnknownMessage = false;
         if (responseSentence == null) {
+            // don't know to respond
             responseSentence = getSentenceAccordingToUserAndRequestType(message.getFromUser(), null);
             isUnknownMessage = true;
         }
@@ -206,11 +208,12 @@ public class ChatServiceImpl implements ChatService {
         if (!isUnknownMessage) {
             final String responseText = chatbotService.translateSentenceToText(responseSentence, message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode());
             responseMessage = messageService.addMessage(responseText, message.getToUser(), message.getFromUser(), responseSentence, MessageSource.USER_CHATBOT_CONVERSATION);
-            responseMessage.setIsUnknownMessage(false); // always false
+            responseMessage.setIsUnknownMessage(isUnknownMessage); // always false
         }
         if (additionalSentence != null) {
             final String additionalText = chatbotService.translateSentenceToText(additionalSentence, message.getFromUser().getAddressingModeStatus().getPreferredAddressingMode());
             additionalMessage = messageService.addMessage(additionalText, message.getToUser(), message.getFromUser(), additionalSentence, MessageSource.USER_CHATBOT_CONVERSATION);
+            additionalMessage.setIsUnknownMessage(isUnknownMessage);
         }
 
         // save the response
