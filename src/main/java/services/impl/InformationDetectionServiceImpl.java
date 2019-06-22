@@ -220,18 +220,17 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
      * @return true if the given subsentence contains expressions like "nu-ți spun", "nu știu" etc.
      */
     private boolean isNotInformation(final String[] words) {
-        final StringBuilder wordsAsExpression_SB = new StringBuilder();
+        final List<String> wordsLcNd = new ArrayList<>();
         for (String word : words) {
-            wordsAsExpression_SB.append(word).append(" ");
+            wordsLcNd.add(Word.replaceDiacritics(word.toLowerCase()));
         }
-        final String wordsAsExpression = Word.replaceDiacritics(wordsAsExpression_SB.toString()).toLowerCase();
 
         final List<RejectingExpression> rejectingExpressions = rejectingExpressionRepository.findAll();
         for (RejectingExpression rejectingExpression : rejectingExpressions) {
             final String[] expressionWords = rejectingExpression.getText().split(" ");
             boolean textContainsAllExpressionWords = true;
             for (String expressionWord : expressionWords) {
-                if (!wordsAsExpression.contains(Word.replaceDiacritics(expressionWord))) {
+                if (!wordsLcNd.contains(Word.replaceDiacritics(expressionWord))) {
                     textContainsAllExpressionWords = false;
                     break;
                 }

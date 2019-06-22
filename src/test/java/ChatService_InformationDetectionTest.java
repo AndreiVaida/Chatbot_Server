@@ -335,6 +335,24 @@ public class ChatService_InformationDetectionTest {
     }
 
     @Test
+    public void testDetectPersonalInformation_homeAddress_planet___valid_3() {
+        user.getPersonalInformation().setFirstName("First Name");
+        user.getPersonalInformation().setSurname("Surname");
+        user.getPersonalInformation().setGender(Gender.MALE);
+        user.getPersonalInformation().setBirthDay(new SimpleDate(1,1,1));
+        userService.updateUser(user);
+        Assert.assertNull(user.getPersonalInformation().getHomeAddress());
+        // the chatbot request the planet name
+        Message messageFromChatbot = chatService.requestMessageFromChatbot(user.getId(), GET_INFORMATION_FROM_USER);
+        Assert.assertEquals(DIRECTIVE, messageFromChatbot.getEquivalentSentence().getSpeechType());
+        Assert.assertEquals(PersonalInformation.class, messageFromChatbot.getEquivalentSentence().getInformationClass());
+        Assert.assertEquals("homeAddress.planet", messageFromChatbot.getEquivalentSentence().getInformationFieldNamePath());
+        // the user give his planet name
+        chatService.addMessageAndIdentifyInformationAndGetResponse("am venit de pe Saturn", user.getId(), andy.getId());
+        Assert.assertEquals("Saturn", user.getPersonalInformation().getHomeAddress().getPlanet());
+    }
+
+    @Test
     public void testDetectPersonalInformation_homeAddress_planet___invalid() {
         user.getPersonalInformation().setFirstName("First Name");
         user.getPersonalInformation().setSurname("Surname");

@@ -45,6 +45,7 @@
       [{"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "momentan", "itemClass": "NOT_AN_INFORMATION"}, {"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "momentan", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "doar", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": null, "itemClass": "NAME"}, {"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",

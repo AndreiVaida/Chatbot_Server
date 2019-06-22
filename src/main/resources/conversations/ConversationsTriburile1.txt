@@ -741,7 +741,7 @@ doar ador lamele da nu le folosesc ( si nu ma refer la lame gilette and others..
  iti plac lamele?:X
 mi se par oleaca cah, dar in rest sunt ok
  iti plac acvariile?
-urasc pestii mi-e frica de ei:-s
+urasc pestii mi-e frica de ei
  iti place intunericul?:X
 cateodata
  crezi in bau-bau?
@@ -2140,12 +2140,6 @@ foarte sigur(cel putin asa cred)
 am verificat si am
  dar tu,ai 18 ani?
 am am
- vrei un pahar de absithe?
-imi dai?::X:X:X
- ai un pahar de absinth?
-ce sa am?
-stii ce e absinth?
-cu siguranta
  il cunosti personal pe garfield?(eu da!)
 doar din filme
  esti normal?

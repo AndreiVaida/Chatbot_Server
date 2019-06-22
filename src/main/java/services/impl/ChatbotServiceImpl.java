@@ -369,6 +369,16 @@ public class ChatbotServiceImpl implements ChatbotService {
                 continue;
             }
 
+            // other words that are not well changed by DexRepository
+            if (word.getText().toLowerCase().equals("ei")) {
+                text.append("ei");
+                continue;
+            }
+            if (word.getText().toLowerCase().equals("vrei") && addressingMode == INFORMAL) {
+                text.append("vrei");
+                continue;
+            }
+
             // identify an appropriate word for addressing mode
             String appropriateWord = getWordWithAddressingModeFromWordAndSynonyms(word, addressingMode);
             if (appropriateWord == null) {
