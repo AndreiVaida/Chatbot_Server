@@ -24,7 +24,7 @@ public interface InformationDetectionService {
      *
      *                             The hierarchy may contain maps. In this case, the field name element should contain at the end the key of the element you want to update, separate with #.
      *                             If after # follows ? it means that the field is a map and you want to add the information in map.
-     *                             Example for PersonalInformation: "grades#math"
+     *                             Example for SchoolInformation: "grades#math"
      *                             Example for RelationshipInformation: "kidsPersonalInformation#Matei.firstName", "brothersAndSistersPersonalInformation#?"
      * @param answer is a statement
      * @return the list with the effective identified information (ex: name(s), date, number etc.); otherwise return <null>

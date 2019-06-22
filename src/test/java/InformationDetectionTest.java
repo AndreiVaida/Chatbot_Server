@@ -434,23 +434,24 @@ public class InformationDetectionTest {
         Assert.assertNotNull(user.getSchoolInformation());
         Assert.assertEquals((Integer) 8, user.getSchoolInformation().getCoursesGrades().get("limba română"));
 
-        /* DIRECTIVE: "Ce materie ai la școală ?" */
-        // TEST 3: "NAME"
-        // add linguistic expression
-        linguisticExpression = new LinguisticExpression();
-        expressionItems = new ArrayList<>();
-        expressionItems.add(new ExpressionItem(null, NAME));
-        linguisticExpression.setItems(expressionItems);
-        linguisticExpression.setInformationClass(SchoolInformation.class);
-        linguisticExpression.setInformationFieldNamePath("coursesGrades");
-        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
-        informationDetectionService.addLinguisticExpression(linguisticExpression);
-        Assert.assertEquals(3, informationDetectionService.getAllLinguisticExpressions().size());
-
-        // Test 2.1: coursesGrades ("De obicei iau 8")
-        informationDetectionService.identifyAndSetInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"), user);
-        Assert.assertNotNull(user.getSchoolInformation());
-        Assert.assertNotNull(user.getSchoolInformation().getCoursesGrades().get("matematică"));
+        // TODO task "PathAndKeys"
+//        /* DIRECTIVE: "Ce materie ai la școală ?" */
+//        // TEST 3: "NAME"
+//        // add linguistic expression
+//        linguisticExpression = new LinguisticExpression();
+//        expressionItems = new ArrayList<>();
+//        expressionItems.add(new ExpressionItem(null, NAME));
+//        linguisticExpression.setItems(expressionItems);
+//        linguisticExpression.setInformationClass(SchoolInformation.class);
+//        linguisticExpression.setInformationFieldNamePath("coursesGrades");
+//        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+//        informationDetectionService.addLinguisticExpression(linguisticExpression);
+//        Assert.assertEquals(3, informationDetectionService.getAllLinguisticExpressions().size());
+//
+//        // Test 2.1: coursesGrades ("De obicei iau 8")
+//        informationDetectionService.identifyAndSetInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"), user);
+//        Assert.assertNotNull(user.getSchoolInformation());
+//        Assert.assertNotNull(user.getSchoolInformation().getCoursesGrades().get("matematică"));
     }
 
     @Test
@@ -472,8 +473,8 @@ public class InformationDetectionTest {
         informationDetectionService.identifyAndSetInformation(SchoolInformation.class, "favouriteCourse", new Message("limba română"), user);
         Assert.assertNotNull(user.getSchoolInformation());
         Assert.assertEquals("limba română", user.getSchoolInformation().getFavouriteCourse());
-        // the course should appear in coursesGrades map
-        Assert.assertNotNull(user.getSchoolInformation().getCoursesGrades().get("limba română"));
+        // the course should NOT appear in coursesGrades map // TODO task "PathAndKeys"
+        Assert.assertNull(user.getSchoolInformation().getCoursesGrades().get("limba română"));
 
         /* DIRECTIVE: "Ce notă iei de obicei la limba română ?" */
         // TEST 2: "De obicei am NUMBER."
@@ -496,23 +497,24 @@ public class InformationDetectionTest {
         Assert.assertNotNull(user.getSchoolInformation());
         Assert.assertEquals((Integer) 8, user.getSchoolInformation().getCoursesGrades().get("limba română"));
 
+        // TODO task "PathAndKeys"
         /* DIRECTIVE: "Ce materie ai la școală ?" */
         // TEST 3: "NAME"
         // add linguistic expression
-        linguisticExpression = new LinguisticExpression();
-        expressionItems = new ArrayList<>();
-        expressionItems.add(new ExpressionItem(null, NAME));
-        linguisticExpression.setItems(expressionItems);
-        linguisticExpression.setInformationClass(SchoolInformation.class);
-        linguisticExpression.setInformationFieldNamePath("coursesGrades");
-        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
-        informationDetectionService.addLinguisticExpression(linguisticExpression);
-        Assert.assertEquals(3, informationDetectionService.getAllLinguisticExpressions().size());
-
-        // Test 2.1: coursesGrades ("De obicei iau 8")
-        informationDetectionService.identifyAndSetInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"), user);
-        Assert.assertNotNull(user.getSchoolInformation());
-        Assert.assertNotNull(user.getSchoolInformation().getCoursesGrades().get("matematică"));
+//        linguisticExpression = new LinguisticExpression();
+//        expressionItems = new ArrayList<>();
+//        expressionItems.add(new ExpressionItem(null, NAME));
+//        linguisticExpression.setItems(expressionItems);
+//        linguisticExpression.setInformationClass(SchoolInformation.class);
+//        linguisticExpression.setInformationFieldNamePath("coursesGrades");
+//        linguisticExpression.setSpeechType(SpeechType.STATEMENT);
+//        informationDetectionService.addLinguisticExpression(linguisticExpression);
+//        Assert.assertEquals(3, informationDetectionService.getAllLinguisticExpressions().size());
+//
+//        // Test 3.1: coursesGrades ("Matematică")
+//        informationDetectionService.identifyAndSetInformation(SchoolInformation.class, "coursesGrades#?", new Message("matematică"), user);
+//        Assert.assertNotNull(user.getSchoolInformation());
+//        Assert.assertNotNull(user.getSchoolInformation().getCoursesGrades().get("matematică"));
     }
 
     @Test

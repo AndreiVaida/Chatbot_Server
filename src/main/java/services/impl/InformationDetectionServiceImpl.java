@@ -321,19 +321,19 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                 final Method setterOfInformation = parent.getClass().getMethod("set" + fieldName_firstLetterCapitalize, fieldClass);
                 setterOfInformation.invoke(parent, informationAsItsType);
 
-                // auxiliary code: update relevant fields to the changed one
-                if (fieldName.equals("favouriteCourse")) {
-                    final Method getterOfCoursesGradesMap = parent.getClass().getMethod("getCoursesGrades");
-                    final Map<String, Integer> coursesGrades = (Map<String, Integer>) getterOfCoursesGradesMap.invoke(parent);
-                    coursesGrades.put(String.valueOf(informationAsItsType), 0);
-                }
+                // auxiliary code: update relevant fields to the changed one // TODO task "PathAndKeys"
+//                if (fieldName.equals("favouriteCourse")) {
+//                    final Method getterOfCoursesGradesMap = parent.getClass().getMethod("getCoursesGrades");
+//                    final Map<String, Integer> coursesGrades = (Map<String, Integer>) getterOfCoursesGradesMap.invoke(parent);
+//                    coursesGrades.put(String.valueOf(informationAsItsType), 0);
+//                }
             } else {
                 // the field is a collection (map or list)
                 if (getterOfChild.getReturnType().equals(Map.class)) {
                     final Map map = (Map) getterOfChild.invoke(parent);
                     if (fieldKey.equals("?")) {
                         if (fieldName.equals("coursesGrades")) {
-                            map.put(informationAsItsType, 0);
+                            // map.put(informationAsItsType, 0); // TODO task "PathAndKeys"
                         } else { // number of members from a map from RelationshipInformation
                             final PersonalInformation personalInformation = new PersonalInformation();
                             // personalInformationRepository.save(personalInformation);
@@ -415,9 +415,13 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
     private Object convertTextToInformation(final String[] informationWords, final ItemClass itemClass, final LinguisticExpression linguisticExpression) {
         switch (itemClass) {
             case NUMBER: {
+                // floor
                 if (informationWords[0].toLowerCase().equals("parter")) return 0;
                 if (informationWords[0].toLowerCase().equals("subsol")) return -1;
                 if (informationWords[0].toLowerCase().equals("ultimul")) return 10;
+                // school class
+                if (informationWords[0].toLowerCase().startsWith("preg")) return 0;
+                if (!Character.isDigit(informationWords[0].charAt(informationWords[0].length()-1))) informationWords[0] = informationWords[0].substring(0, informationWords[0].length()-1);
                 try {
                     return Integer.valueOf(informationWords[0]);
                 } catch (NumberFormatException ignored) {
@@ -521,12 +525,14 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
             }
 
             case GENDER: {
-                final String informationWord = Word.replaceDiacritics(informationWords[0].toLowerCase());
-                if (informationWord.startsWith("b") || informationWord.startsWith("mas") || informationWord.equals("domn") || informationWord.equals("domnisor")) {
-                    return Gender.MALE;
-                }
-                if (informationWord.startsWith("f")  || informationWord.equals("doamna") || informationWord.equals("domnisoara")) {
-                    return Gender.FEMALE;
+                for (String informationWord : informationWords) {
+                    informationWord = Word.replaceDiacritics(informationWord.toLowerCase());
+                    if (informationWord.startsWith("b") || informationWord.startsWith("mas") || informationWord.contains("domn") || informationWord.contains("domnisor")) {
+                        return Gender.MALE;
+                    }
+                    if (informationWord.startsWith("f") || informationWord.contains("doamna") || informationWord.contains("domnisoara")) {
+                        return Gender.FEMALE;
+                    }
                 }
                 return null;
             }

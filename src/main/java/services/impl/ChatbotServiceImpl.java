@@ -787,10 +787,10 @@ public class ChatbotServiceImpl implements ChatbotService {
                     continue; // go to FacultyInformation
                 }
                 // if the user is not at school/faculty, don't ask about that
-                if (information instanceof SchoolInformation && !((SchoolInformation) information).getIsAtSchool()) {
+                if (information instanceof SchoolInformation && ((SchoolInformation) information).getIsAtSchool() != null && !((SchoolInformation) information).getIsAtSchool()) {
                     continue;
                 }
-                if (information instanceof FacultyInformation && !((FacultyInformation) information).getIsAtFaculty()) {
+                if (information instanceof FacultyInformation && ((FacultyInformation) information).getIsAtFaculty() != null && !((FacultyInformation) information).getIsAtFaculty()) {
                     continue;
                 }
 
@@ -824,6 +824,7 @@ public class ChatbotServiceImpl implements ChatbotService {
             }
         }
 
+//        final PathAndKeys pathAndKeys = replaceMapKeysWithQuestionMark(informationFieldNamePath);// TODO task "PathAndKeys"
         final List<Sentence> sentences = sentenceRepository.findAllBySpeechTypeAndInformationClassAndInformationFieldNamePath(DIRECTIVE, informationClass, informationFieldNamePath);
         if (sentences.isEmpty()) {
             return pickRandomSentence();
@@ -838,6 +839,19 @@ public class ChatbotServiceImpl implements ChatbotService {
             return sentencesByLocalityType.get(random.nextInt(sentencesByLocalityType.size()));
         }
         return sentences.get(random.nextInt(sentences.size()));
+    }
+
+    // TODO task "PathAndKeys"
+    private PathAndKeys replaceMapKeysWithQuestionMark(final String informationFieldNamePath) {
+        final StringBuffer newPath = new StringBuffer();
+        final List<String> keys = new ArrayList<>();
+        for (String subPath : informationFieldNamePath.split("#")) {
+            newPath.append(subPath).append("#?");
+            // TODO task "PathAndKeys": save keys
+        }
+        newPath.deleteCharAt(newPath.length() - 1);
+        newPath.deleteCharAt(newPath.length() - 1);
+        return new PathAndKeys();
     }
 
     private boolean probablyAtFaculty(final User user) {
@@ -1026,5 +1040,13 @@ public class ChatbotServiceImpl implements ChatbotService {
     private class MatchingResult {
         int nrOfExtraWords;
         int nrOfUnmatchedWords;
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Data
+    private class PathAndKeys {
+        String informationFieldNamePath;
+        List<String> keys;
     }
 }

@@ -133,6 +133,6 @@
       [{"text": null, "itemClass": "NUMBER"}]],
     "speechType": "STATEMENT",
     "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "coursesGrades"
+    "informationFieldNamePath": "coursesGrades#?"
   }
 ]

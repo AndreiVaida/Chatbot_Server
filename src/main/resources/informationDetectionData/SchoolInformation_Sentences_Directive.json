@@ -42,45 +42,9 @@
     "informationFieldNamePath": "bestFriend"
   },
   {
-    "texts": ["Ce notă iei de obicei la română ?", "Ce notă ai luat ultima dată la română ?", "Ce medie ai la română ?"],
+    "texts": ["Ce notă iei de obicei la # ?", "Ce notă ai luat ultima dată la # ?", "Ce medie ai la # ?"],
     "speechType": "DIRECTIVE",
     "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "coursesGrades#limba și literatura română"
-  },
-  {
-    "texts": ["Ce notă iei de obicei la mate ?", "Ce notă ai luat ultima dată la matematică ?", "Ce medie ai la mate ?"],
-    "speechType": "DIRECTIVE",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "coursesGrades#matematică"
-  },
-  {
-    "texts": ["Ce notă iei de obicei la istorie ?", "Ce notă ai luat ultima dată la istorie ?", "Ce medie ai la istorie ?"],
-    "speechType": "DIRECTIVE",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "coursesGrades#istorie"
-  },
-  {
-    "texts": ["Ce notă iei de obicei la geografie ?", "Ce notă ai luat ultima dată la geografie ?", "Ce medie ai la geografie ?"],
-    "speechType": "DIRECTIVE",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "coursesGrades#geografie"
-  },
-  {
-    "texts": ["Ce notă iei de obicei la biologie ?", "Ce notă ai luat ultima dată la biologie ?", "Ce medie ai la biologie ?"],
-    "speechType": "DIRECTIVE",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "coursesGrades#biologie"
-  },
-  {
-    "texts": ["Ce notă iei de obicei la fizică ?", "Ce notă ai luat ultima dată la fizică ?", "Ce medie ai la fizică ?"],
-    "speechType": "DIRECTIVE",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "coursesGrades#fizică"
-  },
-  {
-    "texts": ["Ce notă iei de obicei la informatică ?", "Ce notă ai luat ultima dată la info ?", "Ce medie ai la informatică ?"],
-    "speechType": "DIRECTIVE",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "coursesGrades#informatică"
+    "informationFieldNamePath": "coursesGrades#?"
   }
 ]
