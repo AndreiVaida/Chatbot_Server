@@ -56,6 +56,11 @@ public class ChatbotService_AddressingModeTest {
     private Word wordSunteți;
     private Word wordNormal;
     private Word questionMark;
+    private Word wordÎți;
+    private Word wordVă;
+    private Word wordPlace;
+    private Word wordȚi_ar;
+    private Word wordV_ar;
 
     @Before
     public void initialize() {
@@ -98,6 +103,17 @@ public class ChatbotService_AddressingModeTest {
         wordRepository.save(wordNormal);
         questionMark = new Word("?");
         wordRepository.save(questionMark);
+        // add „îți”, „vă”, „place”, „ți-ar”, „v-ar”
+        wordÎți = new Word("îți");
+        wordRepository.save(wordÎți);
+        wordVă = new Word("vă");
+        wordRepository.save(wordVă);
+        wordPlace = new Word("place");
+        wordRepository.save(wordPlace);
+        wordȚi_ar = new Word("ți-ar");
+        wordRepository.save(wordȚi_ar);
+        wordV_ar = new Word("v-ar");
+        wordRepository.save(wordV_ar);
 
         Main.addDefaultSentenceDetectionParametersInDb(sentenceDetectionParametersRepository);
     }
@@ -220,6 +236,67 @@ public class ChatbotService_AddressingModeTest {
         // input: FORMAL, output: FORMAL
         text = chatbotService.translateSentenceToText(sentence, FORMAL);
         Assert.assertEquals("sunteți normal?", text);
+    }
+
+    @Test
+    public void testPronouns() {
+        // îți / vă
+        // create INFORMAL input
+        List<Word> words = new ArrayList<>();
+        words.add(wordÎți);
+        words.add(wordPlace);
+        Sentence sentence = new Sentence(words);
+
+        // input: INFORMAL, output: INFORMAL
+        String text = chatbotService.translateSentenceToText(sentence, INFORMAL);
+        Assert.assertEquals("îți place", text);
+
+        // input: INFORMAL, output: FORMAL
+        text = chatbotService.translateSentenceToText(sentence, FORMAL);
+        Assert.assertEquals("vă place", text);
+
+        // create FORMAL input
+        words = new ArrayList<>();
+        words.add(wordVă);
+        words.add(wordPlace);
+        sentence = new Sentence(words);
+
+        // input: FORMAL, output: INFORMAL
+        text = chatbotService.translateSentenceToText(sentence, INFORMAL);
+        Assert.assertEquals("îți place", text);
+
+        // input: FORMAL, output: FORMAL
+        text = chatbotService.translateSentenceToText(sentence, FORMAL);
+        Assert.assertEquals("vă place", text);
+
+        // ți-ar / v-ar
+        // create INFORMAL input
+        words = new ArrayList<>();
+        words.add(wordȚi_ar);
+        words.add(wordPlace);
+        sentence = new Sentence(words);
+
+        // input: INFORMAL, output: INFORMAL
+        text = chatbotService.translateSentenceToText(sentence, INFORMAL);
+        Assert.assertEquals("ți-ar place", text);
+
+        // input: INFORMAL, output: FORMAL
+        text = chatbotService.translateSentenceToText(sentence, FORMAL);
+        Assert.assertEquals("v-ar place", text);
+
+        // create FORMAL input
+        words = new ArrayList<>();
+        words.add(wordV_ar);
+        words.add(wordPlace);
+        sentence = new Sentence(words);
+
+        // input: FORMAL, output: INFORMAL
+        text = chatbotService.translateSentenceToText(sentence, INFORMAL);
+        Assert.assertEquals("ți-ar place", text);
+
+        // input: FORMAL, output: FORMAL
+        text = chatbotService.translateSentenceToText(sentence, FORMAL);
+        Assert.assertEquals("v-ar place", text);
     }
 
 }

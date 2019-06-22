@@ -39,6 +39,11 @@ public interface ChatbotService {
     Sentence generateResponse(final Message message);
 
     /**
+     * Check the word / first 2 words from words[i] and return FORMAL, INFORMAL or null
+     */
+    AddressingMode getAddressingModeOfWord(final List<Word> words, final int index);
+
+    /**
      * @return random good response or <null> if no responses are available for the provided sentence
      */
     Sentence pickGoodResponseForSentence(final Sentence sentence);

@@ -4,12 +4,14 @@ import domain.entities.Message;
 import domain.entities.ResponseMessageAndInformation;
 import domain.entities.Sentence;
 import domain.entities.User;
+import domain.entities.Word;
 import domain.enums.AddressingMode;
 import domain.enums.ChatbotRequestType;
 import domain.enums.MessageSource;
 import domain.information.Information;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import repositories.DexRepository;
 import services.api.ChatService;
 import services.api.ChatbotService;
 import services.api.InformationDetectionService;
@@ -23,6 +25,8 @@ import java.util.List;
 import java.util.Random;
 
 import static app.Main.CHATBOT_ID;
+import static domain.enums.AddressingMode.FORMAL;
+import static domain.enums.AddressingMode.INFORMAL;
 import static domain.enums.ChatbotRequestType.DEFAULT;
 import static domain.enums.ChatbotRequestType.GET_INFORMATION_FROM_USER;
 import static domain.enums.SpeechType.DIRECTIVE;
@@ -34,15 +38,17 @@ public class ChatServiceImpl implements ChatService {
     private final MessageService messageService;
     private final ChatbotService chatbotService;
     private final InformationDetectionService informationDetectionService;
+    private final DexRepository dexRepository;
     private ChatbotRequestType chatbotRequestType = DEFAULT;
     private final Random random;
 
     @Autowired
-    public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService, InformationDetectionService informationDetectionService) {
+    public ChatServiceImpl(MessageService messageService, UserService userService, ChatbotService chatbotService, InformationDetectionService informationDetectionService, DexRepository dexRepository) {
         this.messageService = messageService;
         this.userService = userService;
         this.chatbotService = chatbotService;
         this.informationDetectionService = informationDetectionService;
+        this.dexRepository = dexRepository;
         random = new Random();
     }
 
@@ -111,6 +117,9 @@ public class ChatServiceImpl implements ChatService {
         final Message previousMessage = messageService.getLastMessage(toUserId, fromUserId);
         final Message message = addMessageAndSetItAsResponse(text, fromUser, toUser, messageSource, previousMessage);
 
+        // update user's addressing mode
+        updateUserAddressingMode(fromUser, message.getEquivalentSentence().getWords());
+
         // extract the information from the message and update the user details
         Class<Information> informationClass = null;
         String informationFieldNamePath = null;
@@ -122,7 +131,7 @@ public class ChatServiceImpl implements ChatService {
         try {
             updatedInformationValues = informationDetectionService.identifyAndSetInformation(informationClass, informationFieldNamePath, message, fromUser);
             if (updatedInformationValues != null) {
-                userService.updateUserFirstName(fromUser);
+                userService.updateUser(fromUser);
             }
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
@@ -158,6 +167,35 @@ public class ChatServiceImpl implements ChatService {
         }
 
         return new ResponseMessageAndInformation(response, informationResponse.toString());
+    }
+
+    private void updateUserAddressingMode(final User user, final List<Word> words) {
+        int nrOfFormalWords = 0;
+        int nrOfInformalWords = 0;
+
+        for (int i = 0; i < words.size(); i++) {
+            // check greetings and pronouns
+            final AddressingMode wordAddressingMode = chatbotService.getAddressingModeOfWord(words, i);
+            if (wordAddressingMode == FORMAL) {
+                nrOfFormalWords++;
+                continue;
+            }
+            if (wordAddressingMode == INFORMAL) {
+                nrOfInformalWords++;
+                continue;
+            }
+
+            // check verbs
+            final AddressingMode addressingMode = dexRepository.getWordAddressingModeFromDex(words.get(i));
+            if (addressingMode == FORMAL) {
+                nrOfFormalWords++;
+            } if (addressingMode == INFORMAL) {
+                nrOfInformalWords++;
+            }
+        }
+
+        user.getAddressingModeStatus().add(nrOfFormalWords, nrOfInformalWords);
+        userService.updateUser(user);
     }
 
     private Message addMessageAndSetItAsResponse(final String text, final User fromUser, final User toUser, final MessageSource messageSource, final Message previousMessage) {
@@ -228,7 +266,7 @@ public class ChatServiceImpl implements ChatService {
 
     private String getRandomRequestAgainText(final AddressingMode addressingMode) {
         final List<String> requestAgainSentences = new ArrayList<>();
-        if (addressingMode == AddressingMode.FORMAL) {
+        if (addressingMode == FORMAL) {
             requestAgainSentences.add("Nu mi-ați răspuns la întrebare.");
         } else {
             requestAgainSentences.add("Nu mi-ai răspuns la întrebare.");

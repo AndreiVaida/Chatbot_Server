@@ -42,4 +42,9 @@ public class AddressingModeStatus {
         }
         return AddressingMode.FORMAL_AND_INFORMAL;
     }
+
+    public void add(final int nrOfFormalWords, final int nrOfInformalWords) {
+        this.nrOfFormalWords += nrOfFormalWords;
+        this.nrOfInformalWords += nrOfInformalWords;
+    }
 }

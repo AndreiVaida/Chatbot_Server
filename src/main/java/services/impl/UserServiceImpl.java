@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUserFirstName(final User user) {
+    public void updateUser(final User user) {
         userRepository.save(user);
     }
 
@@ -172,7 +172,7 @@ public class UserServiceImpl implements UserService {
     }
 
 //    @Override
-//    public void updateUserFirstName(final List<Information> informationList, final User user) {
+//    public void updateUser(final List<Information> informationList, final User user) {
 //        for (Information information : informationList) {
 //            // iterate getters of the information object
 //            for (Method getterOfInformation : information.getClass().getMethods()) {

@@ -18,7 +18,7 @@ public interface UserService {
 
     User findUserByEmail(final String email);
 
-    void updateUserFirstName(final User user);
+    void updateUser(final User user);
 
     Information getInformationByClass(final Long userId, final Class<Information> informationClass) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException;
 

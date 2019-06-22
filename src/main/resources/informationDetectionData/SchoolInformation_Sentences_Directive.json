@@ -1,62 +1,86 @@
 [
   {
-    "texts": ["Ce îți place să faci în timpul liber ?", "Ce hobby-uri ai ?", "Ce faci de obicei în timpul liber ?"],
+    "texts": ["Ești la școală ?", "Ești școlar ?", "Ești elev ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "hobbies#?"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "isAtSchool"
   },
   {
-    "texts": ["Îți place să citești ?", "Ție îți place să citești cărți ?", "Îți plac cărțile ?"],
+    "texts": ["La ce școală ești ?", "Cum se numește școala ta ?", "La ce școală mergi ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "likeReading"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "schoolName"
   },
   {
-    "texts": ["Care e cartea ta preferată ?", "Care e cartea ta favorită ?", "Ce îți place să citești cel mai mult ?"],
+    "texts": ["La ce profil ești ?", "Tu la ce profil ești ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "favouriteBook"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "schoolProfile"
   },
   {
-    "texts": ["Ce carte citești acum ?", "Ce citești în perioada asta ?"],
+    "texts": ["În ce clasă ești ?", "Tu în ce clasă ești ?", "În ce clasă ești tu ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "currentReadingBook"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "schoolClass"
   },
   {
-    "texts": ["Îți plac jocurile (pe calculator) ?", "Îți plac jocurile video ?", "Îți place să te joci pe calculator ?"],
+    "texts": ["Care e materia ta favorită ?", "Care e materia ta preferată ?", "Care materie îți place cel mai mult ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "likeVideoGames"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "favouriteCourse"
   },
   {
-    "texts": ["Care e jocul tău preferat (pe calculator) ?", "Ce îți place să joci cel mai mult pe calculator ?"],
+    "texts": ["Care e profesorul tău preferat ?", "De care profesor îți place cel mai mult ?", "Care profesor crezi că predă cel mai bine ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "favouriteVideoGame"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "favouriteProfessor"
   },
   {
-    "texts": ["Ce joci acum pe calculator ?", "Acum ce joci ?"],
+    "texts": ["Care e cel mai bun prieten de la școală ?", "Cum îl cheamă pe cel mai bun prieten al tău de la școală ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "currentPlayedGame"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "bestFriend"
   },
   {
-    "texts": ["Îți plac jocurile (cele de masă) ?", "Îți place să joci jocuri de masă ?"],
+    "texts": ["Ce notă iei de obicei la română ?", "Ce notă ai luat ultima dată la română ?", "Ce medie ai la română ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "likeBoardGames"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "coursesGrades#limba și literatura română"
   },
   {
-    "texts": ["Care e jocul tău preferat (de masă) ?", "Ce îți place să joci cel mai mult cu prietenii (dintre jocurile de masă) ?"],
+    "texts": ["Ce notă iei de obicei la mate ?", "Ce notă ai luat ultima dată la matematică ?", "Ce medie ai la mate ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "favouriteBoardGame"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "coursesGrades#matematică"
   },
   {
-    "texts": ["Ce joc de masă ai jucat ultima dată ?", "În ultima perioadă ce joc de masă ai jucat mai mult ?"],
+    "texts": ["Ce notă iei de obicei la istorie ?", "Ce notă ai luat ultima dată la istorie ?", "Ce medie ai la istorie ?"],
     "speechType": "DIRECTIVE",
-    "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "currentBoardGame"
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "coursesGrades#istorie"
+  },
+  {
+    "texts": ["Ce notă iei de obicei la geografie ?", "Ce notă ai luat ultima dată la geografie ?", "Ce medie ai la geografie ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "coursesGrades#geografie"
+  },
+  {
+    "texts": ["Ce notă iei de obicei la biologie ?", "Ce notă ai luat ultima dată la biologie ?", "Ce medie ai la biologie ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "coursesGrades#biologie"
+  },
+  {
+    "texts": ["Ce notă iei de obicei la fizică ?", "Ce notă ai luat ultima dată la fizică ?", "Ce medie ai la fizică ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "coursesGrades#fizică"
+  },
+  {
+    "texts": ["Ce notă iei de obicei la informatică ?", "Ce notă ai luat ultima dată la info ?", "Ce medie ai la informatică ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationFieldNamePath": "coursesGrades#informatică"
   }
 ]

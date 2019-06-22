@@ -21,7 +21,7 @@ public class DexRepository {
     private void connectToDatabase() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/DEX", "root", "parola");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/DEX", "root", "root");
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
@@ -132,6 +132,56 @@ public class DexRepository {
                             } // else continue
                         }
                     }
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        // not found any conjugate text verbs in the second person
+        return null;
+    }
+
+    /**
+     * @param word if is not a verb in the second person, won't process it and return null
+     * @return FORMAL or INFORMAL if the word is a verb at 2nd person, otherwise return <null>
+     * Nu verifică verbe la modurile imperfect, perfect simplu sau mai mult ca perfect
+     */
+    @SuppressWarnings("Duplicates")
+    public AddressingMode getWordAddressingModeFromDex(final Word word) {
+        if (connection == null) {
+            return null;
+        }
+
+        try {
+            // find the word in DEX
+            final Statement statement1 = connection.createStatement();
+            final ResultSet lexemes = statement1.executeQuery("select * from inflectedform where formNoAccent like \"" + word.getTextWithDiacritics().toLowerCase() + "\"");
+            if (!lexemes.isBeforeFirst()) {
+                return null; // word not found in DEX
+            }
+            while (lexemes.next()) {
+                final int lexemeInflectionId = lexemes.getInt("inflectionId");
+
+                // check if the word is a verb in the second person
+                final Statement statement2 = connection.createStatement();
+                final ResultSet lexemeInflection = statement2.executeQuery("select * from inflection where id = " + lexemeInflectionId);
+                if (!lexemeInflection.next()) {
+                    // corrupted/incomplete database
+                    continue;
+                }
+                final String lexemeInflectionDescription = lexemeInflection.getString("description").toLowerCase();
+                if (!lexemeInflectionDescription.contains("verb") || !lexemeInflectionDescription.contains(" ii-a")) {
+                    // the word is NOT a verb in the second person
+                    continue;
+                }
+                // the lexeme is ok
+
+                if (lexemeInflectionDescription.contains("plural")) {
+                    return AddressingMode.FORMAL;
+                }
+                if (lexemeInflectionDescription.contains("singular")) {
+                    return AddressingMode.INFORMAL;
                 }
             }
 

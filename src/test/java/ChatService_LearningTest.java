@@ -76,7 +76,7 @@ public class ChatService_LearningTest {
         messageService = new MessageServiceImpl(messageRepository);
         final ChatbotService chatbotService = new ChatbotServiceImpl(messageService, sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
         final InformationDetectionService informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository, rejectingExpressionRepository);
-        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationDetectionService);
+        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationDetectionService, dexRepository);
         // add users
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);

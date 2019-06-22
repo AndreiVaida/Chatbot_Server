@@ -37,6 +37,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -331,8 +332,40 @@ public class ChatbotServiceImpl implements ChatbotService {
                 text.append("dumneavoastră");
                 continue;
             }
-            if (word.getText().toLowerCase().equals("dumneavoastra") && INFORMAL.equals(addressingMode)) {
+            if (word.getText().toLowerCase().startsWith("dumnea") && INFORMAL.equals(addressingMode)) {
                 text.append("tu");
+                continue;
+            }
+
+            // îți / vă
+            if (word.getText().toLowerCase().equals("iti")) {
+                if (FORMAL.equals(addressingMode)){
+                    text.append("vă");
+                    continue;
+                }
+                if (INFORMAL.equals(addressingMode)){
+                    text.append("îți");
+                    continue;
+                }
+            }
+            if (word.getText().toLowerCase().equals("va")) {
+                if (INFORMAL.equals(addressingMode)){
+                    text.append("îți");
+                    continue;
+                }
+                if (FORMAL.equals(addressingMode)){
+                    text.append("vă");
+                    continue;
+                }
+            }
+
+            // ți-ar, ți-aș / v-ar, v-ați
+            if (word.getText().toLowerCase().contains("ti-") && FORMAL.equals(addressingMode)) {
+                text.append(word.getTextWithDiacritics().replace("ti-", "v-").replace("ți-", "v-"));
+                continue;
+            }
+            if (word.getText().toLowerCase().contains("v-") && INFORMAL.equals(addressingMode)) {
+                text.append(word.getText().replace("v-", "ți-"));
                 continue;
             }
 
@@ -404,6 +437,38 @@ public class ChatbotServiceImpl implements ChatbotService {
         }
     }
 
+    public AddressingMode getAddressingModeOfWord(final List<Word> words, final int index) {
+        final String word = words.get(index).getText().toLowerCase();
+        String nextWord = null;
+        if (words.size() > index + 1) {
+            nextWord = words.get(index + 1).getText().toLowerCase();
+        }
+
+        // greeting
+        if (nextWord != null) {
+            if (word.equals("buna")) {
+                if (nextWord.equals("dimineata") || nextWord.equals("ziua") || nextWord.equals("seara")) {
+                    return FORMAL;
+                }
+                if (nextWord.equals("dimi")) {
+                    return INFORMAL;
+                }
+                return null;
+            }
+        }
+        if (word.equals("neata") || word.equals("salut") || word.equals("servus") || word.equals("salutare") || word.equals("hey")) {
+            return INFORMAL;
+        }
+        // pronoun
+        if (word.startsWith("dumnea") || word.equals("dvs") || word.equals("va")) {
+            return FORMAL;
+        }
+        if (word.equals("tu") || word.equals("iti")) {
+            return INFORMAL;
+        }
+        return null;
+    }
+
     /**
      * WARNING: if the word already exists, we don't check if it has the same addressing mode
      * */
@@ -417,7 +482,13 @@ public class ChatbotServiceImpl implements ChatbotService {
         return word;
     }
 
+    /**
+     * @return number of greeting words
+     */
     private int wordIsPartOfGreeting(final Sentence sentence, int wordIndex) {
+        if (wordIndex > 1) {
+            return 0;
+        }
         final String word = sentence.getWords().get(wordIndex).getText();
         if (word.equals("salut") || word.equals("servus") || word.equals("salutare") || word.equals("hey")) {
             return 1;
@@ -712,6 +783,18 @@ public class ChatbotServiceImpl implements ChatbotService {
             try {
                 final Method getterOfUser = user.getClass().getMethod("get" + infoClass.getSimpleName());
                 final Information information = (Information) getterOfUser.invoke(user);
+                if (information instanceof SchoolInformation && probablyAtFaculty(user) && isAtFacultyUnknown(user)) {
+                    continue; // go to FacultyInformation
+                }
+                // if the user is not at school/faculty, don't ask about that
+                if (information instanceof SchoolInformation && !((SchoolInformation) information).getIsAtSchool()) {
+                    continue;
+                }
+                if (information instanceof FacultyInformation && !((FacultyInformation) information).getIsAtFaculty()) {
+                    continue;
+                }
+
+                // default: get path to first unknown information field
                 informationFieldNamePath = getFirstNullItemNamePath(information, infoClass);
 
                 // don't request same information 2 times în X minutes
@@ -749,11 +832,21 @@ public class ChatbotServiceImpl implements ChatbotService {
             String localityType = "sat";
             if (user.getPersonalInformation().getHomeAddress().getLocalityType().equals(URBAN)) {
                 localityType = "oraș";
+                localityType = "oraș";
             }
             final List<Sentence> sentencesByLocalityType = getSentencesThatContains(sentences, new Word(localityType));
             return sentencesByLocalityType.get(random.nextInt(sentencesByLocalityType.size()));
         }
         return sentences.get(random.nextInt(sentences.size()));
+    }
+
+    private boolean probablyAtFaculty(final User user) {
+        final SimpleDate birthDay = user.getPersonalInformation().getBirthDay();
+        return birthDay != null && birthDay.getYear() != null && LocalDate.now().getYear() - birthDay.getYear() >= 19;
+    }
+
+    private boolean isAtFacultyUnknown(final User user) {
+        return user.getFacultyInformation() == null || user.getFacultyInformation().getIsAtFaculty() == null;
     }
 
     private List<Sentence> getSentencesThatContains(final List<Sentence> sentences, final Word wordToContain) {
@@ -829,6 +922,20 @@ public class ChatbotServiceImpl implements ChatbotService {
                         final Method getterOfAddress = address.getClass().getMethod("getLocalityType");
                         final LocalityType localityType = (LocalityType) getterOfAddress.invoke(address);
                         if (localityType != null && localityType.equals(RURAL) && (fieldName.endsWith("neighborhood") || fieldName.endsWith("floor") || fieldName.endsWith("apartmentNumber"))) {
+                            continue;
+                        }
+                    }
+                    if (information instanceof FreeTimeInformation) {
+                        final Boolean likeReading = ((FreeTimeInformation)information).getLikeReading();
+                        if (likeReading != null && !likeReading && (fieldName.equals("favouriteBook") || fieldName.equals("currentReadingBook"))) {
+                            continue;
+                        }
+                        final Boolean likeVideoGames = ((FreeTimeInformation)information).getLikeVideoGames();
+                        if (likeVideoGames != null && !likeVideoGames && (fieldName.equals("favouriteVideoGame") || fieldName.equals("currentPlayedGame"))) {
+                            continue;
+                        }
+                        final Boolean likeBoardGames = ((FreeTimeInformation)information).getLikeBoardGames();
+                        if (likeBoardGames != null && !likeBoardGames && (fieldName.equals("favouriteBoardGame") || fieldName.equals("currentBoardGame"))) {
                             continue;
                         }
                     }

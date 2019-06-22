@@ -87,7 +87,7 @@ public class ChatService_InformationDetectionTest {
         messageService = new MessageServiceImpl(messageRepository);
         final ChatbotService chatbotService = new ChatbotServiceImpl(messageService, sentenceRepository, wordRepository, sentenceDetectionParametersRepository, dexRepository, linguisticExpressionRepository);
         informationDetectionService = new InformationDetectionServiceImpl(linguisticExpressionRepository, expressionItemRepository, personalInformationRepository, rejectingExpressionRepository);
-        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationDetectionService);
+        chatService = new ChatServiceImpl(messageService, userService, chatbotService, informationDetectionService, dexRepository);
         // add users
         andy = new User(null, "andy@andy.andy", "parola", "Andy", "Bot", new SimpleDate(2016, 6, 26));
         userService.addUser(andy);
@@ -255,7 +255,7 @@ public class ChatService_InformationDetectionTest {
         user.getPersonalInformation().setSurname("Surname");
         user.getPersonalInformation().setGender(Gender.MALE);
         user.getPersonalInformation().setBirthDay(new SimpleDate(1,1,1));
-        userService.updateUserFirstName(user);
+        userService.updateUser(user);
         Assert.assertNull(user.getPersonalInformation().getHomeAddress());
         // the chatbot request the planet name
         Message messageFromChatbot = chatService.requestMessageFromChatbot(user.getId(), GET_INFORMATION_FROM_USER);
@@ -273,7 +273,7 @@ public class ChatService_InformationDetectionTest {
         user.getPersonalInformation().setSurname("Surname");
         user.getPersonalInformation().setGender(Gender.MALE);
         user.getPersonalInformation().setBirthDay(new SimpleDate(1,1,1));
-        userService.updateUserFirstName(user);
+        userService.updateUser(user);
         Assert.assertNull(user.getPersonalInformation().getHomeAddress());
         // the chatbot request the planet name
         Message messageFromChatbot = chatService.requestMessageFromChatbot(user.getId(), GET_INFORMATION_FROM_USER);

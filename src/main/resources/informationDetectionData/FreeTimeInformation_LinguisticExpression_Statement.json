@@ -12,6 +12,8 @@
       [{"text": "ador", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": "iubesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "iubesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "obicei", "itemClass": "NOT_AN_INFORMATION"}, {"text": "fac", "itemClass": "NOT_AN_INFORMATION"},{"text": null, "itemClass": "NAME"}],
+      [{"text": "obicei", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
     "informationClassDto": "FREE_TIME_INFORMATION",

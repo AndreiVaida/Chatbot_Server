@@ -244,7 +244,31 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
     }
 
     private String[] splitInSubentences(final String text) {
-        return text.split("([.,]+)| și ");
+        final String[] split = text.split("([.,]+)| și ");
+        final List<String> subsentences = new ArrayList<>();
+        // don't split dates by dot
+        for (int i = 0; i < split.length - 1; i++) {
+            String subsentence = split[i];
+
+            boolean isNumber_S1 = false;
+            boolean isNumber_S2 = false;
+            boolean isNumber_S3 = false;
+            try { Integer.parseInt(split[i]); isNumber_S1 = true; }
+            catch (NumberFormatException ignored) {}
+            try { Integer.parseInt(split[i + 1]); isNumber_S2 = true; }
+            catch (NumberFormatException ignored) {}
+            try { Integer.parseInt(split[i + 2]); isNumber_S3 = true; }
+            catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {}
+
+            if (isNumber_S1 && isNumber_S2) {
+                subsentence += split[i + 1];
+            }
+            if (isNumber_S1 && isNumber_S2 && isNumber_S3) {
+                subsentence += split[i + 2];
+            }
+            subsentences.add(subsentence);
+        }
+        return subsentences.toArray(new String[0]);
     }
 
     private String removeMapKeysFromPath(final String informationFieldNamePath) {
@@ -397,23 +421,31 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                     informationString_SB.append(word).append(" ");
                 }
                 final String informationString = Word.replaceDiacritics(informationString_SB.toString()).toLowerCase();
-                if (informationString.contains("da") && informationString.contains("de unde")) {
+                if ((informationString.contains("da") && informationString.contains("de unde")) || informationString.contains("mai putin")) {
                     return false;
                 }
-                return informationString.contains("da") || informationString.contains("sigur") || informationString.contains("afirm") || informationString.contains("categoric") ||
+                if (informationString.contains("nu") || informationString.contains("neg") || informationString.contains("nici vorba") ||
+                        informationString.contains("niciodata") || informationString.contains("never") || informationString.contains("nope")) {
+                    return false;
+                }
+                if (informationString.contains("da") || informationString.contains("sigur") || informationString.contains("afirm") || informationString.contains("categoric") ||
                         informationString.contains("absolut") || informationString.contains("normal") || (informationString.contains("evident") && !informationString.contains("nu")) ||
                         informationString.contains("desigur") || informationString.contains("putin") || informationString.contains("cateodata") ||
-                        (informationString.contains("ca") && informationString.contains("de") && informationString.contains("cat"));
+                        (informationString.contains("ca") && informationString.contains("de") && informationString.contains("cat"))) {
+                    return true;
+                }
+                return null;
             }
 
             case DATE: {
                 try {
                     // ieri / azi / mâine / poimâine
-                    if (informationWords[0].toLowerCase().equals("azi") || informationWords[0].toLowerCase().startsWith("ast")) {
+                    final String informationWord = Word.replaceDiacritics(informationWords[0].toLowerCase());
+                    if (informationWord.equals("azi") || informationWord.startsWith("ast")) {
                         final LocalDate today = LocalDate.now();
                         return new SimpleDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
                     }
-                    if (informationWords[0].toLowerCase().equals("ieri")) {
+                    if (informationWord.equals("ieri")) {
                         final LocalDate yesterday = LocalDate.now().minusDays(1);
                         return new SimpleDate(yesterday.getYear(), yesterday.getMonthValue(), yesterday.getDayOfMonth());
                     }
@@ -472,21 +504,23 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
             }
 
             case GENDER: {
-                if (informationWords[0].toLowerCase().startsWith("b") || informationWords[0].toLowerCase().startsWith("mas")) {
+                final String informationWord = Word.replaceDiacritics(informationWords[0].toLowerCase());
+                if (informationWord.startsWith("b") || informationWord.startsWith("mas") || informationWord.equals("domn") || informationWord.equals("domnisor")) {
                     return Gender.MALE;
                 }
-                if (informationWords[0].toLowerCase().startsWith("f")) {
+                if (informationWord.startsWith("f")  || informationWord.equals("doamna") || informationWord.equals("domnisoara")) {
                     return Gender.FEMALE;
                 }
                 return null;
             }
 
             case LOCALITY_TYPE: {
-                if (informationWords[0].toLowerCase().startsWith("ța") || informationWords[0].toLowerCase().startsWith("ta") || informationWords[0].toLowerCase().startsWith("sat") || informationWords[0].toLowerCase().startsWith("ru")) { // țară || sat || rural
+                final String informationWord = Word.replaceDiacritics(informationWords[0].toLowerCase());
+                if (informationWord.startsWith("ța") || informationWord.startsWith("ta") || informationWord.startsWith("sat") || informationWord.startsWith("ru")) { // țară || sat || rural
                     return LocalityType.RURAL;
                 }
-                if (informationWords[0].toLowerCase().startsWith("or") || informationWords[0].toLowerCase().startsWith("ur")) { // oraș || urban
-                    return LocalityType.RURAL;
+                if (informationWord.startsWith("or") || informationWord.startsWith("ur")) { // oraș || urban
+                    return LocalityType.URBAN;
                 }
                 return null;
             }
