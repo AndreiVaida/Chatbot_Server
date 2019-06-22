@@ -247,24 +247,30 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
         final String[] split = text.split("([.,]+)| și ");
         final List<String> subsentences = new ArrayList<>();
         // don't split dates by dot
-        for (int i = 0; i < split.length - 1; i++) {
+        for (int i = 0; i < split.length; i++) {
             String subsentence = split[i];
+            final String[] subsentenceWords = subsentence.split(" ");
+            final String lastSubsentenceWord = subsentenceWords[subsentenceWords.length - 1];
 
             boolean isNumber_S1 = false;
             boolean isNumber_S2 = false;
             boolean isNumber_S3 = false;
-            try { Integer.parseInt(split[i]); isNumber_S1 = true; }
+            try { Integer.parseInt(lastSubsentenceWord); isNumber_S1 = true; }
             catch (NumberFormatException ignored) {}
             try { Integer.parseInt(split[i + 1]); isNumber_S2 = true; }
-            catch (NumberFormatException ignored) {}
-            try { Integer.parseInt(split[i + 2]); isNumber_S3 = true; }
             catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {}
+            try {
+                final String nextNextFirstSubsentenceWord = split[i+2].split(" ")[0];
+                Integer.parseInt(nextNextFirstSubsentenceWord); isNumber_S3 = true;
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {}
 
             if (isNumber_S1 && isNumber_S2) {
-                subsentence += split[i + 1];
+                subsentence += "." + split[i + 1];
+                i++;
             }
             if (isNumber_S1 && isNumber_S2 && isNumber_S3) {
-                subsentence += split[i + 2];
+                subsentence += "." + split[i + 1];
+                i++;
             }
             subsentences.add(subsentence);
         }
@@ -412,7 +418,11 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                 if (informationWords[0].toLowerCase().equals("parter")) return 0;
                 if (informationWords[0].toLowerCase().equals("subsol")) return -1;
                 if (informationWords[0].toLowerCase().equals("ultimul")) return 10;
-                return Integer.valueOf(informationWords[0]);
+                try {
+                    return Integer.valueOf(informationWords[0]);
+                } catch (NumberFormatException ignored) {
+                    return null;
+                }
             }
 
             case BOOLEAN: {
@@ -431,7 +441,7 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                 if (informationString.contains("da") || informationString.contains("sigur") || informationString.contains("afirm") || informationString.contains("categoric") ||
                         informationString.contains("absolut") || informationString.contains("normal") || (informationString.contains("evident") && !informationString.contains("nu")) ||
                         informationString.contains("desigur") || informationString.contains("putin") || informationString.contains("cateodata") ||
-                        (informationString.contains("ca") && informationString.contains("de") && informationString.contains("cat"))) {
+                        (informationString.contains("ca") && informationString.contains("de") && informationString.contains("cat")) || informationString.contains("probabil")) {
                     return true;
                 }
                 return null;
@@ -477,20 +487,27 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                         return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), pastTime.getDayOfMonth());
                     }
 
+                    // remove dots from date
+                    final List<String> informationWordsNoDots = new ArrayList<>();
+                    for (String word : informationWords) {
+                        if (!word.equals(".")) {
+                            informationWordsNoDots.add(word);
+                        }
+                    }
                     Integer day = null;
                     Integer month = null;
                     Integer year = null;
-                    if (informationWords.length == 1) { // just month
-                        month = stringToMonth(informationWords[0]);
+                    if (informationWordsNoDots.size() == 1) { // just month
+                        month = stringToMonth(informationWordsNoDots.get(0));
                     }
-                    if (informationWords.length == 2) { // day + month
-                        day = Integer.valueOf(informationWords[0]);
-                        month = stringToMonth(informationWords[1]);
+                    if (informationWordsNoDots.size() == 2) { // day + month
+                        day = Integer.valueOf(informationWordsNoDots.get(0));
+                        month = stringToMonth(informationWordsNoDots.get(1));
                     }
-                    if (informationWords.length >= 3) { // day + month + year
-                        day = Integer.valueOf(informationWords[0]);
-                        month = stringToMonth(informationWords[1]);
-                        year = Integer.valueOf(informationWords[2]);
+                    if (informationWordsNoDots.size() >= 3) { // day + month + year
+                        day = Integer.valueOf(informationWordsNoDots.get(0));
+                        month = stringToMonth(informationWordsNoDots.get(1));
+                        year = Integer.valueOf(informationWordsNoDots.get(2));
                     }
                     if (day == null && month == null && year == null) {
                         return null;

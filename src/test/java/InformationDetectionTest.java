@@ -406,12 +406,12 @@ public class InformationDetectionTest {
         informationDetectionService.addLinguisticExpression(linguisticExpression);
         Assert.assertEquals(1, informationDetectionService.getAllLinguisticExpressions().size());
 
-        // Test 1.1: favouriteCourse ("NAME")
+        // Test 1.1: isAtSchool ("BOOLEAN")
         informationDetectionService.identifyAndSetInformation(SchoolInformation.class, "isAtSchool", new Message("Da"), user);
         Assert.assertNotNull(user.getSchoolInformation());
-        Assert.assertEquals(true, user.getSchoolInformation().getIsAtSchool());
+        Assert.assertTrue(user.getSchoolInformation().getIsAtSchool());
         // the course should appear in coursesGrades map
-        Assert.assertEquals(true, user.getSchoolInformation().getIsAtSchool());
+        Assert.assertTrue(user.getSchoolInformation().getIsAtSchool());
 
         /* DIRECTIVE: "Ce notă iei de obicei la limba română ?" */
         // TEST 2: "De obicei am NUMBER."

@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Objects;
 
 // Lombok
 @NoArgsConstructor
@@ -53,5 +54,20 @@ public class SimpleDate {
             string += year;
         }
         return string;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimpleDate that = (SimpleDate) o;
+        return Objects.equals(year, that.year) &&
+                Objects.equals(month, that.month) &&
+                Objects.equals(day, that.day);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(year, month, day);
     }
 }
