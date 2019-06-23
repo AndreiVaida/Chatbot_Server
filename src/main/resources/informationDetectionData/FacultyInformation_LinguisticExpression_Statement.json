@@ -133,6 +133,8 @@
       [{"text": "obicei", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
       [{"text": "obicei", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": "iau", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": "luat", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": "luat", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": "ultima", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": "doar", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
       [{"text": "ieșit", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
       [{"text": "avut", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],

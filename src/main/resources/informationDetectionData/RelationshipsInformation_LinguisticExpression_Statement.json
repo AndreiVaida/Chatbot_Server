@@ -1,0 +1,38 @@
+[
+  {
+    "expressionItems": [[{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": "de", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": "copii", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": null, "itemClass": "NUMBER"}, {"text": "am", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "doar", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "doar", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": null, "itemClass": "NUMBER"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "RELATIONSHIPS_INFORMATION",
+    "informationFieldNamePath": "numberOfBrothersAndSisters"
+  },
+  {
+    "expressionItems": [[{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": "de", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": "copii", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": null, "itemClass": "NUMBER"}, {"text": "am", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "doar", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "doar", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": null, "itemClass": "NUMBER"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "RELATIONSHIPS_INFORMATION",
+    "informationFieldNamePath": "numberOfGrandparents"
+  },
+  {
+    "expressionItems": [[{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": "de", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": "copii", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "am", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": null, "itemClass": "NUMBER"}, {"text": "am", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "doar", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "doar", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": null, "itemClass": "NUMBER"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "RELATIONSHIPS_INFORMATION",
+    "informationFieldNamePath": "numberOfKids"
+  }
+]

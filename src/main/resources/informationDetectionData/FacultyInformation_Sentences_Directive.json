@@ -24,7 +24,7 @@
     "informationFieldNamePath": "facultyYear"
   },
   {
-    "texts": ["În ce an grupă ești ?", "Tu în ce grupă ești la facultate ?", "La facultate în ce grupă ești tu ?"],
+    "texts": ["În ce grupă ești ?", "Tu în ce grupă ești la facultate ?", "La facultate în ce grupă ești tu ?"],
     "speechType": "DIRECTIVE",
     "informationClassDto": "FACULTY_INFORMATION",
     "informationFieldNamePath": "facultyGroup"

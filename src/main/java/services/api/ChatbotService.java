@@ -13,7 +13,7 @@ import java.util.List;
 public interface ChatbotService {
     LocalTime endOfMorning = LocalTime.of(11, 0, 0);
     LocalTime startOfEvening = LocalTime.of(18, 0, 0);
-    int MINUTES_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION = 10;
+    int MINUTES_TO_WAIT_TO_REQUEST_AGAIN_SAME_INFORMATION = 1;
 
     /**
      * @param text - the text for which is intended to get a sentence

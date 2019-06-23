@@ -1,0 +1,20 @@
+[
+  {
+    "texts": ["Câți frați/surori ani ?", "Câți frați sau surori ai tu ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "RELATIONSHIPS_INFORMATION",
+    "informationFieldNamePath": "numberOfBrothersAndSisters"
+  },
+  {
+    "texts": ["Câți bunici ani ?", "Câți bunici îți mai trăiesc ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "RELATIONSHIPS_INFORMATION",
+    "informationFieldNamePath": "numberOfGrandparents"
+  },
+  {
+    "texts": ["Câți copii ani ?", "Tu câți copii ai ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "RELATIONSHIPS_INFORMATION",
+    "informationFieldNamePath": "numberOfKids"
+  }
+]

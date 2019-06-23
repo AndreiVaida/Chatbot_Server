@@ -33,54 +33,54 @@ public class RelationshipsInformation implements Information {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "MOTHER_INFORMATION")
-    private PersonalInformation motherPersonalInformation;
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "MOTHER_INFORMATION")
+//    private PersonalInformation motherPersonalInformation;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FATHER_INFORMATION")
-    private PersonalInformation fatherPersonalInformation;
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "FATHER_INFORMATION")
+//    private PersonalInformation fatherPersonalInformation;
 
     @Column
     private Integer numberOfBrothersAndSisters;
 
-    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
-    @JoinColumn(name = "BROTHERS_SISTERS_INFORMATION")
-    @MapKey(name = "firstName")
-    private Map<String, PersonalInformation> brothersAndSistersPersonalInformation = new HashMap<>();
+//    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
+//    @JoinColumn(name = "BROTHERS_SISTERS_INFORMATION")
+//    @MapKey(name = "firstName")
+//    private Map<String, PersonalInformation> brothersAndSistersPersonalInformation = new HashMap<>();
 
     @Column
     private Integer numberOfGrandparents;
 
-    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
-    @JoinColumn(name = "GRANDPARENTS_INFORMATION")
-    @MapKey(name = "firstName")
-    private Map<String, PersonalInformation> grandparentsPersonalInformation = new HashMap<>();
+//    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
+//    @JoinColumn(name = "GRANDPARENTS_INFORMATION")
+//    @MapKey(name = "firstName")
+//    private Map<String, PersonalInformation> grandparentsPersonalInformation = new HashMap<>();
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "WIFE_HUSBAND_INFORMATION")
-    private PersonalInformation wifeOrHusbandInformation;
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "WIFE_HUSBAND_INFORMATION")
+//    private PersonalInformation wifeOrHusbandInformation;
 
     @Column
     private Integer numberOfKids;
 
-    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
-    @JoinColumn(name = "KIDS_INFORMATION")
-    @MapKey(name = "firstName")
-    private Map<String, PersonalInformation> kidsPersonalInformation = new HashMap<>(); // <kidFirstName, PersonalInformation>
+//    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
+//    @JoinColumn(name = "KIDS_INFORMATION")
+//    @MapKey(name = "firstName")
+//    private Map<String, PersonalInformation> kidsPersonalInformation = new HashMap<>(); // <kidFirstName, PersonalInformation>
 
     @Override
     public List<String> getFieldNamesInImportanceOrder() {
         final List<String> fieldNamesInImportanceOrder = new ArrayList<>();
-        fieldNamesInImportanceOrder.add("motherPersonalInformation");
-        fieldNamesInImportanceOrder.add("fatherPersonalInformation");
+        //fieldNamesInImportanceOrder.add("motherPersonalInformation");
+        //fieldNamesInImportanceOrder.add("fatherPersonalInformation");
         fieldNamesInImportanceOrder.add("numberOfBrothersAndSisters");
-        fieldNamesInImportanceOrder.add("brothersAndSistersPersonalInformation");
+        //fieldNamesInImportanceOrder.add("brothersAndSistersPersonalInformation");
         fieldNamesInImportanceOrder.add("numberOfGrandparents");
-        fieldNamesInImportanceOrder.add("grandparentsPersonalInformation");
-        fieldNamesInImportanceOrder.add("wifeOrHusbandInformation");
+        //fieldNamesInImportanceOrder.add("grandparentsPersonalInformation");
+        //fieldNamesInImportanceOrder.add("wifeOrHusbandInformation");
         fieldNamesInImportanceOrder.add("numberOfKids");
-        fieldNamesInImportanceOrder.add("kidsPersonalInformation");
+        //fieldNamesInImportanceOrder.add("kidsPersonalInformation");
         return fieldNamesInImportanceOrder;
     }
 }

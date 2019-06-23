@@ -123,21 +123,21 @@ public class InformationMapper {
 
     public static RelationshipInformationDto relationshipInformationToRelationshipInformationDto(final RelationshipsInformation entity) {
         final RelationshipInformationDto dto = new RelationshipInformationDto();
-        dto.setMotherPersonalInformation(personalInformationToPersonalInformationDto(entity.getMotherPersonalInformation()));
-        dto.setFatherPersonalInformation(personalInformationToPersonalInformationDto(entity.getFatherPersonalInformation()));
+//        dto.setMotherPersonalInformation(personalInformationToPersonalInformationDto(entity.getMotherPersonalInformation()));
+//        dto.setFatherPersonalInformation(personalInformationToPersonalInformationDto(entity.getFatherPersonalInformation()));
         dto.setNumberOfBrothersAndSisters(entity.getNumberOfBrothersAndSisters());
-        dto.setBrothersAndSistersPersonalInformation(entity.getBrothersAndSistersPersonalInformation().values().stream()
-                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
-                        personalInformationToPersonalInformationDto(entity.getBrothersAndSistersPersonalInformation().get(information.getFirstName())))));
+//        dto.setBrothersAndSistersPersonalInformation(entity.getBrothersAndSistersPersonalInformation().values().stream()
+//                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
+//                        personalInformationToPersonalInformationDto(entity.getBrothersAndSistersPersonalInformation().get(information.getFirstName())))));
         dto.setNumberOfGrandparents(entity.getNumberOfGrandparents());
-        dto.setGrandparentsPersonalInformation(entity.getGrandparentsPersonalInformation().values().stream()
-                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
-                        personalInformationToPersonalInformationDto(entity.getGrandparentsPersonalInformation().get(information.getFirstName())))));
-        dto.setWifeOrHusbandInformation(personalInformationToPersonalInformationDto(entity.getWifeOrHusbandInformation()));
+//        dto.setGrandparentsPersonalInformation(entity.getGrandparentsPersonalInformation().values().stream()
+//                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
+//                        personalInformationToPersonalInformationDto(entity.getGrandparentsPersonalInformation().get(information.getFirstName())))));
+//        dto.setWifeOrHusbandInformation(personalInformationToPersonalInformationDto(entity.getWifeOrHusbandInformation()));
         dto.setNumberOfKids(entity.getNumberOfKids());
-        dto.setKidsPersonalInformation(entity.getKidsPersonalInformation().values().stream()
-                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
-                        personalInformationToPersonalInformationDto(entity.getKidsPersonalInformation().get(information.getFirstName())))));
+//        dto.setKidsPersonalInformation(entity.getKidsPersonalInformation().values().stream()
+//                .collect(Collectors.toMap(PersonalInformation::getFirstName, information ->
+//                        personalInformationToPersonalInformationDto(entity.getKidsPersonalInformation().get(information.getFirstName())))));
         return dto;
     }
 

@@ -437,9 +437,28 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                 if (informationWords[0].toLowerCase().equals("parter")) return 0;
                 if (informationWords[0].toLowerCase().equals("subsol")) return -1;
                 if (informationWords[0].toLowerCase().equals("ultimul")) return 10;
-                // school class
+                // school class (ex: 12D)
                 if (informationWords[0].toLowerCase().startsWith("preg")) return 0;
-                if (!Character.isDigit(informationWords[0].charAt(informationWords[0].length()-1))) informationWords[0] = informationWords[0].substring(0, informationWords[0].length()-1);
+                if (Character.isDigit(informationWords[0].charAt(0)) && !Character.isDigit(informationWords[0].charAt(informationWords[0].length()-1))) {
+                    informationWords[0] = informationWords[0].substring(0, informationWords[0].length()-1);
+                }
+                // other
+                if (informationWords[0].toLowerCase().startsWith("niciun")) return 0;
+                if (informationWords[0].toLowerCase().startsWith("nu") && informationWords.length >= 2 && informationWords[1].toLowerCase().startsWith("am")) return 0;
+                if (informationWords[0].toLowerCase().startsWith("nu")) return 0;
+                if (informationWords[0].toLowerCase().equals("zero")) return 0;
+                if (informationWords[0].toLowerCase().equals("un")) return 1;
+                if (informationWords[0].toLowerCase().equals("o")) return 1;
+                if (informationWords[0].toLowerCase().equals("unu")) return 1;
+                if (informationWords[0].toLowerCase().equals("doi")) return 2;
+                if (informationWords[0].toLowerCase().equals("trei")) return 3;
+                if (informationWords[0].toLowerCase().equals("patru")) return 4;
+                if (informationWords[0].toLowerCase().equals("cinci")) return 5;
+                if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("sase")) return 6;
+                if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("sapte")) return 7;
+                if (informationWords[0].toLowerCase().equals("opt")) return 8;
+                if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("noua")) return 9;
+                if (informationWords[0].toLowerCase().equals("zece")) return 10;
                 try {
                     return Integer.valueOf(informationWords[0]);
                 } catch (NumberFormatException ignored) {
