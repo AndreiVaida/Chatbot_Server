@@ -463,7 +463,8 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                 if (informationString.contains("da") || informationString.contains("sigur") || informationString.contains("afirm") || informationString.contains("categoric") ||
                         informationString.contains("absolut") || informationString.contains("normal") || (informationString.contains("evident") && !informationString.contains("nu")) ||
                         informationString.contains("desigur") || informationString.contains("putin") || informationString.contains("cateodata") ||
-                        (informationString.contains("ca") && informationString.contains("de") && informationString.contains("cat")) || informationString.contains("probabil")) {
+                        (informationString.contains("ca") && informationString.contains("de") && informationString.contains("cat")) || informationString.contains("probabil") ||
+                        informationString.contains("place") || informationString.contains("placut") || informationString.contains("sunt")) {
                     return true;
                 }
                 return null;

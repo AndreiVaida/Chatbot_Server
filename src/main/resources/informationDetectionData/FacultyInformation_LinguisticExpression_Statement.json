@@ -2,8 +2,8 @@
   {
     "expressionItems": [[{"text": null, "itemClass": "BOOLEAN"}]],
     "speechType": "STATEMENT",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "isAtSchool"
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "isAtFaculty"
   },
   {
     "expressionItems": [[{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
@@ -14,8 +14,8 @@
       [{"text": "din", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "schoolName"
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "facultyName"
   },
   {
     "expressionItems": [[{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
@@ -24,26 +24,32 @@
       [{"text": "la", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "schoolProfile"
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "facultySpecialization"
   },
   {
-    "expressionItems": [[{"text": "în", "itemClass": "NOT_AN_INFORMATION"}, {"text": "a", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "în", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "într-a", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "întra", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "pe", "itemClass": "NOT_AN_INFORMATION"}, {"text": "a", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "pe", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "a", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "clasa", "itemClass": "NOT_AN_INFORMATION"}, {"text": "a", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "clasa", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "sigur", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": "siguranță", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
-      [{"text": null, "itemClass": "NAME"}, {"text": "clar", "itemClass": "NOT_AN_INFORMATION"}],
+    "expressionItems": [[{"text": "în", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": "în", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "anul", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": "anul", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "anu", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}],
+      [{"text": "anu", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NUMBER"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NUMBER"}, {"text": "clar", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NUMBER"}]],
+    "speechType": "STATEMENT",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "facultyYear"
+  },
+  {
+    "expressionItems": [[{"text": "în", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "în", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "grupa", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "grupa", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": null, "itemClass": "NAME"}, {"text": "cred", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
-    "informationClassDto": "SCHOOL_INFORMATION",
-    "informationFieldNamePath": "schoolClass"
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "facultyGroup"
   },
   {
     "expressionItems": [[{"text": "place", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
@@ -65,9 +71,10 @@
       [{"text": "sigur", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "siguranță", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": null, "itemClass": "NAME"}, {"text": "clar", "itemClass": "NOT_AN_INFORMATION"}],
+      [{"text": "clar", "itemClass": "NOT_AN_INFORMATION"},{"text": null, "itemClass": "NAME"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
-    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationClassDto": "FACULTY_INFORMATION",
     "informationFieldNamePath": "favouriteCourse"
   },
   {
@@ -96,7 +103,7 @@
       [{"text": null, "itemClass": "NAME"}, {"text": "clar", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
-    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationClassDto": "FACULTY_INFORMATION",
     "informationFieldNamePath": "favouriteProfessor"
   },
   {
@@ -114,7 +121,7 @@
       [{"text": null, "itemClass": "NAME"}, {"text": "clar", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
-    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationClassDto": "FACULTY_INFORMATION",
     "informationFieldNamePath": "bestFriend"
   },
   {
@@ -137,7 +144,7 @@
       [{"text": null, "itemClass": "NUMBER"}, {"text": "am", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NUMBER"}]],
     "speechType": "STATEMENT",
-    "informationClassDto": "SCHOOL_INFORMATION",
+    "informationClassDto": "FACULTY_INFORMATION",
     "informationFieldNamePath": "coursesGrades#?"
   }
 ]

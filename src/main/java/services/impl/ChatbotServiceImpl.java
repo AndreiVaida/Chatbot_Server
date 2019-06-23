@@ -41,7 +41,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -857,7 +856,6 @@ public class ChatbotServiceImpl implements ChatbotService {
             String localityType = "sat";
             if (user.getPersonalInformation().getHomeAddress().getLocalityType().equals(URBAN)) {
                 localityType = "oraș";
-                localityType = "oraș";
             }
             final List<Sentence> sentencesByLocalityType = getSentencesThatContains(sentences, new Word(localityType));
             return sentencesByLocalityType.get(random.nextInt(sentencesByLocalityType.size()));
@@ -866,18 +864,33 @@ public class ChatbotServiceImpl implements ChatbotService {
         final Sentence sentence = sentences.get(random.nextInt(sentences.size()));
 
         if (informationFieldNamePath.contains("coursesGrades")) {
-            replaceQuestionMarkWithRandomCourse(sentence);
+            if (informationClass.equals(SchoolInformation.class) && user.getSchoolInformation() != null) {
+                replaceQuestionMarkWithCourse(sentence, user.getSchoolInformation().getFavouriteCourse());
+            }
+            if (informationClass.equals(FacultyInformation.class) && user.getFacultyInformation() != null) {
+                replaceQuestionMarkWithCourse(sentence, user.getFacultyInformation().getFavouriteCourse());
+            }
+            replaceQuestionMarkWithCourse(sentence, null);
         }
         return sentence;
     }
 
-    private Sentence replaceQuestionMarkWithRandomCourse(final Sentence sentence) {
+    /**
+     * @param course if null, replace ? with a random course
+     */
+    private void replaceQuestionMarkWithCourse(final Sentence sentence, final String course) {
         final Word lastWord = sentence.getWords().get(sentence.getWords().size() - 1);
         if (!lastWord.getText().equals("?")) {
-            return sentence;
+            return;
         }
+
+        if (course != null) {
+            sentence.getWords().set(sentence.getWords().size() - 1, getOrAddWordInDb(course, null));
+            return;
+        }
+
         final List<String> courses = new ArrayList<>();
-        courses.add("liba română");
+        courses.add("limba română");
         courses.add("matematică");
         courses.add("istorie");
         courses.add("geografie");
@@ -887,7 +900,6 @@ public class ChatbotServiceImpl implements ChatbotService {
         final Word word = getOrAddWordInDb(courses.get(random.nextInt(courses.size())), null);
         sentence.getWords().set(sentence.getWords().size() - 1, word);
         sentenceRepository.save(sentence); // TODO: MAKE A NEW SENTENCE
-        return sentence;
     }
 
     // TODO task "PathAndKeys"

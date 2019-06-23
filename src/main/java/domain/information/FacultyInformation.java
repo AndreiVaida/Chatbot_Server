@@ -40,7 +40,7 @@ public class FacultyInformation implements Information {
     private String facultySpecialization;
 
     @Column(name = "FACULTY_YEAR")
-    private String facultyYear;
+    private Integer facultyYear;
 
     @Column(name = "FACULTY_GROUP")
     private String facultyGroup;

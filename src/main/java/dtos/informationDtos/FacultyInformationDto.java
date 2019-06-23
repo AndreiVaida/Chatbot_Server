@@ -15,7 +15,7 @@ public class FacultyInformationDto implements InformationDto {
     private Boolean isAtFaculty;
     private String facultyName;
     private String facultySpecialization;
-    private String facultyYear;
+    private Integer facultyYear;
     private String facultyGroup;
     private String favouriteCourse;
     private String favouriteProfessor;

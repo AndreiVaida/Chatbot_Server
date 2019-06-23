@@ -6,25 +6,31 @@
     "informationFieldNamePath": "isAtFaculty"
   },
   {
-    "texts": ["La ce școală ești ?", "Cum se numește școala ta ?", "La ce școală mergi ?"],
+    "texts": ["La ce facultate ești ?", "Cum se numește facultatea ta ?", "La ce facultate mergi ?"],
     "speechType": "DIRECTIVE",
     "informationClassDto": "FACULTY_INFORMATION",
-    "informationFieldNamePath": "schoolName"
+    "informationFieldNamePath": "facultyName"
   },
   {
-    "texts": ["La ce profil ești ?", "Tu la ce profil ești ?"],
+    "texts": ["La ce secție ești la facultate ?", "Tu la ce secție ești la facultate ?"],
     "speechType": "DIRECTIVE",
     "informationClassDto": "FACULTY_INFORMATION",
-    "informationFieldNamePath": "schoolProfile"
+    "informationFieldNamePath": "facultySpecialization"
   },
   {
-    "texts": ["În ce clasă ești ?", "Tu în ce clasă ești ?", "În ce clasă ești tu ?"],
+    "texts": ["În ce an ești ?", "Tu în ce an ești la facultate ?", "La facultate în ce an ești tu ?"],
     "speechType": "DIRECTIVE",
     "informationClassDto": "FACULTY_INFORMATION",
-    "informationFieldNamePath": "schoolClass"
+    "informationFieldNamePath": "facultyYear"
   },
   {
-    "texts": ["Care e materia ta favorită ?", "Care e materia ta preferată ?", "Care materie îți place cel mai mult ?"],
+    "texts": ["În ce an grupă ești ?", "Tu în ce grupă ești la facultate ?", "La facultate în ce grupă ești tu ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "facultyGroup"
+  },
+  {
+    "texts": ["Care e / a fost cursul tău favorit ?", "Care e cursul tău preferat ?", "Care curs ți-a plăcut cel mai mult ?"],
     "speechType": "DIRECTIVE",
     "informationClassDto": "FACULTY_INFORMATION",
     "informationFieldNamePath": "favouriteCourse"
@@ -36,7 +42,7 @@
     "informationFieldNamePath": "favouriteProfessor"
   },
   {
-    "texts": ["Care e cel mai bun prieten de la școală ?", "Cum îl cheamă pe cel mai bun prieten al tău de la școală ?"],
+    "texts": ["Care e cel mai bun prieten de la facultate ?", "Cum îl cheamă pe cel mai bun prieten al tău de la facultate ?"],
     "speechType": "DIRECTIVE",
     "informationClassDto": "FACULTY_INFORMATION",
     "informationFieldNamePath": "bestFriend"
