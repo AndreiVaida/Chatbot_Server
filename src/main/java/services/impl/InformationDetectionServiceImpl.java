@@ -471,23 +471,40 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                         return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
                     }
                     // acum X ani/luni/zile
-                    if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("ani"); })
-                            || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("ani")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("ani"))) {
-                        final int yearsToSubtract = Integer.valueOf(informationWords[0]);
-                        final LocalDate pastTime = LocalDate.now().minusYears(yearsToSubtract);
-                        return new SimpleDate(pastTime.getYear(), null, null);
+                    if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("acum") || item.getText().equals("urmă"); })) {
+                        if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("ani"); })
+                                || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("ani")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("ani"))) {
+                            final int yearsToSubtract = Integer.valueOf(informationWords[0]);
+                            final LocalDate pastTime = LocalDate.now().minusYears(yearsToSubtract);
+                            return new SimpleDate(pastTime.getYear(), null, null);
+                        }
+                        if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("luni"); })
+                                || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("luni")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("luni"))) {
+                            final int monthsToSubtract = Integer.valueOf(informationWords[0]);
+                            final LocalDate pastTime = LocalDate.now().minusMonths(monthsToSubtract);
+                            return new SimpleDate(null, pastTime.getMonthValue(), null);
+                        }
+                        if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("zile"); })
+                                || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("zile")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("luni"))) {
+                            final int daysToSubtract = Integer.valueOf(informationWords[0]);
+                            final LocalDate pastTime = LocalDate.now().minusDays(daysToSubtract);
+                            return new SimpleDate(null, pastTime.getMonthValue(), pastTime.getDayOfMonth());
+                        }
                     }
-                    if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("luni"); })
-                            || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("luni")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("luni"))) {
-                        final int monthsToSubtract = Integer.valueOf(informationWords[0]);
-                        final LocalDate pastTime = LocalDate.now().minusMonths(monthsToSubtract);
-                        return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), null);
-                    }
-                    if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("zile"); })
-                            || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("zile")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("luni"))) {
-                        final int daysToSubtract = Integer.valueOf(informationWords[0]);
-                        final LocalDate pastTime = LocalDate.now().minusDays(daysToSubtract);
-                        return new SimpleDate(pastTime.getYear(), pastTime.getMonthValue(), pastTime.getDayOfMonth());
+                    // peste X luni/zile
+                    if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("peste"); })) {
+                        if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("luni"); })
+                                || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("luni")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("luni"))) {
+                            final int monthsToSubtract = Integer.valueOf(informationWords[0]);
+                            final LocalDate futureTime = LocalDate.now().plusMonths(monthsToSubtract);
+                            return new SimpleDate(null, futureTime.getMonthValue(), null);
+                        }
+                        if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("zile"); })
+                                || (informationWords.length >= 2 && informationWords[1].toLowerCase().equals("zile")) || (informationWords.length >= 3 && informationWords[2].toLowerCase().equals("luni"))) {
+                            final int daysToSubtract = Integer.valueOf(informationWords[0]);
+                            final LocalDate futureTime = LocalDate.now().plusDays(daysToSubtract);
+                            return new SimpleDate(null, futureTime.getMonthValue(), futureTime.getDayOfMonth());
+                        }
                     }
 
                     // remove dots from date

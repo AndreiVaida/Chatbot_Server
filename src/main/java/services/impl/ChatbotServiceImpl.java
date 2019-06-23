@@ -349,7 +349,9 @@ public class ChatbotServiceImpl implements ChatbotService {
                 }
             }
             if (word.getText().toLowerCase().equals("va")) {
-                if (INFORMAL.equals(addressingMode)){
+                Word previousWord = null;
+                if (i > 0) previousWord = sentence.getWords().get(i - 1);
+                if (INFORMAL.equals(addressingMode) && !(previousWord != null && (previousWord.getText().toLowerCase().equals("ma") || previousWord.getText().toLowerCase().equals("te")))) {
                     text.append("îți");
                     continue;
                 }
@@ -361,11 +363,19 @@ public class ChatbotServiceImpl implements ChatbotService {
 
             // ți-ar, ți-aș / v-ar, v-ați
             if (word.getText().toLowerCase().contains("ti-") && FORMAL.equals(addressingMode)) {
-                text.append(word.getTextWithDiacritics().replace("ti-", "v-").replace("ți-", "v-"));
+                text.append(word.getTextWithDiacritics().replace("ti-", "v-").replace("ti-", "v-"));
                 continue;
             }
             if (word.getText().toLowerCase().contains("v-") && INFORMAL.equals(addressingMode)) {
                 text.append(word.getText().replace("v-", "ți-"));
+                continue;
+            }
+            if (word.getText().toLowerCase().contains("ti") && FORMAL.equals(addressingMode)) {
+                text.append(word.getTextWithDiacritics().replace("ti", "vă").replace("ti", "v"));
+                continue;
+            }
+            if (word.getText().toLowerCase().contains("va") && INFORMAL.equals(addressingMode)) {
+                text.append(word.getText().replace("va", "ți"));
                 continue;
             }
 
@@ -793,8 +803,12 @@ public class ChatbotServiceImpl implements ChatbotService {
             try {
                 final Method getterOfUser = user.getClass().getMethod("get" + infoClass.getSimpleName());
                 final Information information = (Information) getterOfUser.invoke(user);
-                if (information instanceof SchoolInformation && probablyAtFaculty(user) && isAtFacultyUnknown(user)) {
-                    continue; // go to FacultyInformation
+                final Boolean probablyAtFaculty = probablyAtFaculty(user);
+                if (information instanceof SchoolInformation && probablyAtFaculty != null && probablyAtFaculty && isAtFacultyUnknown(user)) {
+                    final Boolean isAtSchool = user.getSchoolInformation().getIsAtSchool();
+                    if (isAtSchool == null || !isAtSchool) {
+                        continue; // go to FacultyInformation
+                    }
                 }
                 // if the user is not at school/faculty, don't ask about that
                 if (information instanceof SchoolInformation && ((SchoolInformation) information).getIsAtSchool() != null && !((SchoolInformation) information).getIsAtSchool()) {
@@ -848,7 +862,32 @@ public class ChatbotServiceImpl implements ChatbotService {
             final List<Sentence> sentencesByLocalityType = getSentencesThatContains(sentences, new Word(localityType));
             return sentencesByLocalityType.get(random.nextInt(sentencesByLocalityType.size()));
         }
-        return sentences.get(random.nextInt(sentences.size()));
+
+        final Sentence sentence = sentences.get(random.nextInt(sentences.size()));
+
+        if (informationFieldNamePath.contains("coursesGrades")) {
+            replaceQuestionMarkWithRandomCourse(sentence);
+        }
+        return sentence;
+    }
+
+    private Sentence replaceQuestionMarkWithRandomCourse(final Sentence sentence) {
+        final Word lastWord = sentence.getWords().get(sentence.getWords().size() - 1);
+        if (!lastWord.getText().equals("?")) {
+            return sentence;
+        }
+        final List<String> courses = new ArrayList<>();
+        courses.add("liba română");
+        courses.add("matematică");
+        courses.add("istorie");
+        courses.add("geografie");
+        courses.add("biologie");
+        courses.add("fizică");
+        courses.add("informatică");
+        final Word word = getOrAddWordInDb(courses.get(random.nextInt(courses.size())), null);
+        sentence.getWords().set(sentence.getWords().size() - 1, word);
+        sentenceRepository.save(sentence); // TODO: MAKE A NEW SENTENCE
+        return sentence;
     }
 
     // TODO task "PathAndKeys"
@@ -864,9 +903,12 @@ public class ChatbotServiceImpl implements ChatbotService {
         return new PathAndKeys();
     }
 
-    private boolean probablyAtFaculty(final User user) {
+    private Boolean probablyAtFaculty(final User user) {
         final SimpleDate birthDay = user.getPersonalInformation().getBirthDay();
-        return birthDay != null && birthDay.getYear() != null && LocalDate.now().getYear() - birthDay.getYear() >= 19;
+        if (birthDay == null || birthDay.getYear() == null) {
+            return null;
+        }
+        return LocalDate.now().getYear() - birthDay.getYear() >= 19;
     }
 
     private boolean isAtFacultyUnknown(final User user) {
