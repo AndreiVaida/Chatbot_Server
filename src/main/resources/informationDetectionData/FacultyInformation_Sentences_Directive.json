@@ -1,0 +1,50 @@
+[
+  {
+    "texts": ["Ești la facultate ?", "Ești student ?", "Ești la vreo facultate ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "isAtFaculty"
+  },
+  {
+    "texts": ["La ce școală ești ?", "Cum se numește școala ta ?", "La ce școală mergi ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "schoolName"
+  },
+  {
+    "texts": ["La ce profil ești ?", "Tu la ce profil ești ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "schoolProfile"
+  },
+  {
+    "texts": ["În ce clasă ești ?", "Tu în ce clasă ești ?", "În ce clasă ești tu ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "schoolClass"
+  },
+  {
+    "texts": ["Care e materia ta favorită ?", "Care e materia ta preferată ?", "Care materie îți place cel mai mult ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "favouriteCourse"
+  },
+  {
+    "texts": ["Care e profesorul tău preferat ?", "De care profesor îți place cel mai mult ?", "Care profesor crezi că predă cel mai bine ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "favouriteProfessor"
+  },
+  {
+    "texts": ["Care e cel mai bun prieten de la școală ?", "Cum îl cheamă pe cel mai bun prieten al tău de la școală ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "bestFriend"
+  },
+  {
+    "texts": ["Ce notă iei de obicei la # ?", "Ce notă ai luat ultima dată la # ?", "Ce medie ai la # ?"],
+    "speechType": "DIRECTIVE",
+    "informationClassDto": "FACULTY_INFORMATION",
+    "informationFieldNamePath": "coursesGrades#?"
+  }
+]

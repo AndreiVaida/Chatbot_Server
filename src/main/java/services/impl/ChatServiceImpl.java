@@ -288,11 +288,11 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public List<Message> getMessages(final Long userId1, Long userId2, final LocalDateTime maxDateTime, final Integer nrOfMessages) {
+    public List<Message> getMessages(final Long userId1, Long userId2, final LocalDateTime maxDateTime, final boolean includeMaxMessage, final Integer nrOfMessages) {
         if (userId2 == null || userId2 == 0) {
             userId2 = CHATBOT_ID;
         }
-        return messageService.getMessagesByUsers(userId1, userId2, maxDateTime, nrOfMessages);
+        return messageService.getMessagesByUsers(userId1, userId2, maxDateTime, includeMaxMessage, nrOfMessages);
     }
 
     @Override

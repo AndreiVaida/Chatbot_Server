@@ -364,8 +364,16 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                     // consider fieldNameHierarchy.length == 2
                     final String dateFieldName_firstLetterCapitalize = fieldNameHierarchy[1].substring(0, 1).toUpperCase() + fieldNameHierarchy[1].substring(1);
                     final Method setterOfDate = child.getClass().getMethod("set" + dateFieldName_firstLetterCapitalize, Integer.class);
-                    final Integer value = ((SimpleDate)informationAsItsType).getMonth();
-                    setterOfDate.invoke(child, value);
+                    final SimpleDate birthDay = (SimpleDate)informationAsItsType;
+                    if (dateFieldName_firstLetterCapitalize.equals("Year")) {
+                        setterOfDate.invoke(child, birthDay.getYear());
+                    }
+                    if (dateFieldName_firstLetterCapitalize.equals("Month")) {
+                        setterOfDate.invoke(child, birthDay.getMonth());
+                    }
+                    if (dateFieldName_firstLetterCapitalize.equals("Day")) {
+                        setterOfDate.invoke(child, birthDay.getDay());
+                    }
                     return;
                 }
 
@@ -453,22 +461,24 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
             case DATE: {
                 try {
                     // ieri / azi / mâine / poimâine
-                    final String informationWord = Word.replaceDiacritics(informationWords[0].toLowerCase());
-                    if (informationWord.equals("azi") || informationWord.startsWith("ast")) {
-                        final LocalDate today = LocalDate.now();
-                        return new SimpleDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
-                    }
-                    if (informationWord.equals("ieri")) {
-                        final LocalDate yesterday = LocalDate.now().minusDays(1);
-                        return new SimpleDate(yesterday.getYear(), yesterday.getMonthValue(), yesterday.getDayOfMonth());
-                    }
-                    if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("maine")) {
-                        final LocalDate tomorrow = LocalDate.now().plusDays(1);
-                        return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
-                    }
-                    if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("poimâine")) {
-                        final LocalDate tomorrow = LocalDate.now().plusDays(2);
-                        return new SimpleDate(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
+                    for (String informationWord : informationWords) {
+                        informationWord = Word.replaceDiacritics(informationWord.toLowerCase());
+                        if (informationWord.equals("azi") || informationWord.startsWith("ast")) {
+                            final LocalDate today = LocalDate.now();
+                            return new SimpleDate(null, today.getMonthValue(), today.getDayOfMonth());
+                        }
+                        if (informationWord.equals("ieri")) {
+                            final LocalDate yesterday = LocalDate.now().minusDays(1);
+                            return new SimpleDate(null, yesterday.getMonthValue(), yesterday.getDayOfMonth());
+                        }
+                        if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("maine")) {
+                            final LocalDate tomorrow = LocalDate.now().plusDays(1);
+                            return new SimpleDate(null, tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
+                        }
+                        if (Word.replaceDiacritics(informationWords[0]).toLowerCase().equals("poimâine")) {
+                            final LocalDate tomorrow = LocalDate.now().plusDays(2);
+                            return new SimpleDate(null, tomorrow.getMonthValue(), tomorrow.getDayOfMonth());
+                        }
                     }
                     // acum X ani/luni/zile
                     if (linguisticExpression.getItems().stream().anyMatch(item -> {if (item.getText() == null) return false; return item.getText().equals("acum") || item.getText().equals("urmă"); })) {
@@ -517,8 +527,24 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                     Integer day = null;
                     Integer month = null;
                     Integer year = null;
-                    if (informationWordsNoDots.size() == 1) { // just month
-                        month = stringToMonth(informationWordsNoDots.get(0));
+                    if (informationWordsNoDots.size() == 1) { // just day, month or year
+                        final Integer number = stringToMonth(informationWordsNoDots.get(0));
+                        if (number != null && linguisticExpression.getInformationFieldNamePath().endsWith("year")) {
+                            year = number;
+                        }
+                        if (number != null && linguisticExpression.getInformationFieldNamePath().endsWith("month")) {
+                            month = number;
+                        }
+                        if (number != null && linguisticExpression.getInformationFieldNamePath().endsWith("day")) {
+                            day = number;
+                        }
+                        if (number != null && year == null && month == null && day == null) {
+                            if (number >= 0 && number <= 12) {
+                                month = number;
+                            } else {
+                                year = number;
+                            }
+                        }
                     }
                     if (informationWordsNoDots.size() == 2) { // day + month
                         day = Integer.valueOf(informationWordsNoDots.get(0));

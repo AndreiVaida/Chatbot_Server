@@ -15,7 +15,7 @@ public interface ChatFacade {
 
     List<MessageDto> getMessages(final Long userId1, final Long userId2);
 
-    List<MessageDto> getMessages(final Long userId1, final Long userId2, final LocalDateTime from, final Integer nrOfMessages);
+    List<MessageDto> getMessages(final Long userId1, final Long userId2, final LocalDateTime from, final boolean includeMaxMessage, final Integer nrOfMessages);
 
     MessageDto requestMessageFromChatbot(final Long userId, final ChatbotRequestType chatbotRequestType);
 }

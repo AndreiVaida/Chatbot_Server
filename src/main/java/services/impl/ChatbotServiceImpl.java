@@ -362,19 +362,19 @@ public class ChatbotServiceImpl implements ChatbotService {
             }
 
             // ți-ar, ți-aș / v-ar, v-ați
-            if (word.getText().toLowerCase().contains("ti-") && FORMAL.equals(addressingMode)) {
-                text.append(word.getTextWithDiacritics().replace("ti-", "v-").replace("ti-", "v-"));
+            if (word.getText().toLowerCase().startsWith("ti-") && FORMAL.equals(addressingMode)) {
+                text.append(word.getTextWithDiacritics().replace("ți-", "v-").replace("ti-", "v-"));
                 continue;
             }
-            if (word.getText().toLowerCase().contains("v-") && INFORMAL.equals(addressingMode)) {
+            if (word.getText().toLowerCase().startsWith("v-") && INFORMAL.equals(addressingMode)) {
                 text.append(word.getText().replace("v-", "ți-"));
                 continue;
             }
-            if (word.getText().toLowerCase().contains("ti") && FORMAL.equals(addressingMode)) {
-                text.append(word.getTextWithDiacritics().replace("ti", "vă").replace("ti", "v"));
+            if (word.getText().toLowerCase().startsWith("ti") && FORMAL.equals(addressingMode)) {
+                text.append(word.getTextWithDiacritics().replace("ți", "vă").replace("ti", "v"));
                 continue;
             }
-            if (word.getText().toLowerCase().contains("va") && INFORMAL.equals(addressingMode)) {
+            if (word.getText().toLowerCase().equals("va") && INFORMAL.equals(addressingMode)) {
                 text.append(word.getText().replace("va", "ți"));
                 continue;
             }

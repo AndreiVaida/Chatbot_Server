@@ -49,14 +49,15 @@ public class ChatController extends AbstractController {
     @GetMapping
     public ResponseEntity<List<MessageDto>> getMessages(@RequestParam final Long userId1, @RequestParam final Long userId2,
                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime maxDateTime,
-                                                        @RequestParam(defaultValue = "20") final Integer nrOfMessages) {
+                                                        @RequestParam(defaultValue = "20") final Integer nrOfMessages,
+                                                        @RequestParam(defaultValue = "true") final boolean includeMaxMessage) {
         if (!(userPermissionService.hasUserAccess(userId1) || userPermissionService.hasUserAccess(userId2))) {
             return new ResponseEntity<>(FORBIDDEN);
         }
         if (maxDateTime == null) {
             maxDateTime = LocalDateTime.now();
         }
-        final List<MessageDto> messages = chatFacade.getMessages(userId1, userId2, maxDateTime, nrOfMessages);
+        final List<MessageDto> messages = chatFacade.getMessages(userId1, userId2, maxDateTime, includeMaxMessage, nrOfMessages);
         return new ResponseEntity<>(messages, HttpStatus.OK);
     }
 

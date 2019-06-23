@@ -58,7 +58,7 @@ public interface ChatService {
      * @param nrOfMessages number of messages to return before given date
      * @return lat <nrOfMessages> messages before <maxDateTime> (including maxDateTime)
      */
-    List<Message> getMessages(final Long userId1, Long userId2, final LocalDateTime maxDateTime, final Integer nrOfMessages);
+    List<Message> getMessages(final Long userId1, Long userId2, final LocalDateTime maxDateTime, final boolean includeMaxMessage, final Integer nrOfMessages);
 
     /**
      * @param chatbotRequestType may be null => by default is used the global variable CHATBOT_REQUEST_TYPE

@@ -44,8 +44,8 @@ public class ChatFacadeImpl implements ChatFacade {
     }
 
     @Override
-    public List<MessageDto> getMessages(Long userId1, Long userId2, LocalDateTime maxDateTime, Integer nrOfMessages) {
-        return chatService.getMessages(userId1, userId2, maxDateTime, nrOfMessages).stream()
+    public List<MessageDto> getMessages(Long userId1, Long userId2, LocalDateTime maxDateTime, final boolean includeMaxMessage, Integer nrOfMessages) {
+        return chatService.getMessages(userId1, userId2, maxDateTime, includeMaxMessage, nrOfMessages).stream()
                 .map(MessageMapper::messageToMessageDto)
                 .collect(Collectors.toList());
     }

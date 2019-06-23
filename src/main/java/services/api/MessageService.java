@@ -20,7 +20,7 @@ public interface MessageService {
      * @param nrOfMessages number of messages to return before given date
      * @return lat <nrOfMessages> messages before <maxDateTime> (including maxDateTime)
      */
-    List<Message> getMessagesByUsers(final Long userId1, final Long userId2, final LocalDateTime maxDateTime, final Integer nrOfMessages);
+    List<Message> getMessagesByUsers(final Long userId1, final Long userId2, final LocalDateTime maxDateTime, final boolean includeMaxMessage, final Integer nrOfMessages);
 
     /**
      * @return the first message before given message or <null> if there is no previous message
