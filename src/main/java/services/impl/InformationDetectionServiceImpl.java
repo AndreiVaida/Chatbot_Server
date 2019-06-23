@@ -276,7 +276,15 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
         return subsentences.toArray(new String[0]);
     }
 
+    /**
+     * Replace map keys with question mark.
+     * WARNING: only for coursesGrades.
+     */
     private String removeMapKeysFromPath(final String informationFieldNamePath) {
+        if (!informationFieldNamePath.contains("coursesGrades#")) {
+            return informationFieldNamePath;
+        }
+
         final String[] pathList = informationFieldNamePath.split("\\.");
         final StringBuilder newInformationFieldNamePath = new StringBuilder();
         for (int i = 0; i < pathList.length; i++) {
@@ -285,6 +293,9 @@ public class InformationDetectionServiceImpl implements InformationDetectionServ
                 newInformationFieldNamePath.append(".");
             }
             newInformationFieldNamePath.append(path[0]);
+            if (path.length > 1) {
+                newInformationFieldNamePath.append("#?");
+            }
         }
         return newInformationFieldNamePath.toString();
     }

@@ -126,6 +126,12 @@ public class ChatServiceImpl implements ChatService {
         if (previousMessage != null) {
             informationClass = previousMessage.getEquivalentSentence().getInformationClass();
             informationFieldNamePath = previousMessage.getEquivalentSentence().getInformationFieldNamePath();
+            if (informationFieldNamePath != null && informationFieldNamePath.contains("coursesGrades#")) {
+                // replace ? with course name
+                final String[] auxPath = informationFieldNamePath.split("#");
+                auxPath[1] = previousMessage.getEquivalentSentence().getWords().get(previousMessage.getEquivalentSentence().getWords().size() - 1).getTextWithDiacritics();
+                informationFieldNamePath = auxPath[0] + "#" + auxPath[1];
+            }
         }
         List<Object> updatedInformationValues = null;
         try {
