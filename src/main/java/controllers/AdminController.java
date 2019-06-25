@@ -178,9 +178,8 @@ public class AdminController extends AbstractController {
                 return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
             }
             case "questionsAndAnswers": {
-//                final AddedDataStatus addedDataStatus = adminFacade.addQuestionsAndAnswersFromCsvFile(file);
-//                return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
-                return new ResponseEntity<>(new AddedDataStatus(0,0), HttpStatus.ACCEPTED);
+                final AddedDataStatus addedDataStatus = adminFacade.addAnswersAndQuestionsFromCsvString(file);
+                return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
             }
             case "sentences": {
                 final AddedDataStatus addedDataStatus = adminFacade.addSentencesFromJsonFile(file);

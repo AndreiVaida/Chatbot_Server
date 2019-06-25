@@ -137,6 +137,11 @@ public class AdminFacadeImpl implements AdminFacade {
     }
 
     @Override
+    public AddedDataStatus addAnswersAndQuestionsFromCsvString(final MultipartFile csvFile) throws IOException {
+        return adminService.addAnswersAndQuestionsFromCsvFile(csvFile);
+    }
+
+    @Override
     public AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException {
         return adminService.addSentencesFromJsonFile(sentencesJsonFile);
     }

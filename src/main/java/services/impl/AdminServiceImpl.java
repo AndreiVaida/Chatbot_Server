@@ -1,6 +1,7 @@
 package services.impl;
 
 import app.Main;
+import com.opencsv.CSVReader;
 import domain.entities.CsvConversationTimestamp;
 import domain.entities.LinguisticExpression;
 import domain.entities.Message;
@@ -49,6 +50,7 @@ import javax.transaction.Transactional;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -267,6 +269,72 @@ public class AdminServiceImpl implements AdminService {
         }
 
         return new AddedDataStatus(numberOfConversations, numberOfAddedConversations);
+    }
+
+    @Override
+    public AddedDataStatus addAnswersAndQuestionsFromCsvFile(final MultipartFile csvMultipartFile) throws IOException {
+        final Map<String, List<String>> questionsAndAnswers = getQuestionsAndAnswersFromCsvString(csvMultipartFile); // <question,answers>
+        int numberOfQuestions = questionsAndAnswers.size();
+        int numberOfAnswers = 0;
+
+        // add replies to questions
+        for (String question : questionsAndAnswers.keySet()) {
+            if (question.equals("Întrebări")) {
+                continue;
+            }
+            final Sentence questionSentence = chatbotService.getExistingSentenceOrCreateANewOne(question);
+            for (String answer : questionsAndAnswers.get(question)) {
+                final Sentence responseSentence = chatbotService.getExistingSentenceOrCreateANewOne(answer);
+                chatbotService.addResponseAndSynonym(questionSentence, responseSentence);
+                numberOfAnswers++;
+            }
+        }
+
+        // add questions (without replies)
+        for (String question : questionsAndAnswers.get("Întrebări")) {
+            chatbotService.getExistingSentenceOrCreateANewOne(question);
+        }
+
+        return new AddedDataStatus(numberOfQuestions, numberOfAnswers);
+    }
+
+    private Map<String, List<String>> getQuestionsAndAnswersFromCsvString(final MultipartFile csvMultipartFile) throws IOException {
+        final File csvFile = new File(csvMultipartFile.getOriginalFilename());
+        csvFile.createNewFile();
+        final FileOutputStream fileOutputStream = new FileOutputStream(csvFile);
+        fileOutputStream.write(csvMultipartFile.getBytes());
+        fileOutputStream.close();
+
+        final FileReader filereader = new FileReader(csvFile);
+        final Map<String, List<String>> questionsAndAnswers = new HashMap<>();
+        final CSVReader csvReader = new CSVReader(filereader);
+
+        // read header (without timestamp)
+        String[] record = csvReader.readNext();
+        final String[] header = new String[record.length - 1];
+        for (int i = 1; i < record.length; i++) {
+            final String cell = record[i];
+            header[i-1] = cell;
+            questionsAndAnswers.put(cell, new ArrayList<>());
+        }
+
+        // read content (without timestamp)
+        while ((record = csvReader.readNext()) != null) {
+            for (int i = 1; i < record.length; i++) {
+                final String cell = record[i];
+                final String[] lines = cell.split("\\R");
+                final List<String> responses = questionsAndAnswers.get(header[i-1]);
+                for (String line : lines) {
+                    if (line.trim().isEmpty() || line.contains("LGBTQ")) {
+                        continue;
+                    }
+                    line = line.replaceAll("\"", "");
+                    responses.add(line);
+                }
+            }
+        }
+
+        return questionsAndAnswers;
     }
 
     @Override

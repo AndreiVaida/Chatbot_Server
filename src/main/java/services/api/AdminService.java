@@ -75,6 +75,14 @@ public interface AdminService {
     AddedDataStatus addMessagesFromCsvString(final String csvString);
 
     /**
+     * The csv file from Google Forms.
+     * @param csvString the content of the csv file as string. Its structure is: "timestamp","questions","Ce faci ?","Care e melodia ta preferată ?","Care e filmul tău preferat ?","Cum e la școală ?","Cum e la facultate ?","Lucrezi ?","Cât de deștept ești ?","Ce ai făcut în weekend ?","Care e mâncarea ta preferată ?","Cum a fost la film ?","Ție ce îți place să asculți ?"
+     * @param csvFile
+     * @return number of questions&answers groups added (we will added existing timestamp)
+     */
+    AddedDataStatus addAnswersAndQuestionsFromCsvFile(final MultipartFile csvFile) throws IOException;
+
+    /**
      * WARNING: add all sentences, it does not verify if a sentence already exists
      * A JSON sentence have:
      *      texts: String[]
