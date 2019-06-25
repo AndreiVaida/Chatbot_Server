@@ -559,6 +559,31 @@ public class ChatbotServiceImpl implements ChatbotService {
                 })
                 .collect(Collectors.toList());
 
+        // create a virtual array of responses, every response is "frequency" times in array (ex: r1,r1,r1,r1, r2,r2, r3)
+        int totalFrequency = 0;
+        for (Sentence response : sortedResponses) {
+            final int frequency = sentence.getResponses().get(response);
+            if (frequency > 0) {
+                totalFrequency += frequency;
+            }
+        }
+        // pick a random index in the virtual array
+        final int frequencyIndex = random.nextInt(totalFrequency);
+        // pick the response from the virtual array
+        totalFrequency = 0;
+        for (Sentence response : sortedResponses) {
+            final int frequency = sentence.getResponses().get(response);
+            if (frequency > 0) {
+                totalFrequency += frequency;
+            }
+            if (totalFrequency > frequencyIndex) {
+                return response;
+            }
+        }
+
+        // should never get here
+        final Exception exception = new RuntimeException("BUG IN pickGoodResponseForSentence() METHOD. IT DID NOT PICKED A REPLY.");
+        exception.printStackTrace();
         int index = random.nextInt(sortedResponses.size());
         if (index != 0 && sortedResponses.size() > 10) {
             index = random.nextInt(index);
