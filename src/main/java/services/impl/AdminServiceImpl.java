@@ -338,6 +338,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public AddedDataStatus addSentencesFromJsonFile(final MultipartFile sentencesJsonFile) throws IOException {
         int numberOfSentences = 0;
         int numberOfAddedSentences = 0;
@@ -408,6 +409,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public AddedDataStatus addLinguisticExpressionsFromJsonFile(MultipartFile linguisticExpressionsJsonFile) throws IOException {
         int numberOfLinguisticExpressions = 0;
         int numberOfAddedLinguisticExpressions = 0;
@@ -445,6 +447,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public AddedDataStatus addRejectingExpressionsFromJsonFile(MultipartFile rejectingExpressionsJsonFile) throws IOException {
         int numberOfRejectingExpressions = 0;
         int numberOfAddedRejectingExpressions = 0;

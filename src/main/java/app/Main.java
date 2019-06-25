@@ -3,6 +3,7 @@ package app;
 import domain.entities.SentenceDetectionParameters;
 import domain.entities.SimpleDate;
 import domain.entities.User;
+import dtos.admin.AddedDataStatus;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -14,15 +15,14 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-import repositories.FacebookChatRepository;
 import repositories.SentenceDetectionParametersRepository;
-import repositories.WordRepository;
+import repositories.SentenceRepository;
 import services.api.AdminService;
-import services.api.FastLearningService;
 import services.api.UserService;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Objects;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
@@ -35,39 +35,109 @@ public class Main {
     public static Long USER_FOR_LEARNING_2_ID;
     private final UserService userService;
     private final AdminService adminService;
-    private final SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
-    private final WordRepository wordRepository;
-    private final FastLearningService fastLearningService;
-    private final FacebookChatRepository facebookChatRepository;
+    private final SentenceRepository sentenceRepository;
 
     @Autowired
-    public Main(UserService userService, FastLearningService fastLearningService, FacebookChatRepository facebookChatRepository, Environment environment, AdminService adminService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, WordRepository wordRepository) {
+    public Main(UserService userService, Environment environment, AdminService adminService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, SentenceRepository sentenceRepository) {
         this.userService = userService;
-        this.fastLearningService = fastLearningService;
+        this.sentenceRepository = sentenceRepository;
         this.adminService = adminService;
-        this.sentenceDetectionParametersRepository = sentenceDetectionParametersRepository;
-        this.facebookChatRepository = facebookChatRepository;
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
         USER_FOR_LEARNING_1_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning1.id")));
         USER_FOR_LEARNING_2_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning2.id")));
-        this.wordRepository = wordRepository;
 
+        // add users
         if (userService.findAll().isEmpty()) {
-            // add users
             addChatbotInDb(environment);
             addAdminInDb();
             addUserForLearningInDb();
             addAndreiInDb();
             addSomeWordsInDb();
-            // add Sentences, LinguisticExpressions and messages
-            //uploadSentencesFile();
-            //uploadLinguisticExpressionFile();
-            //uploadMessagesFiles();
         }
+        // add sentence detection parameters
         if (sentenceDetectionParametersRepository.count() == 0) {
             addDefaultSentenceDetectionParametersInDb(sentenceDetectionParametersRepository);
         }
+        // add sentences and linguistic expressions
+        if (this.sentenceRepository.count() == 0) {
+            addSentencesAndLinguisticExpressionsAndRejectingExpressionsInDb();
+        }
+    }
 
+    private void addSentencesAndLinguisticExpressionsAndRejectingExpressionsInDb() {
+        try {
+            // sentences
+            File file = new File("src/main/resources/informationDetectionData/PersonalInformation_Sentences_Directive.json");
+            FileInputStream inputStream = new FileInputStream(file);
+            MultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            AddedDataStatus status = adminService.addSentencesFromJsonFile(multipartFile);
+            System.out.println("PersonalInformation_Sentences_Directive: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            file = new File("src/main/resources/informationDetectionData/FreeTimeInformation_Sentences_Directive.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addSentencesFromJsonFile(multipartFile);
+            System.out.println("FreeTimeInformation_Sentences_Directive: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            file = new File("src/main/resources/informationDetectionData/SchoolInformation_Sentences_Directive.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addSentencesFromJsonFile(multipartFile);
+            System.out.println("SchoolInformation_Sentences_Directive: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            file = new File("src/main/resources/informationDetectionData/FacultyInformation_Sentences_Directive.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addSentencesFromJsonFile(multipartFile);
+            System.out.println("FacultyInformation_Sentences_Directive: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            file = new File("src/main/resources/informationDetectionData/RelationshipsInformation_Sentences_Directive.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addSentencesFromJsonFile(multipartFile);
+            System.out.println("RelationshipsInformation_Sentences_Directive: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            // linguistic expressions
+            file = new File("src/main/resources/informationDetectionData/PersonalInformation_LinguisticExpression_Statement.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addLinguisticExpressionsFromJsonFile(multipartFile);
+            System.out.println("PersonalInformation_LinguisticExpression_Statement: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            file = new File("src/main/resources/informationDetectionData/FreeTimeInformation_LinguisticExpression_Statement.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addLinguisticExpressionsFromJsonFile(multipartFile);
+            System.out.println("FreeTimeInformation_LinguisticExpression_Statement: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            file = new File("src/main/resources/informationDetectionData/SchoolInformation_LinguisticExpression_Statement.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addLinguisticExpressionsFromJsonFile(multipartFile);
+            System.out.println("SchoolInformation_LinguisticExpression_Statement: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            file = new File("src/main/resources/informationDetectionData/FacultyInformation_LinguisticExpression_Statement.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addLinguisticExpressionsFromJsonFile(multipartFile);
+            System.out.println("FacultyInformation_LinguisticExpression_Statement: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            file = new File("src/main/resources/informationDetectionData/RelationshipsInformation_LinguisticExpression_Statement.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addLinguisticExpressionsFromJsonFile(multipartFile);
+            System.out.println("RelationshipsInformation_LinguisticExpression_Statement: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+            // rejecting expressions
+            file = new File("src/main/resources/informationDetectionData/RejectingExpression.json");
+            inputStream = new FileInputStream(file);
+            multipartFile = new MockMultipartFile("file", file.getName(), "text/plain", IOUtils.toByteArray(inputStream));
+            status = adminService.addRejectingExpressionsFromJsonFile(multipartFile);
+            System.out.println("RejectingExpression: " + status.getNumberOfAddedData() + "/" + status.getNumberOfData());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void addSomeWordsInDb() {

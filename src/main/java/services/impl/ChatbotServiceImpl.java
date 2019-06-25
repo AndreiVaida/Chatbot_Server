@@ -717,10 +717,6 @@ public class ChatbotServiceImpl implements ChatbotService {
         int nrOfExtraWords = 0;
         int nrOfUnmatchedWords = 0;
 
-        if (words.contains(new Word("e")) && words.contains(new Word("melodia"))) {
-            System.out.println(words);
-        }
-
         for (Word wordToMatch : wordsToMatch) {
             if (!words.contains(wordToMatch) && wordToMatch.getSynonyms().keySet().stream().noneMatch(words::contains)) {
                 nrOfUnmatchedWords++;

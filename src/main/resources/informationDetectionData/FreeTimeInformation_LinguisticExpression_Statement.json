@@ -17,7 +17,7 @@
       [{"text": null, "itemClass": "NAME"}]],
     "speechType": "STATEMENT",
     "informationClassDto": "FREE_TIME_INFORMATION",
-    "informationFieldNamePath": "hobbies"
+    "informationFieldNamePath": "hobbies#?"
   },
   {
     "expressionItems": [[{"text": null, "itemClass": "BOOLEAN"}]],
