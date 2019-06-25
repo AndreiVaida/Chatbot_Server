@@ -103,4 +103,6 @@ public interface AdminService {
     AddedDataStatus downloadConversationsFromWebsite();
 
     AddedDataStatus loadFileConversationsFromWebsite();
+
+    void setSynonyms(final String word1, final String word2);
 }

@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static app.Main.CHATBOT_ID;
@@ -280,10 +281,35 @@ public class ChatbotServiceImpl implements ChatbotService {
         }
 
         // check for a response in sentence synonyms
-        final List<Sentence> orderedSynonyms = sentence.getSynonyms().keySet().stream()
+        List<Sentence> synonymsOrdered = sentence.getSynonyms().keySet().stream()
                 .sorted((synonym1, synonym2) -> sentence.getSynonyms().get(synonym2).compareTo(sentence.getSynonyms().get(synonym1)))
                 .collect(Collectors.toList());
-        for (Sentence synonym : orderedSynonyms) {
+
+        // if no real synonym is present, take a response for the most similar sentence
+        if (synonymsOrdered.isEmpty() || sentence.getSynonyms().get(synonymsOrdered.get(0)) <= 1) {
+            final Map<Long, MatchingResult> matchingResultMap = new HashMap<>(); // <Sentence.id, MatchingResult>
+            final Set<Sentence> synonyms = sentence.getSynonyms().keySet();
+            for (Sentence synonym : synonyms) {
+                final MatchingResult matchingResult = compareWords(synonym.getWords(), sentence.getWords(), sentence.getWords().size() >= 3);
+                matchingResultMap.put(synonym.getId(), matchingResult);
+            }
+            final double weight = 0.9;
+            synonymsOrdered = synonyms.stream()
+                    .sorted((Sentence synonym1, Sentence synonym) -> {
+                        final MatchingResult mrS1 = matchingResultMap.get(synonym1.getId());
+                        final MatchingResult mrS2 = matchingResultMap.get(synonym.getId());
+
+                        final double nrOfExtraWordsWeight = 1 - weight;
+                        final double nrOfUnmatchedWords = 1 - nrOfExtraWordsWeight;
+                        final Double differenceSentence1 = Math.abs(mrS1.getNrOfExtraWords() * nrOfExtraWordsWeight - mrS1.getNrOfUnmatchedWords() * nrOfUnmatchedWords);
+                        final Double differenceSentence2 = Math.abs(mrS2.getNrOfExtraWords() * nrOfExtraWordsWeight - mrS2.getNrOfUnmatchedWords() * nrOfUnmatchedWords);
+                        // less is better (0 difference = best match)
+                        return differenceSentence1.compareTo(differenceSentence2);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        for (Sentence synonym : synonymsOrdered) {
             response = pickGoodResponseForSentence(synonym);
             if (response != null) {
                 System.out.println("Synonym of Sentence: " + synonym);
@@ -651,6 +677,7 @@ public class ChatbotServiceImpl implements ChatbotService {
      * Matching a sentence means:
      * - the text from the given list must be in the sentence
      * - if the word is not in the sentence, check if a synonym of the word is in the sentence
+     * For sentences with >=3 words ignore punctuation in sorting
      */
     public List<Sentence> findSimilarSentencesByWords(final List<Word> words, final int maxNrOfExtraWords, final int maxNrOfUnmatchedWords, final double weight) {
         final Map<Long, MatchingResult> matchingResultMap = new HashMap<>(); // <Sentence.id, MatchingResult>
@@ -660,7 +687,8 @@ public class ChatbotServiceImpl implements ChatbotService {
                     if (Math.abs(words.size() - sentence.getWords().size()) > maxNrOfExtraWords) {
                         return false;
                     }
-                    final MatchingResult matchingResult = compareWords(words, sentence.getWords());
+                    // ignore punctuation for sentences with 3 or more words (used only in sorting)
+                    final MatchingResult matchingResult = compareWords(words, sentence.getWords(), sentence.getWords().size() >= 3);
                     final boolean isOK = matchingResult.getNrOfExtraWords() <= maxNrOfExtraWords && matchingResult.getNrOfUnmatchedWords() <= maxNrOfUnmatchedWords;
                     if (isOK) {
                         matchingResultMap.put(sentence.getId(), matchingResult);
@@ -685,17 +713,21 @@ public class ChatbotServiceImpl implements ChatbotService {
      * The function does not take into account the positions of the text.
      * Consider that a word from <wordsToMatch> exists in <text> if the the list contains the word or a synonym of the word
      */
-    private MatchingResult compareWords(final List<Word> wordsToMatch, final List<Word> words) {
+    private MatchingResult compareWords(final List<Word> wordsToMatch, final List<Word> words, boolean ignorePunctuation) {
         int nrOfExtraWords = 0;
         int nrOfUnmatchedWords = 0;
 
+        if (words.contains(new Word("e")) && words.contains(new Word("melodia"))) {
+            System.out.println(words);
+        }
+
         for (Word wordToMatch : wordsToMatch) {
-            if (!words.contains(wordToMatch) || wordToMatch.getSynonyms().keySet().stream().anyMatch(words::contains)) {
+            if (!words.contains(wordToMatch) && wordToMatch.getSynonyms().keySet().stream().noneMatch(words::contains)) {
                 nrOfUnmatchedWords++;
             }
         }
         for (Word word : words) {
-            if (!wordsToMatch.contains(word) || word.getSynonyms().keySet().stream().anyMatch(wordsToMatch::contains)) {
+            if (!wordsToMatch.contains(word) && word.getSynonyms().keySet().stream().noneMatch(wordsToMatch::contains)) {
                 nrOfExtraWords++;
             }
         }

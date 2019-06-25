@@ -499,6 +499,26 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
+    public void setSynonyms(final String word1Text, final String word2Text) {
+        Word word1 = wordRepository.getFirstByTextIgnoreCase(word1Text);
+        if (word1 == null) {
+            word1 = new Word(word1Text);
+            wordRepository.save(word1);
+        }
+        Word word2 = wordRepository.getFirstByTextIgnoreCase(word2Text);
+        if (word2 == null) {
+            word2 = new Word(word2Text);
+            wordRepository.save(word2);
+        }
+
+        word1.addSynonym(word2);
+        wordRepository.save(word1);
+        word2.addSynonym(word1);
+        wordRepository.save(word2);
+    }
+
+    @Override
     public List<Sentence> getSentences(final Integer pageNumber, final Integer itemsPerPage) {
         return sentenceRepository.findAll(PageRequest.of(pageNumber, itemsPerPage)).getContent();
     }

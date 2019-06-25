@@ -16,6 +16,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import repositories.FacebookChatRepository;
 import repositories.SentenceDetectionParametersRepository;
+import repositories.WordRepository;
 import services.api.AdminService;
 import services.api.FastLearningService;
 import services.api.UserService;
@@ -35,11 +36,12 @@ public class Main {
     private final UserService userService;
     private final AdminService adminService;
     private final SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
+    private final WordRepository wordRepository;
     private final FastLearningService fastLearningService;
     private final FacebookChatRepository facebookChatRepository;
 
     @Autowired
-    public Main(UserService userService, FastLearningService fastLearningService, FacebookChatRepository facebookChatRepository, Environment environment, AdminService adminService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository) {
+    public Main(UserService userService, FastLearningService fastLearningService, FacebookChatRepository facebookChatRepository, Environment environment, AdminService adminService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, WordRepository wordRepository) {
         this.userService = userService;
         this.fastLearningService = fastLearningService;
         this.adminService = adminService;
@@ -48,6 +50,7 @@ public class Main {
         CHATBOT_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("chatbot.id")));
         USER_FOR_LEARNING_1_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning1.id")));
         USER_FOR_LEARNING_2_ID = Long.valueOf(Objects.requireNonNull(environment.getProperty("userForLearning2.id")));
+        this.wordRepository = wordRepository;
 
         if (userService.findAll().isEmpty()) {
             // add users
@@ -55,6 +58,7 @@ public class Main {
             addAdminInDb();
             addUserForLearningInDb();
             addAndreiInDb();
+            addSomeWordsInDb();
             // add Sentences, LinguisticExpressions and messages
             //uploadSentencesFile();
             //uploadLinguisticExpressionFile();
@@ -66,8 +70,12 @@ public class Main {
 
     }
 
+    private void addSomeWordsInDb() {
+        adminService.setSynonyms("e", "este");
+    }
+
     public static void addDefaultSentenceDetectionParametersInDb(SentenceDetectionParametersRepository sentenceDetectionParametersRepository) {
-        final double weight = 0.6;
+        final double weight = 0.9;
 
         for (int sentenceLength = 1; sentenceLength <= 10; sentenceLength++) {
             int maxNrOfExtraWords;
