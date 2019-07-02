@@ -318,9 +318,8 @@ public class ChatServiceImpl implements ChatService {
         final Message lastMessage = messageService.getLastMessageOfUsers(fromUser.getId(), toUser.getId());
         final Sentence sentence;
 
-        // if requestType is default and passed >30 minutes from last conversation => greets again
-        if ((chatbotRequestType == null || chatbotRequestType == DEFAULT) &&
-                lastMessage != null && LocalDateTime.now().minusMinutes(30).isAfter(lastMessage.getDateTime())) {
+        // if requestType is default and passed >30 minutes from last conversation || new user => greets again
+        if (lastMessage == null || (chatbotRequestType == null || chatbotRequestType == DEFAULT) && LocalDateTime.now().minusMinutes(30).isAfter(lastMessage.getDateTime())) {
             sentence = chatbotService.generateGreetingSentence();
         } else {
             sentence = getSentenceAccordingToUserAndRequestType(toUser, chatbotRequestType);
