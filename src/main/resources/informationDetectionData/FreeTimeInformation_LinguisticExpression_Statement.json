@@ -31,6 +31,7 @@
       [{"text": "e", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": "e", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}, {"text": ".", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": "numește", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
+      [{"text": "plac", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],
       [{"text": null, "itemClass": "NAME"}, {"text": "se", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": null, "itemClass": "NAME"}, {"text": "este", "itemClass": "NOT_AN_INFORMATION"}],
       [{"text": "citesc", "itemClass": "NOT_AN_INFORMATION"}, {"text": null, "itemClass": "NAME"}],

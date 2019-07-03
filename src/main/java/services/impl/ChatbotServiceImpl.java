@@ -363,8 +363,8 @@ public class ChatbotServiceImpl implements ChatbotService {
                 continue;
             }
 
-            // îți / vă
-            if (word.getText().toLowerCase().equals("iti")) {
+            // îți, te / vă
+            if (word.getText().toLowerCase().equals("iti") || word.getText().toLowerCase().equals("te")) {
                 if (FORMAL.equals(addressingMode)){
                     text.append("vă");
                     continue;
@@ -392,6 +392,10 @@ public class ChatbotServiceImpl implements ChatbotService {
                 text.append(word.getTextWithDiacritics().replace("ți-", "v-").replace("ti-", "v-"));
                 continue;
             }
+            if (word.getText().toLowerCase().startsWith("te-ai") && FORMAL.equals(addressingMode)) {
+                text.append(word.getTextWithDiacritics().replace("te-ai", "v-ați"));
+                continue;
+            }
             if (word.getText().toLowerCase().startsWith("te-") && FORMAL.equals(addressingMode)) {
                 text.append(word.getTextWithDiacritics().replace("te-", "v-"));
                 continue;
@@ -400,12 +404,18 @@ public class ChatbotServiceImpl implements ChatbotService {
                 text.append(word.getText().replace("v-", "ți-"));
                 continue;
             }
-            if (word.getText().toLowerCase().startsWith("ti") && FORMAL.equals(addressingMode)) {
-                text.append(word.getTextWithDiacritics().replace("ți", "vă").replace("ti", "v"));
-                continue;
-            }
+//            if (word.getText().toLowerCase().startsWith("iti") && FORMAL.equals(addressingMode)) {
+//                text.append(word.getTextWithDiacritics().replace("ți", "vă").replace("ti", "v"));
+//                continue;
+//            }
             if (word.getText().toLowerCase().equals("va") && INFORMAL.equals(addressingMode)) {
                 text.append(word.getText().replace("va", "ți"));
+                continue;
+            }
+
+            // -mi / -ți-mi
+            if (word.getText().toLowerCase().endsWith("-mi") && FORMAL.equals(addressingMode)) {
+                text.append(word.getTextWithDiacritics().replace("-mi", "-ți-mi"));
                 continue;
             }
 
