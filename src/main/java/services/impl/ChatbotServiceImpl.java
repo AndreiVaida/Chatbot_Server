@@ -352,8 +352,9 @@ public class ChatbotServiceImpl implements ChatbotService {
                 continue;
             }
 
-            // tu / dumneavoastră
-            if (word.getText().toLowerCase().equals("tu") && FORMAL.equals(addressingMode)) {
+            // tu, ție, tău, ta / dumneavoastră
+            if ((word.getText().toLowerCase().equals("tu") || word.getText().toLowerCase().equals("tie") || word.getText().toLowerCase().equals("tau") || word.getText().toLowerCase().equals("ta"))
+                    && FORMAL.equals(addressingMode)) {
                 text.append("dumneavoastră");
                 continue;
             }
@@ -386,9 +387,13 @@ public class ChatbotServiceImpl implements ChatbotService {
                 }
             }
 
-            // ți-ar, ți-aș / v-ar, v-ați
+            // ți-ar, ți-aș, te-ai / v-ar, v-ați
             if (word.getText().toLowerCase().startsWith("ti-") && FORMAL.equals(addressingMode)) {
                 text.append(word.getTextWithDiacritics().replace("ți-", "v-").replace("ti-", "v-"));
+                continue;
+            }
+            if (word.getText().toLowerCase().startsWith("te-") && FORMAL.equals(addressingMode)) {
+                text.append(word.getTextWithDiacritics().replace("te-", "v-"));
                 continue;
             }
             if (word.getText().toLowerCase().startsWith("v-") && INFORMAL.equals(addressingMode)) {
