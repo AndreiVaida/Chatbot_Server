@@ -369,6 +369,10 @@ public class ChatbotServiceImpl implements ChatbotService {
                     text.append("vă");
                     continue;
                 }
+                if (INFORMAL.equals(addressingMode) && word.getText().toLowerCase().equals("te")){
+                    text.append("te");
+                    continue;
+                }
                 if (INFORMAL.equals(addressingMode)){
                     text.append("îți");
                     continue;
