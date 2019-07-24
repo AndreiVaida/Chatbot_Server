@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 // Lombok
@@ -37,6 +38,7 @@ public class Message {
     @JoinColumn(name = "TO_USER")
     private User toUser;
 
+    @NotNull
     @Column(length = 1024)
     private String text;
 
