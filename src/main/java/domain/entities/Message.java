@@ -1,6 +1,5 @@
 package domain.entities;
 
-import com.sun.istack.internal.NotNull;
 import domain.enums.MessageSource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,7 +37,6 @@ public class Message {
     @JoinColumn(name = "TO_USER")
     private User toUser;
 
-    @NotNull
     @Column(length = 1024)
     private String text;
 
