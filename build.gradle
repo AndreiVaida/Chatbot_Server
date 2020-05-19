@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'net.ltgt.apt' version '0.10'
     id 'org.springframework.boot' version '2.1.1.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 }
 
 apply plugin: 'java'
@@ -12,8 +13,18 @@ version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 repositories {
     mavenCentral()
+}
+
+springBoot {
+    mainClassName = "app.Main"
 }
 
 dependencies {
@@ -22,7 +33,7 @@ dependencies {
 
     // Spring Boot
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
-    compile group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '2.1.6.RELEASE', ext: 'pom'
+    compile group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '2.1.6.RELEASE'
 
     // Spring Boot Starter
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter
