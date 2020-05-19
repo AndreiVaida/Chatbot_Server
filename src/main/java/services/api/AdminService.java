@@ -105,4 +105,6 @@ public interface AdminService {
     AddedDataStatus loadFileConversationsFromWebsite();
 
     void setSynonyms(final String word1, final String word2);
+
+    AddedDataStatus getDataLoadingStatus();
 }

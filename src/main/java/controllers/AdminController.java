@@ -205,4 +205,10 @@ public class AdminController extends AbstractController {
         final AddedDataStatus addedDataStatus = adminFacade.addConversationsFromWebsite();
         return new ResponseEntity<>(addedDataStatus, HttpStatus.OK);
     }
+
+    @GetMapping("/status")
+    public ResponseEntity<AddedDataStatus> getDataLoadingStatus() {
+        final AddedDataStatus dataLoadingStatus = adminFacade.getDataLoadingStatus();
+        return new ResponseEntity<>(dataLoadingStatus, HttpStatus.OK);
+    }
 }

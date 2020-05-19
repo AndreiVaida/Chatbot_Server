@@ -76,8 +76,10 @@ public class AdminServiceImpl implements AdminService {
     private final SentenceDetectionParametersRepository sentenceDetectionParametersRepository;
     private final CsvConversationTimestampRepository csvConversationTimestampRepository;
     private final String fileWithConversations = "src/main/resources/conversations/ConversationsTriburile1.txt";
+    private AddedDataStatus dataLoadingStatus;
 
     public AdminServiceImpl(SentenceRepository sentenceRepository, WordRepository wordRepository, LinguisticExpressionRepository linguisticExpressionRepository, RejectingExpressionRepository rejectingExpressionRepository, ChatService chatService, ChatbotService chatbotService, UserService userService, SentenceDetectionParametersRepository sentenceDetectionParametersRepository, CsvConversationTimestampRepository csvConversationTimestampRepository) {
+        dataLoadingStatus = new AddedDataStatus(0, 0);
         this.sentenceRepository = sentenceRepository;
         this.wordRepository = wordRepository;
         this.linguisticExpressionRepository = linguisticExpressionRepository;
@@ -244,8 +246,19 @@ public class AdminServiceImpl implements AdminService {
             final User auxUser = learningUser1;
             learningUser1 = learningUser2;
             learningUser2 = auxUser;
+
+            updateDataLoadingStatus(numberOfMessages, numberOfAddedMessages);
         }
         return new AddedDataStatus(numberOfMessages, numberOfAddedMessages);
+    }
+
+    private void updateDataLoadingStatus(int numberOfMessages, int numberOfAddedMessages) {
+        dataLoadingStatus.setNumberOfData(numberOfMessages);
+        dataLoadingStatus.setNumberOfAddedData(numberOfAddedMessages);
+    }
+
+    public AddedDataStatus getDataLoadingStatus() {
+        return dataLoadingStatus;
     }
 
     @Override

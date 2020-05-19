@@ -170,4 +170,9 @@ public class AdminFacadeImpl implements AdminFacade {
     public AddedDataStatus addConversationsFromWebsite() {
         return adminService.loadFileConversationsFromWebsite();
     }
+
+    @Override
+    public AddedDataStatus getDataLoadingStatus() {
+        return adminService.getDataLoadingStatus();
+    }
 }
