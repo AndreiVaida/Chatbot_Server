@@ -5,7 +5,6 @@ import domain.entities.Sentence;
 import domain.entities.User;
 import domain.enums.MessageSource;
 import domain.information.Information;
-import org.w3c.dom.html.HTMLModElement;
 
 import java.time.LocalDateTime;
 import java.util.List;
